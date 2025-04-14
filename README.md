@@ -32,7 +32,10 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 --- 
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
-
+- *Nombre completo:* Facundo Devida
+- *Legajo:* 33539
+- *Alias de Slack:* @Facudevida
+- *Perfil de GitHub:* https://github.com/Facudevida
 
 ---
 
