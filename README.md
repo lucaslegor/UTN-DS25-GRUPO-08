@@ -26,7 +26,6 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - React
 - Node.js
 - Mercado Pago / Stripe (integración de pagos)
-- API RESTful
 - Diseño Responsive (Mobile First)
 
   
