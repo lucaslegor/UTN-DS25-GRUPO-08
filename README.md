@@ -4,8 +4,6 @@
 
 | Detalle            | Información                                       |
 |--------------------|-------------------------------------------------- |
-| **Equipo**         | Manrique Agustín, Domato Tobías,Rodríguez Joaquín,| 
-|                    |  Legorburu Lucas, Giordani Luca y Devida Facundo  |
 | **Materia**        | Desarrollo de Software                            |
 | **Profesor**       | Matías Corti                                      |
 
@@ -30,6 +28,12 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Mercado Pago / Stripe (integración de pagos)
 - API RESTful
 - Diseño Responsive (Mobile First)
+
+  
+--- 
+
+## 👨‍💻👩‍💻 Miembros del Equipo
+
 
 ---
 
