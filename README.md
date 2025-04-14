@@ -28,10 +28,16 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Mercado Pago / Stripe (integración de pagos)
 - Diseño Responsive (Mobile First)
 
-  
---- 
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
+
+- **Nombre completo:** Lucas Legorburu
+- **Legajo:** 33497
+- **Alias de Slack:** @lucaslegor
+- **Perfil de GitHub:** https://github.com/lucaslegor
+
+
+
 
 
 ---
