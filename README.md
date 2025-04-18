@@ -32,7 +32,11 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 --- 
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
-
+- Nombre Completo: Joaquin Rodriguez
+- Legajo: 33402
+- Alias de Slack: @Joaquin Rodriguez
+- Perfil de github: github.com/Joacorodriguezz
+ 
 
 ---
 
