@@ -33,10 +33,10 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
 
-Nombre Completo: Lucas Legorburu
-Legajo: 33497
-Alias Slack: lucaslegor
-GitHub: https://github.com/lucaslegor
+- Nombre Completo: Lucas Legorburu
+- Legajo: 33497
+- Alias Slack: lucaslegor
+- GitHub: https://github.com/lucaslegor
 ---
 - Nombre completo: Tobias Domato
 - Legajo: 33271
