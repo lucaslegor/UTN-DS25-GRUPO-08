@@ -64,5 +64,7 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Perfil de github: https://github.com/Joacorodriguezz
 ---
 
+## 🎯🎯 Objetivos del proyecto
 
+Objetivo principal: Potenciar el aspecto comercial del Club For Ever mediante la implementación de una plataforma de venta online.
 
