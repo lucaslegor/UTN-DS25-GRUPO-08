@@ -27,7 +27,6 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Node.js
 - Mercado Pago / Stripe (integración de pagos)
 - Diseño Responsive (Mobile First)
-
   
 --- 
 
@@ -49,8 +48,8 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Perfil de GitHub: https://github.com/tobidomato
 ---
 - Nombre Completo: Agustín Manrique
-- Legajo: 31976  
-- Alias Slack: agusmanri 
+- Legajo: 31976
+- Alias Slack: agusmanri
 - GitHub: https://github.com/AgustinManrique
 ---
 - Nombre completo: Facundo Devida
@@ -63,12 +62,11 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Alias de Slack: @Joaquin Rodriguez
 - Perfil de github: https://github.com/Joacorodriguezz
 ---
-
 ## 🎯🎯 Objetivos del proyecto
 - Objetivo principal: Potenciar el aspecto comercial del Club For Ever mediante la implementación de una plataforma de venta online.
 ---
 ## Objetivos específicos:
 1. Desarrollar una tienda virtual moderna y accesible para la venta de merchandising del club en el plazo de 8 meses.
-
 2. Integrar medios de pago electrónicos confiables como 
 Mercado Pago o Stripe.
+
