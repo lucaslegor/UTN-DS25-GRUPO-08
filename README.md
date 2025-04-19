@@ -35,7 +35,7 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 
 ##Datos Personales
 
-- Nombre Completo: Luca Giordani
+- Nombre Completo: Luca GIordani
 - Legajo: 33382
 - Alias del Slack: @LucaGiordani
 - Perfil de Github: https://github.com/LucaGio04
