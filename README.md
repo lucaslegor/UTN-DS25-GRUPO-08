@@ -37,7 +37,7 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Legajo: 33539
 - Alias de Slack: @Facudevida
 - Perfil de GitHub: https://github.com/Facudevida
-
+---
 - Nombre Completo: Joaquin Rodriguez
 - Legajo: 33402
 - Alias de Slack: @Joaquin Rodriguez
