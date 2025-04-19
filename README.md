@@ -27,37 +27,44 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Node.js
 - Mercado Pago / Stripe (integración de pagos)
 - Diseño Responsive (Mobile First)
-
   
 --- 
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
+
 - Nombre Completo: Luca Giordani
 - Legajo: 33382
 - Alias del Slack: @LucaGiordani
 - Perfil de Github: https://github.com/LucaGio04
+---
 - Nombre Completo: Lucas Legorburu
 - Legajo: 33497
 - Alias Slack: lucaslegor
 - GitHub: https://github.com/lucaslegor
+---
 - Nombre completo: Tobias Domato
 - Legajo: 33271
 - Alias de Slack: @TobiasDomato
 - Perfil de GitHub: https://github.com/tobidomato
+---
 - Nombre Completo: Agustín Manrique
 - Legajo: 31976
 - Alias Slack: agusmanri
 - GitHub: https://github.com/AgustinManrique
+---
 - Nombre completo: Facundo Devida
 - Legajo: 33539
 - Alias de Slack: @Facudevida
 - Perfil de GitHub: https://github.com/Facudevida
+---
 - Nombre Completo: Joaquin Rodriguez
 - Legajo: 33402
 - Alias de Slack: @Joaquin Rodriguez
 - Perfil de github: https://github.com/Joacorodriguezz
+---
 ## 🎯🎯 Objetivos del proyecto
 - Objetivo principal: Potenciar el aspecto comercial del Club For Ever mediante la implementación de una plataforma de venta online.
-- Objetivos específicos: 
-- Desarrollar una tienda virtual moderna y accesible para la 
-venta de merchandising del club en el plazo de 8 meses.
+---
+## Objetivos específicos: 
+1. Desarrollar una tienda virtual moderna y accesible para la venta de merchandising del club en el plazo de 8 meses.
+
