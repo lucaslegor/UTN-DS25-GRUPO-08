@@ -58,7 +58,7 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Alias de Slack: @Joaquin Rodriguez
 - Perfil de github: https://github.com/Joacorodriguezz
 
->>>>>>> 87bd2de809a17751f47359a7a40aec794949998f
+
 
 
 ---
