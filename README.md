@@ -33,10 +33,10 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
 
-- Nombre Completo: Luca Giordani
-- Legajo: 33382
-- Alias del Slack: @LucaGiordani
-- Perfil de Github: https://github.com/LucaGio04
+- Nombre Completo: Joaquin Rodriguez
+- Legajo: 33402
+- Alias de Slack: @Joaquin Rodriguez
+- Perfil de github: github.com/Joacorodriguezz
 ---
 
 
