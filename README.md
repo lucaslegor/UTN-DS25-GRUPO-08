@@ -51,5 +51,7 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 
 ---
 
-
+- Objetivos específicos: 
+-  Desarrollar una tienda virtual moderna y accesible para la 
+  venta de merchandising del club en el plazo de 8 meses.
 
