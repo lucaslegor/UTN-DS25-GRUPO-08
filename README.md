@@ -33,6 +33,11 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
 
+- Nombre completo: Tobias Domato
+- Legajo: 33271
+- Alias de Slack: @TobiasDomato
+- Perfil de GitHub: https://github.com/tobidomato
+---
 - Nombre Completo: Agustín Manrique
 - Legajo: 31976  
 - Alias Slack: agusmanri 
@@ -47,6 +52,7 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Legajo: 33402
 - Alias de Slack: @Joaquin Rodriguez
 - Perfil de github: https://github.com/Joacorodriguezz
+
 
 
 ---
