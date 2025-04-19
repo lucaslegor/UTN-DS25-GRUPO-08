@@ -33,10 +33,34 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
 
+<<<<<<< HEAD
 Nombre Completo: Lucas Legorburu
 Legajo: 33497
 Alias Slack: lucaslegor
 GitHub: https://github.com/lucaslegor
+=======
+- Nombre completo: Tobias Domato
+- Legajo: 33271
+- Alias de Slack: @TobiasDomato
+- Perfil de GitHub: https://github.com/tobidomato
+---
+- Nombre Completo: Agustín Manrique
+- Legajo: 31976  
+- Alias Slack: agusmanri 
+- GitHub: https://github.com/AgustinManrique
+---
+- Nombre completo: Facundo Devida
+- Legajo: 33539
+- Alias de Slack: @Facudevida
+- Perfil de GitHub: https://github.com/Facudevida
+---
+- Nombre Completo: Joaquin Rodriguez
+- Legajo: 33402
+- Alias de Slack: @Joaquin Rodriguez
+- Perfil de github: https://github.com/Joacorodriguezz
+
+>>>>>>> 87bd2de809a17751f47359a7a40aec794949998f
+
 
 ---
 
