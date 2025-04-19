@@ -33,10 +33,22 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
 
-  - Agustín Manriqu
-  - Legajo: 31976  
-  - Alias Slack: agusmanri 
-  - GitHub: https://github.com/AgustinManrique
+- Agustín Manriqu
+- Legajo: 31976  
+- Alias Slack: agusmanri 
+- GitHub: https://github.com/AgustinManrique
+---
+- Nombre completo: Facundo Devida
+- Legajo: 33539
+- Alias de Slack: @Facudevida
+- Perfil de GitHub: https://github.com/Facudevida
+---
+- Nombre Completo: Joaquin Rodriguez
+- Legajo: 33402
+- Alias de Slack: @Joaquin Rodriguez
+- Perfil de github: github.com/Joacorodriguezz
+
+
 ---
 
 
