@@ -33,7 +33,10 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
 
-
+- **Agustín Manrique**  
+  - Legajo: 31976  
+  - Alias Slack: agusmanri 
+  - GitHub: https://github.com/AgustinManrique
 ---
 
 
