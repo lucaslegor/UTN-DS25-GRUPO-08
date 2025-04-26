@@ -63,6 +63,8 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 ## 🎯🎯 Objetivos del proyecto
 - Objetivo principal: Potenciar el aspecto comercial del Club For Ever mediante la implementación de una plataforma de venta online.
 ---
-## Objetivos específicos: 
+## Objetivos específicos:
 1. Desarrollar una tienda virtual moderna y accesible para la venta de merchandising del club en el plazo de 8 meses.
+2. Integrar medios de pago electrónicos confiables como 
+Mercado Pago o Stripe.
 
