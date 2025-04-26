@@ -8,14 +8,14 @@ Este repositorio contiene toda la documentación correspondiente al proyecto. A 
 - Documento de Visión y Alcance (versión actual)
 
 ### 01 - Análisis Inicial
-- 01.01 - Revisión del Alcance Inicial
-- 01.02 - Diagrama Contextual
-- 01.03 - Mapa Funcional
-- 01.04 - Matriz de Riesgo
+- 1.1 - Revisión del Alcance Inicial
+- 1.2 - Diagrama Contextual
+- 1.2 - Mapa Funcional
+- 1.3 - Matriz de Riesgo
 
 ### 02 - Modelado de Dominio
-- 02.01 - Glosario Oficial
-- 02.02 - Diagramas de Clase Básicos
-- 02.03 - Reglas de Negocio
+- 2.1 - Glosario Oficial
+- 2.1 - Diagramas de Clase Básicos
+- 2.2 - Reglas de Negocio
 
 ---
