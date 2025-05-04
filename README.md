@@ -27,8 +27,6 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Node.js
 - Mercado Pago / Stripe (integración de pagos)
 - Diseño Responsive (Mobile First)
-  
---- 
 
 ## 👨‍💻👩‍💻 Miembros del Equipo
 
