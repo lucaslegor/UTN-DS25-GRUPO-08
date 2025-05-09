@@ -1,4 +1,4 @@
-# 🛒 Plataforma E-Commerce - Club For Ever
+# 🛒 Plataforma E-Commerce - Maps Seguros
 
 ## 📋 Información General
 
@@ -11,14 +11,14 @@
 
 ## 🚀 Breve Descripcion del Proyecto
 
-Desarrollo de una plataforma **E-commerce** para el **Club Social, Cultural y Deportivo For Ever**, utilizando tecnologías como **React** para el frontend y **Node.js** para el backend.
+Desarrollo de una plataforma **E-commerce** para la Empresa **Maps Seguros**, utilizando tecnologías como **React** para el frontend y **Node.js** para el backend.
 
 La plataforma permitirá:
-- La venta online de merchandising oficial.
+- La venta online de enlatados.
 - Una experiencia de usuario ágil, moderna y segura.
 - Integración con pasarelas de pago confiables como **Mercado Pago** o **Stripe**.
 
-El proyecto busca potenciar el alcance comercial del club, facilitando a los usuarios la compra desde cualquier dispositivo y lugar.
+El proyecto busca potenciar el alcance comercial de la Empresa MAPS, facilitando a los usuarios la compra desde cualquier dispositivo y lugar.
 
 ---
 
@@ -60,11 +60,15 @@ El proyecto busca potenciar el alcance comercial del club, facilitando a los usu
 - Alias de Slack: @Joaquin Rodriguez
 - Perfil de github: https://github.com/Joacorodriguezz
 ---
-## 🎯🎯 Objetivos del proyecto
-- Objetivo principal: Potenciar el aspecto comercial del Club For Ever mediante la implementación de una plataforma de venta online.
----
-## Objetivos específicos:
-1. Desarrollar una tienda virtual moderna y accesible para la venta de merchandising del club en el plazo de 8 meses.
-2. Integrar medios de pago electrónicos confiables como 
-Mercado Pago o Stripe.
+## Objetivos del Proyecto
 
+### Objetivos específicos
+
+- **Objetivo principal**: Potenciar el aspecto comercial e innovador de la empresa mediante la implementación de una plataforma de venta online.
+
+1. Desarrollar una tienda virtual moderna y accesible para la venta de seguros y enlatados de la empresa en el plazo de 8 meses.
+2. Integrar medios de pago electrónicos confiables como Mercado Pago o Stripe.
+3. Integrar un ChatBot con BotMaker.
+4. Mejorar la experiencia de compra para los usuarios, ampliando el alcance a nivel nacional.
+5. Automatizar el proceso de ventas para reducir la carga operativa.
+6. Aumentar el número de ventas y la exposición de la empresa.
