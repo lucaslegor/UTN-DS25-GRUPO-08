@@ -17,5 +17,13 @@ Este repositorio contiene toda la documentación correspondiente al proyecto. A 
 - 2.1 - Glosario Oficial
 - 2.1 - Diagramas de Clase Básicos
 - 2.2 - Reglas de Negocio
+  
+### 06 - Wireframes
+- 6.1 - Catalogo
+- 6.2 - Carrito
+- 6.3 - Carta de producto
+- 6.4 - Login web
+- 6.5 - Login Mobile
+- 6.5 - Editar Perfil
 
 ---
