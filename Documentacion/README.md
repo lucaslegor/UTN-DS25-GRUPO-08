@@ -17,6 +17,10 @@ Este repositorio contiene toda la documentación correspondiente al proyecto. A 
 - 2.1 - Glosario Oficial
 - 2.1 - Diagramas de Clase Básicos
 - 2.2 - Reglas de Negocio
+
+### 04 - Documento de Visión y Alcance
+- 4.1 - Matriz de Trazabilidad
+
   
 ### 06 - Wireframes
 - 6.1 - Catalogo
