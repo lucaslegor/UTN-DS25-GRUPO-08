@@ -1,0 +1,92 @@
+/* Reset global */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/*estilitos iniciales y provisionales, recontra sujetos a cambios*/
+/* ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
+body {
+  font-family: sans-serif;
+  background-color: #e6e6e6;
+  padding: 1rem;
+}
+
+.header {
+  background-color: #1e43c0;
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.auth-buttons button {
+  margin-left: 0.5rem;
+  background-color: #00bfff;   
+  color: white;                
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.auth-buttons button:hover {
+  background-color: #6a3fcf;  
+  transform: scale(1.1);
+}
+
+.filters {
+  margin: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filter-buttons button {
+  background-color: #3d6de2;  
+  color: white;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filter-buttons button:hover {
+  cursor: pointer;
+}
+
+.catalog {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.product-card {
+  background-color: white;
+  padding: 2rem;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .product-card {
+    width: 100%;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+}
