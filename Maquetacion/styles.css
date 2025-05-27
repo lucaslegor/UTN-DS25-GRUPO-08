@@ -5,11 +5,12 @@
   margin: 0;
   padding: 0;
 }
-/* Importacion de archivo var.css donde definimos las variables para usar en los estilos*/
-@import url(./var.css);
+/* La importacion de archivo var.css donde definimos las variables para usar en los estilos
+esta hecha en el HTML, la saque de aca porque tenerla dos veces puede generar conflictos
+por duplicacion y puede afectar la performance. */
 
-/*estilitos iniciales y provisionales, recontra sujetos a cambios*/
-/* ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
+/* Estilitos iniciales y provisionales, recontra sujetos a cambios*/
+/* Ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
 body {
   font-family: var(--font-text);
   background-color: #e6e6e6;
