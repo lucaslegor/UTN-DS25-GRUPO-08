@@ -5,13 +5,14 @@
   margin: 0;
   padding: 0;
 }
+
 /*estilitos iniciales y provisionales, recontra sujetos a cambios*/
 /* ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
 body {
-  font-family: var(--font-text);
+  font-family: sans-serif;
   background-color: #e6e6e6;
   padding: 0;
-  display: flex;
+  display: flex; 
   flex-direction: column; 
   min-height: 100vh; 
 }
@@ -32,10 +33,9 @@ body {
   text-decoration: none;
 }
 
-
 .auth-buttons button {
   margin-left: 0.5rem;
-  background-color: var(--buttonColour);   
+  background-color: #00bfff;   
   color: white;                
   border: none;
   padding: 0.5rem 1rem;
@@ -57,7 +57,7 @@ body {
 }
 
 .filter-buttons button {
-  background-color: var(--buttonColour);  
+  background-color: #3d6de2;  
   color: white;
   border: none;
   padding: 0.5rem 1.2rem;
@@ -97,7 +97,7 @@ body {
   color: white;
   padding: 1.5rem 1rem;
   text-align: center;
-  margin-top: auto; /* Añadido para empujar el footer hacia abajo*/
+  margin-top: auto;
 }
 
 .footer-content {
@@ -105,7 +105,7 @@ body {
   margin: 0 auto;
 }
 
-/* Estilos para la sección About Us */
+/* estilos para la secion de about us*/
 .about-us-content {
   max-width: 900px;
   margin: 2rem auto;
