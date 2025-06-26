@@ -14,22 +14,14 @@ const ProductCardPage = () => {
 
   return (
     <div>
-      <header className="header">
-        <h1><Link to="/">Maps</Link></h1>
-        <div className="auth-buttons">
-          <button>Login</button>
-          <button>Register</button>
-          <Link to="/aboutus"><button>About Us</button></Link>
-        </div>
-      </header>
-
+     
       <main>
         <div className="product-detail-container">
           <ProductCard {...product} />
           <div className="product-info">
             <h2>{product.title}</h2>
             <p>{product.description}</p>
-            <p className="product-price">{product.price}</p>
+            {/*<p className="product-price">{product.price}</p>*/}
             <div className="product-actions">
               <button id="addToCartButton">Agregar al carrito</button>
             </div>
@@ -37,11 +29,6 @@ const ProductCardPage = () => {
         </div>
       </main>
 
-      <footer className="footer">
-        <div className="footer-content">
-          <p>&copy; 2025 Maps. Todos los derechos reservados.</p>
-        </div>
-      </footer>
     </div>
   );
 };

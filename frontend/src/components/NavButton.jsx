@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 
 const NavButton = ({ image, icon: Icon, label, onClick }) => {
   return (
-    <ButtonBase
+    <ButtonBase 
       onClick={onClick}
       sx={{
         position: 'relative',
