@@ -1,26 +1,4 @@
-/* Reset global */
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/*estilitos iniciales y provisionales, recontra sujetos a cambios*/
-/* ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
-
-body {
-  font-family: sans-serif;
-  background-color: #e6e6e6;
-  padding: 0; 
-  display: flex; 
-  flex-direction: column; 
-  min-height: 100vh;
-}
-
-
 .header {
-  
   background-color: #1e43c0;
   color: white;
   padding: 1rem;
