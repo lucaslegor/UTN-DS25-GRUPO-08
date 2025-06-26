@@ -1,23 +1,28 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom'; // Agregá también Outlet
 import '../styles/styles.css';
+import Footer from './Footer';
+import { NavBar } from './navBar';
+import Login from './Login';
 
-const Layout = ({ children }) => (
-  <div className="app-layout">
-    <header className="header">
-      <h1><Link to="/">Maps</Link></h1>
-      <div className="auth-buttons">
-        <button>Login</button>
-        <button>Register</button>
-      </div>
-    </header>
-    <main style={{ flex: 1 }}>{children}</main>
-    <footer className="footer">
-      <div className="footer-content">
-        <p>&copy; 2025 Maps. Todos los derechos reservados.</p>
-      </div>
-    </footer>
-  </div>
-);
+export const Layout = () => {
+  const location = useLocation();
 
-export default Layout; 
+  // Si estoy en /login, solo renderizo el componente Login
+  if (location.pathname === '/login') {
+    return <Login />;
+  }
+
+  // Para cualquier otra ruta, renderizo el layout completo
+  return (
+    <>
+      <NavBar />
+      <main style={{ flex: 1 }}>
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
+};
+
+export default Layout;
