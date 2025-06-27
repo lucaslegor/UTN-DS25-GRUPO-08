@@ -13,6 +13,7 @@
 
 .title {
     display: flex;
+    font-family: 'Poppins', sans-serif;
     color: white;
     font-size: 26px;
     align-items: center;
@@ -23,6 +24,8 @@
 .link-list {
     display: flex;
     position: relative;
+    font-family: 'Poppins';
+    font-weight: 400;
     right: 40px;
     text-decoration: none;
     justify-content: space-between;
