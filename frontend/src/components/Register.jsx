@@ -1,26 +1,27 @@
-import React, { useState } from 'react'
-import { Hammer, Home, ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/login.css'
-import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
+import '../styles/login.css';
+import { Button } from '@mui/material';
 
-export const Login = () => {
+const Register = () => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-
-    if (username === 'admin' && password === 'admin123') {
-      localStorage.setItem('adminToken', 'demo-token');
-      navigate('/');
-    } else {
-      setError('Usuario o contraseña incorrectos');
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
     }
+    // Aca vamos a hacer la lógica de registro real
+    alert('¡Registro exitoso!');
+    navigate('/');
   };
 
   return (
@@ -29,26 +30,26 @@ export const Login = () => {
         <div className="content-wrapper-login">
           <div className="form-inicio-login">
             <button
+              onClick={() => navigate('/')}
               style={{
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
                 alignSelf: 'flex-start',
-                marginTop: '-100px',
-                marginBottom: '2.5rem',
+                marginTop: '30px',
+                marginBottom: 0,
                 color: '#1e43c0',
                 padding: 0,
                 display: 'flex',
                 alignItems: 'center',
-                fontSize: 18
+                fontSize: 18,
               }}
-              onClick={() => navigate('/')}
-              aria-label="Volver atrás"
+              aria-label="Volver"
             >
               <ArrowLeft size={32} />
               <span style={{ marginLeft: 8 }}>Volver al inicio</span>
             </button>
-            <h3>¡Hola, bienvenido!</h3>
+            <h3 style={{ marginTop: 0 }}>¡Registrate!</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-grupo-login">
                 <label htmlFor="usuario">Usuario:</label>
@@ -60,6 +61,19 @@ export const Login = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Introduce tu usuario"
+                  required
+                />
+              </div>
+              <div className="form-grupo-login">
+                <label htmlFor="email">Email:</label>
+                <input
+                  className='input-login'
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Introduce tu email"
                   required
                 />
               </div>
@@ -76,13 +90,33 @@ export const Login = () => {
                   required
                 />
               </div>
+              <div className="form-grupo-login">
+                <label htmlFor="confirmPassword">Confirmar contraseña:</label>
+                <input
+                  className='input-login'
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repetí tu contraseña"
+                  required
+                />
+              </div>
               {error && <p className="error-message">{error}</p>}
-              <button className='submit-button-login' type="submit">Ingresar</button>
+              <button className='submit-button-login' type="submit" style={{ marginBottom: 24 }}>Registrarse</button>
             </form>
-            <div className='container-register'>
-              <span>Todavia no tenes tu cuenta? Registrate aca</span>
-              <Link className='link' to={"/register"}><Button variant="outlined" >Registrarse</Button></Link> 
-            </div>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/login')}
+              sx={{
+                display: 'block',
+                mx: 'auto',
+                mb: 3
+              }}
+            >
+              Iniciar sesión
+            </Button>
           </div>
           <div className="container-login">
             <img src="MaxiColor.png" alt="" width={350} />
@@ -94,4 +128,4 @@ export const Login = () => {
   );
 };
 
-export default Login;
+export default Register; 
