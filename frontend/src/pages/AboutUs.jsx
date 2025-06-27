@@ -26,6 +26,24 @@ const AboutUs = () => {
           <h3>Nuestro Equipo</h3>
           <div className="team-members">
             {/* aca irian los team members, por ahora lo dejo sin hacer, sin simulacion x ahora*/}
+            <TeamMember
+              name="Juan Pérez"
+              role="CEO y Fundador"
+              description="Con más de 15 años de experiencia en venta de seguros."
+              image="https://images.unsplash.com/photo-1695230981824-8edd894a6c2c?q=80&w=686&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            /> 
+            <TeamMember
+              name="María García"
+              role="Directora"
+              description="Experta en seguros y pólizas."
+              image="https://plus.unsplash.com/premium_photo-1661394915648-8ce7bb49e4e8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            />
+            <TeamMember
+              name="Carlos López"
+              role="Jefe de Venta"
+              description="Líder en la sección de ventas."
+              image="https://images.unsplash.com/photo-1659355894000-b8617fc7cf8d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            /> 
           </div>
         </section>
       </main>
