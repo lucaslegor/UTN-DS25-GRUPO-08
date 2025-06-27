@@ -22,7 +22,12 @@ const Home = () => {
   return (
     <>
       <nav className="page-nav" style={{ justifyContent: 'center' }}>
-        {/* aca iria el nav buton del about us */}
+        <NavButton
+          image="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80"
+          icon={InfoIcon}
+          label="About Us"
+          onClick={() => navigate('/aboutus')}
+        />
         <NavButton
           image="https://plus.unsplash.com/premium_photo-1661434758776-faf568a8a34f?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           icon={ShoppingCartIcon}
@@ -58,7 +63,12 @@ const Home = () => {
       <main className="catalog">
         {/* aca irian los product cards implementados, por ahora lo dejo sin hacer, dejo la simu abajo para que la pagina se vea llena */}
         {/* aca iria el catalogo de productos, por ahora uso la simulacion de productos */}
-       
+       <ProductCard
+          title="Pelota de fútbol"
+          description="Pelota oficial tamaño 5, ideal para partidos y entrenamientos."
+          price="$1"
+          image="https://images.unsplash.com/photo-1614632537190-23e4146777db?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        /> 
         {products.map(product => (
           <Link key={product.id} to="/productcard" style={{ textDecoration: 'none', color: 'inherit' }}>
             <ProductCard {...product} />
