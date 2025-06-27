@@ -26,7 +26,7 @@ const Home = () => {
           image="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80"
           icon={InfoIcon}
           label="About Us"
-          onClick={() => navigate('/aboutus')}
+          onClick={() => navigate('/nosotros')}
         />
         <NavButton
           image="https://plus.unsplash.com/premium_photo-1661434758776-faf568a8a34f?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -38,7 +38,7 @@ const Home = () => {
           image="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&q=80"
           icon={AccountCircleIcon}
           label="Mi Perfil"
-          onClick={() => alert('Ir a Mi Perfil (próximamente)')}
+          onClick={() => navigate('/userProfile')} 
         />
       </nav>
 

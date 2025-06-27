@@ -4,6 +4,7 @@ import AboutUs from './pages/AboutUs';
 import ProductCardPage from './pages/ProductCard';
 import Layout from './components/Layout';
 import { LoginPage } from './pages/Login';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="nosotros" element={<AboutUs />} />
           <Route path="productcard" element={<ProductCardPage />} />
+          <Route path="userProfile" element={<UserProfile/>} />
         </Route>
       </Routes>
     </Router>
