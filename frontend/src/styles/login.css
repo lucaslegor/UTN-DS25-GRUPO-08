@@ -1,0 +1,148 @@
+
+
+.principal-container-login {
+    background-color: #3d6de2;
+    color: #000;
+    line-height: 1.6;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.content-wrapper-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 50px); /* Altura de la pantalla menos el padding superior */
+    text-align: left;
+    padding: 0; /* Elimina el padding para asegurar que los divs estén pegados */
+    margin-top: 20px;
+}
+
+
+.form-inicio-login {
+    width: 50%; /* Igualar el ancho de ambos divs */
+    max-width: 600px; /* Tamaño máximo ajustado */
+    height: 750px; /* Igualar la altura de ambos divs */
+    background-color: #f9f9f9;
+    padding: 30px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 101;
+    border-radius: 15px;
+}
+
+
+.form-inicio-login {
+    background-color: #f9f9f9;
+}
+
+.logo-login {
+    height: 150px;
+    width: auto;
+}
+
+.container-login {
+    width: 50%; /* Igualar el ancho de ambos divs */
+    max-width: 600px; /* Tamaño máximo ajustado */
+    height: 750px; /* Igualar la altura de ambos divs */
+    background-color: #1751e4;
+    padding: 30px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 101;
+    border-radius: 15px;
+    background-image: url('/fotos/waves-login.jpeg');
+    opacity: 1;
+    background-size: cover; /* Ajusta el tamaño del fondo */
+    background-repeat: no-repeat; /* Evita la repetición de la imagen */
+    background-position: center; /* Centra la imagen */
+    color: #fff;
+    text-align: center;
+}
+
+.container-login h2 {
+    color:rgb(255, 255, 255);
+    font-size: 2em;
+}
+
+.form-inicio-login h3 {
+    font-size: 30px;
+    text-align: center;
+    color: black
+}
+
+
+.form-grupo-login {
+    margin-bottom: 20px;
+    width: 100%; /* Asegura que los elementos ocupen el ancho completo del formulario */
+}
+
+.form-grupo-login label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold; /* Hace el texto del label en negrita */
+    color: #333; /* Color del texto del label */
+}
+
+.input-login {
+    width: 500px; /* Asegura que los campos de entrada ocupen todo el ancho disponible */
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px; /* Tamaño de fuente de los campos de entrada */
+}
+
+.submit-button-login {
+    width:100%;
+    padding: 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+.submit-button-login:hover {
+    background-color: #0056b3;
+}
+
+.form-inicio-login div {
+    text-align: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.form-inicio-login div span {
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-inicio-login div button a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.form-inicio-login div button a:hover {
+    text-decoration: underline;
+}
+
+.container-register {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.container-register span{
+  color: #333;
+  font-weight: bold;
+}

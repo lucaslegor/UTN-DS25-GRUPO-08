@@ -11,7 +11,7 @@ import SearchIcon from '@mui/icons-material/Search';
 const Home = () => {
   const navigate = useNavigate();
   // Simulación de productos para el catálogo
-  const products = Array.from({ length: 32 }, (_, i) => ({
+  const products = Array.from({ length: 12 }, (_, i) => ({
     id: i + 1,
     title: `ProductCard ${i + 1}`,
     description: `Descripción del producto ${i + 1}`,

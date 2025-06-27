@@ -3,14 +3,20 @@ import '../styles/productCard.css';
 
 const ProductCard = ({ title, description, price, image }) => {
   return (
-    <div className="product-card">
-      <h2 className="product-title">{title}</h2>
-      <div className="product-image-container">
-        <img src={image} alt={title} className="product-image" />
+    <div className="product-card-horizontal">
+      <div className="product-image-horizontal">
+        <img src={image} alt={title} />
       </div>
-      <p className="product-description">{description}</p>
-      <span className="product-price">{price}</span>
+      <div className="product-details-horizontal">
+        <h3 className="product-title-horizontal">{title}</h3>
+        <p className="product-description-horizontal">{description}</p>
+        <div className="product-footer-horizontal">
+          <span className="product-price-horizontal">{price}</span>
+          <button className="product-button-horizontal">Agregar al carrito</button>
+        </div>
+      </div>
     </div>
   );
 };
-export default ProductCard; 
+
+export default ProductCard;
