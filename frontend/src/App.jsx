@@ -15,9 +15,8 @@ function App() {
         {/* Resto de rutas con Layout */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="aboutus" element={<AboutUs />} />
+          <Route path="nosotros" element={<AboutUs />} />
           <Route path="productcard" element={<ProductCardPage />} />
-          {/* Podés agregar más rutas aquí */}
         </Route>
       </Routes>
     </Router>

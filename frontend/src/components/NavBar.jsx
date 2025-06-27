@@ -6,11 +6,11 @@ import '../styles/navbar.css';
 
 export const NavBar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isLogin, setIsLogin] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
-        setIsAdmin(!!token);
+        setIsLogin(!!token);
     }, []);
 
     return (
@@ -54,9 +54,13 @@ export const NavBar = () => {
                             Contacto
                         </ScrollLink>
                     </li>
-                     <li>
-                        <Link className='link' to={"/login"}>Login</Link>
-                    </li>
+                    {
+                        isLogin ? (
+                            <li>
+                                 <Link className='link' to={"/login"}>Login</Link>
+                            </li>
+                        ) : null
+                    } 
                 </ul>
             </nav>
         </header>

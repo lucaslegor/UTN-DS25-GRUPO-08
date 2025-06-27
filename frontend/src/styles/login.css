@@ -1,104 +1,7 @@
 
-.lines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    z-index: 100;
-    overflow: hidden;
-}
-
-.lines .line {
-    position: absolute;
-    width: 2px;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    opacity: 0.7;
-}
-
-.lines .line::after {
-    content: "";
-    display: block;
-    position: absolute;
-    height: 15vh;
-    width: 100%;
-    top: -50%;
-    left: 0;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 75%, #ffffff 100%);
-    animation: run 2.5s infinite;
-}
-
-@keyframes run {
-    0% {
-        top: -50%;
-    }
-    100% {
-        top: 110%;
-    }
-}
-
-/* Configuración para las líneas en la parte izquierda */
-.lines .line:nth-child(1) {
-    left: 5%;
-    animation-delay: 0s;
-}
-
-.lines .line:nth-child(2) {
-    left: 15%;
-    animation-delay: 0.5s;
-}
-
-.lines .line:nth-child(3) {
-    left: 25%;
-    animation-delay: 1s;
-}
-
-.lines .line:nth-child(4) {
-    left: 35%;
-    animation-delay: 1.5s;
-}
-
-.lines .line:nth-child(5) {
-    left: 45%;
-    animation-delay: 2s;
-}
-
-/* Configuración para las líneas en la parte derecha */
-.lines .line:nth-child(6) {
-    left: 55%;
-    animation-delay: 2.5s;
-}
-
-.lines .line:nth-child(7) {
-    left: 65%;
-    animation-delay: 3s;
-}
-
-.lines .line:nth-child(8) {
-    left: 75%;
-    animation-delay: 3.5s;
-}
-
-.lines .line:nth-child(9) {
-    left: 85%;
-    animation-delay: 4s;
-}
-
-.lines .line:nth-child(10) {
-    left: 95%;
-    animation-delay: 4.5s;
-}
-
-.lines .line:nth-child(11) {
-    left: 50%; /* Línea central */
-    animation-delay: 5s;
-}
-
-/* Añade el resto de las líneas */
 
 .principal-container-login {
-    background-color: #000000;
+    background-color: #3d6de2;
     color: #000;
     line-height: 1.6;
     overflow: hidden;
@@ -145,7 +48,7 @@
     width: 50%; /* Igualar el ancho de ambos divs */
     max-width: 600px; /* Tamaño máximo ajustado */
     height: 750px; /* Igualar la altura de ambos divs */
-    background-color: #f9f9f9;
+    background-color: #1751e4;
     padding: 30px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     display: flex;
@@ -163,6 +66,10 @@
     text-align: center;
 }
 
+.container-login h2 {
+    color:rgb(255, 255, 255);
+    font-size: 2em;
+}
 
 .form-inicio-login h3 {
     font-size: 30px;
@@ -170,22 +77,6 @@
     color: black
 }
 
-.container-login {
-    background-color: rgb(29, 28, 28); ;
-}
-
-.container-login h2 {
-    color:rgb(255, 255, 255);
-    font-size: 40px;
-}
-
-.container-login h3 {
-    color: rgb(255, 255, 255);
-    font-size: 25px;
-    display: flex;
-    position: relative;
-    bottom: 40px;
-}
 
 .form-grupo-login {
     margin-bottom: 20px;
@@ -241,4 +132,17 @@
 
 .form-inicio-login div button a:hover {
     text-decoration: underline;
+}
+
+.container-register {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.container-register span{
+  color: #333;
+  font-weight: bold;
 }

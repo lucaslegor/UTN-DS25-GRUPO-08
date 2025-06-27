@@ -1,6 +1,6 @@
 /* Estilos base */
 .navbar {
-    background-color: white;
+    background-color: #3d6de2;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -13,7 +13,7 @@
 
 .title {
     display: flex;
-    color: #15233c;
+    color: white;
     font-size: 26px;
     align-items: center;
     gap: 10px;
@@ -32,9 +32,13 @@
 
 .link {
     text-decoration: none;
-    color: #15233c;
+    color: white;
     font-weight: bold;
     cursor: pointer;
+}
+
+.link:hover {
+    color: #2725a5;
 }
 
 /* Estilos para el botón de menú hamburguesa */
