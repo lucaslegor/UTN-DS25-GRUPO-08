@@ -3,11 +3,10 @@ import OtherGallery from '../components/OtherGallery';
 import TeamMember from '../components/TeamMember';
 import '../styles/aboutUs.css';
 
-export const WhoAreWe = () => {
+export const AboutUs = () => {
   return (
     <section className="nosotros-section">
 
-      {/* Contenido dividido */}
       <div className="nosotros-row">
         <div className="nosotros-texts">
           <h2 className="nosotros-title">¿Quiénes somos?</h2>
@@ -59,4 +58,4 @@ export const WhoAreWe = () => {
   );
 };
 
-export default WhoAreWe;
+export default AboutUs;

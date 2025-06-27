@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link as ScrollLink } from 'react-scroll';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User } from 'lucide-react';
 import '../styles/navbar.css';
@@ -35,28 +34,20 @@ export const NavBar = () => {
             <nav className={`nav-links ${menuOpen ? 'open' : ''}`}>
                 <ul className='link-list'>
                     <li>
-                        <ScrollLink className='link' to="inicio" smooth={true} duration={100} offset={50}>
-                            <Link className='link' to={"/"}>Inicio</Link>
-                        </ScrollLink>
+                        <Link className='link' to="/">Inicio</Link>
                     </li>
                     <li>
-                        <Link className='link' to={"/nosotros"}>Nosotros</Link>
-                    </li> 
-                    <li>
-                        <ScrollLink className='link' to="contacto" smooth={true} duration={100} offset={-50}>
-                            Contacto
-                        </ScrollLink>
+                        <Link className='link' to="/contacto">Contacto</Link>
                     </li>
-
                     {isLogin ? (
                         <>
-                            <li className="link" onClick={handleLogout}>
-                                    Cerrar sesión
+                            <li>
+                                <button className="session-btn" onClick={handleLogout}>Cerrar sesión</button>
                             </li>
                         </>
                     ) : (
                         <li>
-                            <Link className='link' to={"/login"}>Login</Link>
+                            <button className="session-btn" onClick={() => navigate('/login')}>Iniciar sesión</button>
                         </li>
                     )}
                 </ul>
