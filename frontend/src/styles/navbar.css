@@ -41,6 +41,21 @@
     color: #2725a5;
 }
 
+.logout-button {
+  background: none;
+  border: none;
+  color:  white;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s;
+}
+
+.logout-button:hover {
+  color: #2725a5;
+}
+
+
 /* Estilos para el botón de menú hamburguesa */
 .menu-toggle {
     display: none;
