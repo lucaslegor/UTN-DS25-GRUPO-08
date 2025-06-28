@@ -11,7 +11,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Ruta /login sin Layout */}
+        {/* Ruta /login y /register sin Layout */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
