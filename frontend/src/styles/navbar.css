@@ -13,6 +13,7 @@
 
 .title {
     display: flex;
+    font-family: 'Poppins', sans-serif;
     color: white;
     font-size: 26px;
     align-items: center;
@@ -22,7 +23,8 @@
 /* Estilos para la lista de enlaces */
 .link-list {
     display: flex;
-    align-items: center;
+    position: relative;
+    right: 40px;
     text-decoration: none;
     justify-content: space-between;
     list-style-type: none;

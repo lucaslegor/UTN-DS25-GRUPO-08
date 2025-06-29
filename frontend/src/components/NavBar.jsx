@@ -7,7 +7,15 @@ export const NavBar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isLogin, setIsLogin] = useState(false);
     const [username, setUsername] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
+
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem('adminToken');
+        setIsAdmin(!!token);
+    }, []);
+
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -39,6 +47,11 @@ export const NavBar = () => {
                     <li>
                         <Link className='link' to="/contacto">Contacto</Link>
                     </li>
+                     {isAdmin && (
+                        <li>
+                            <Link className='link' to={"/adminpanel"}>Panel Admin</Link>
+                        </li>
+                    )}
                     {isLogin ? (
                         <>
                             <li>

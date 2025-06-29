@@ -33,10 +33,6 @@
 }
 
 
-.form-inicio-login {
-    background-color: #f9f9f9;
-}
-
 .logo-login {
     height: 150px;
     width: auto;
@@ -55,7 +51,6 @@
     align-items: center;
     z-index: 101;
     border-radius: 15px;
-    background-image: url('/fotos/waves-login.jpeg');
     opacity: 1;
     background-size: cover; /* Ajusta el tamaño del fondo */
     background-repeat: no-repeat; /* Evita la repetición de la imagen */

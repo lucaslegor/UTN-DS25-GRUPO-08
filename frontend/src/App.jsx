@@ -6,12 +6,12 @@ import Layout from './components/Layout';
 import { LoginPage } from './pages/Login';
 import UserProfile from './pages/UserProfile';
 import RegisterPage from './pages/Register';
-
+import AdminPanel from './pages/AdminPanelPage';
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Ruta /login sin Layout */}
+        {/* Ruta /login y /register sin Layout */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
@@ -21,6 +21,7 @@ function App() {
           <Route path="nosotros" element={<AboutUs />} />
           <Route path="productcard" element={<ProductCardPage />} />
           <Route path="userProfile" element={<UserProfile/>} />
+          <Route path="adminPanel" element={<AdminPanel/>} />
         </Route>
       </Routes>
     </Router>

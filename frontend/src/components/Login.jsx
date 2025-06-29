@@ -17,7 +17,7 @@ export const Login = () => {
 
     if (username === 'admin' && password === 'admin123') {
       localStorage.setItem('adminToken', 'demo-token');
-      navigate('/');
+      navigate('/adminPanel');
     } else {
       setError('Usuario o contraseña incorrectos');
     }

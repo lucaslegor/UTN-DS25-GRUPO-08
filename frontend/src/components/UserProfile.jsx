@@ -79,7 +79,7 @@ const UserProfile = () => {
         disabled={!editable}
       />
       <div className={`error-wrapper ${errores[name] ? 'visible' : ''}`}>
-        {errores[name] && <span className="error">��� {errores[name]}</span>}
+        {errores[name] && <span className="error">⚠️ {errores[name]}</span>}
       </div>
     </div>
   );
@@ -87,43 +87,43 @@ const UserProfile = () => {
   return (
     <div className="profile-container">
       <div className="left-panel">
-        <img src={logo} alt="Logo" className="logo-img" />
-      </div>
-      <div className="right-panel">
-        <h2>Perfil de usuario���</h2>
-        <div
-          className="avatar-wrapper"
-          onClick={() => document.getElementById('avatarInput').click()}
-        >
+        <div className="left-content">
+          <h2>Perfil de usuario</h2>
+
           <div
-            className="avatar"
-            style={{ backgroundImage: avatar ? `url(${avatar})` : 'none' }}
-          ></div>
-          <input
-            id="avatarInput"
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleAvatarChange}
-          />
+            className="avatar-wrapper"
+            onClick={() => document.getElementById('avatarInput').click()}
+          >
+            <div
+              className="avatar"
+              style={{ backgroundImage: avatar ? `url(${avatar})` : 'none' }}
+            ></div>
+            <input
+              id="avatarInput"
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleAvatarChange}
+            />
+          </div>
+
+          {renderInput('Nombre completo:', 'nombre')}
+          {renderInput('Correo Electrónico:', 'correo', 'email')}
+          {renderInput('Contraseña:', 'contraseña', 'password')}
+          {renderInput('Teléfono:', 'telefono')}
+          {renderInput('Dirección:', 'direccion')}
+
+          <button
+            onClick={handleEditClick}
+            className={editable ? 'btn-guardar' : 'btn-editar'}
+          >
+            {editable ? '💾 Guardar' : '✏️ Editar'}
+          </button>
+
+          {mensajeGuardado && (
+            <div className="toast-success">✅ ¡Datos guardados correctamente!</div>
+          )}
         </div>
-
-        {renderInput('Nombre completo:', 'nombre')}
-        {renderInput('Correo Electrónico:', 'correo', 'email')}
-        {renderInput('Contraseña:', 'contraseña', 'password')}
-        {renderInput('Teléfono:', 'telefono')}
-        {renderInput('Dirección:', 'direccion')}
-
-        <button
-          onClick={handleEditClick}
-          className={editable ? 'btn-guardar' : 'btn-editar'}
-        >
-          {editable ? '��� Guardar' : '✏️ Editar'}
-        </button>
-
-        {mensajeGuardado && (
-          <div className="toast-success">✅ ¡Datos guardados correctamente!</div>
-        )}
       </div>
     </div>
   );
