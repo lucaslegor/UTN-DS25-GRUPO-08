@@ -63,14 +63,14 @@ const Home = () => {
       <main className="catalog">
         {/* aca irian los product cards implementados, por ahora lo dejo sin hacer, dejo la simu abajo para que la pagina se vea llena */}
         {/* aca iria el catalogo de productos, por ahora uso la simulacion de productos */}
-       <ProductCard
+        {/* <ProductCard
           title="Pelota de fútbol"
           description="Pelota oficial tamaño 5, ideal para partidos y entrenamientos."
           price="$1"
           image="https://images.unsplash.com/photo-1614632537190-23e4146777db?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        /> 
+        /> */}
         {products.map(product => (
-          <Link key={product.id} to="/productcard" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link key={product.id} to={`/productcard/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             <ProductCard {...product} />
           </Link>
         ))}

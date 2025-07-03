@@ -1,20 +1,26 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import '../styles/productCard.css';
 
+const products = Array.from({ length: 32 }, (_, i) => ({
+  id: (i + 1).toString(),
+  title: `ProductCard ${i + 1}`,
+  description: `Descripción del producto ${i + 1}`,
+  price: `$${1000 + i * 100}`,
+  image: '/messi.png',
+}));
+
 const ProductCardPage = () => {
-  // Simulación de datos de producto
-  const product = {
-    title: 'Nombre del producto',
-    description: 'Descripción detallada del producto que puede incluir características, beneficios y otros detalles.',
-    price: '$1234',
-    image: './messi.png',
-  };
+  const { id } = useParams();
+  const product = products.find(p => p.id === id);
+
+  if (!product) {
+    return <div>Producto no encontrado</div>;
+  }
 
   return (
     <div>
-     
       <main>
         <div className="product-detail-container">
           <ProductCard {...product} />
@@ -28,7 +34,6 @@ const ProductCardPage = () => {
           </div>
         </div>
       </main>
-
     </div>
   );
 };
