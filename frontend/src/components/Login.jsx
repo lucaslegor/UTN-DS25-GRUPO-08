@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
-import { Hammer } from 'lucide-react';
+import { Hammer, Home, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css'
+import { Link } from 'react-router-dom';
+import Button from '@mui/material/Button';
 
 export const Login = () => {
   const [username, setUsername] = useState('');
@@ -13,11 +15,9 @@ export const Login = () => {
     e.preventDefault();
     setError('');
 
-    // For demo purposes, using hardcoded credentials
-    // In a real application, this should be handled by a backend service
     if (username === 'admin' && password === 'admin123') {
       localStorage.setItem('adminToken', 'demo-token');
-      navigate('/admin/panel');
+      navigate('/adminPanel');
     } else {
       setError('Usuario o contraseña incorrectos');
     }
@@ -25,26 +25,29 @@ export const Login = () => {
 
   return (
     <>
-      <div className="lines">
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-        <div className="line"></div>
-      </div>
-
       <div className='principal-container-login'>
         <div className="content-wrapper-login">
           <div className="form-inicio-login">
-            <h2>
-              <img className='logo-login' src="/fotos/vintage.png" alt="vintageherreria"/>
-            </h2>
+            <button
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                alignSelf: 'flex-start',
+                marginTop: '-100px',
+                marginBottom: '2.5rem',
+                color: '#1e43c0',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: 18
+              }}
+              onClick={() => navigate('/')}
+              aria-label="Volver atrás"
+            >
+              <ArrowLeft size={32} />
+              <span style={{ marginLeft: 8 }}>Volver al inicio</span>
+            </button>
             <h3>¡Hola, bienvenido!</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-grupo-login">
@@ -76,10 +79,14 @@ export const Login = () => {
               {error && <p className="error-message">{error}</p>}
               <button className='submit-button-login' type="submit">Ingresar</button>
             </form>
+            <div className='container-register'>
+              <span>Todavia no tenes tu cuenta? Registrate aca</span>
+              <Link className='link' to={"/register"}><Button variant="outlined" >Registrarse</Button></Link> 
+            </div>
           </div>
           <div className="container-login">
-            <h2>Vintage Herreria</h2>
-            <h3>SERVICIOS DE HERRERIA </h3>
+            <img src="MaxiColor.png" alt="" width={350} />
+            <h2>¡Bienvenido a Maps, tu bienestar es nuestro compromiso!</h2>
           </div>
         </div>
       </div>

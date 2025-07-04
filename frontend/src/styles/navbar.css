@@ -1,6 +1,6 @@
 /* Estilos base */
 .navbar {
-    background-color: white;
+    background-color: #3d6de2;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -13,7 +13,8 @@
 
 .title {
     display: flex;
-    color: #15233c;
+    font-family: 'Poppins', sans-serif;
+    color: white;
     font-size: 26px;
     align-items: center;
     gap: 10px;
@@ -32,9 +33,47 @@
 
 .link {
     text-decoration: none;
-    color: #15233c;
+    color: white;
     font-weight: bold;
     cursor: pointer;
+}
+
+.link:hover {
+    color: #2725a5;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color:  white;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s;
+}
+
+.logout-button:hover {
+  color: #2725a5;
+}
+
+.session-btn {
+  background: #fff;
+  color: #1e43c0;
+  border-radius: 8px;
+  padding: 0.4rem 1.2rem;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(30,67,192,0.10);
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+  text-decoration: none;
+  outline: none;
+}
+.session-btn:hover, .session-btn:focus {
+  background: #1e43c0;
+  color: #fff;
+  transform: translateY(-2px) scale(1.07);
 }
 
 /* Estilos para el botón de menú hamburguesa */

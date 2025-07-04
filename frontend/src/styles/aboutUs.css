@@ -1,128 +1,64 @@
-/* Reset global */
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/*estilitos iniciales y provisionales, recontra sujetos a cambios*/
-/* ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
-body {
-  font-family: sans-serif;
-  background-color: #e6e6e6;
-  padding: 0;
-  display: flex; 
-  flex-direction: column; 
-  min-height: 100vh; 
-}
-
-.header {
-  
-  background-color: #1e43c0;
-  color: white;
-  padding: 1rem;
+.nosotros-section {
+  background-color: #e7ecf7;
+  padding: 60px 20px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
 }
 
-
-.header h1 a {
-  color: white;
-  text-decoration: none;
-}
-
-.auth-buttons button {
-  margin-left: 0.5rem;
-  background-color: #00bfff;   
-  color: white;                
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.auth-buttons button:hover {
-  background-color: #6a3fcf;  
-  transform: scale(1.1);
-}
-
-.filters {
-  margin: 1rem ;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.filter-buttons button {
-  background-color: #3d6de2;  
-  color: white;
-  border: none;
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.filter-buttons button:hover {
-  cursor: pointer;
-}
-
-.catalog {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.product-card {
-  background-color: white;
-  padding: 2rem;
-  width: 250px;
-  height: 250px;
+.nosotros-row {
   display: flex;
   justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  align-items: flex-start;
+  gap: 3rem;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  width: 100%;
 }
 
-.footer {
-  background-color: #162f8a;
-  color: white;
-  padding: 1.5rem 1rem;
-  text-align: center;
-  margin-top: auto;
+.nosotros-texts {
+  flex: 1 1 500px;
+  margin-top: 10em;
+  margin-right: 8em;
 }
 
-.footer-content {
-  max-width: 1000px;
-  margin: 0 auto;
+.nosotros-gallery {
+  flex: 1 1 400px;
 }
 
-/* estilos para la secion de about us*/
-.about-us-content {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  line-height: 1.6;
-}
-
-.about-us-content h2 {
-  text-align: center;
-  color: #1e43c0;
-  margin-bottom: 1.5rem;
+.nosotros-title {
   font-size: 2.5rem;
+  color: #3d6de2;
+  margin-bottom: 30px;
+  font-weight: bold;
+  text-align: left;
 }
 
-.about-us-content p {
-  margin-bottom: 1rem;
-  color: #333;
+.texts {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nosotros-text {
+  font-size: 1.125rem;
+  color: #3d6de2;
+  margin-bottom: 10px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.team-section {
+  margin-top: 60px;
+  text-align: center;
+}
+
+.team-members {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
 }
 
 .team-section {
@@ -144,10 +80,10 @@ body {
 }
 
 .member-card {
-    background-color: white;
+    background-color: rgb(248, 247, 247);
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 2px 2px 2px 5px rgba(0,0,0,0.1);
     width: 280px;
     text-align: center;
 }
@@ -163,12 +99,14 @@ body {
     color: #555;
 }
 
+/* Responsivo */
 @media (max-width: 768px) {
-  .product-card {
-    width: 100%;
+  .nosotros-row {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .filters {
-    flex-direction: column;
+  .nosotros-title, .nosotros-text {
+    text-align: center;
   }
 }

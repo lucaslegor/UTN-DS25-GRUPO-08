@@ -1,5 +1,4 @@
 /* Reset global */
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,7 +8,7 @@
 /* ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background-color: #f4f6fb;
+  background-color: #e7ecf7;
   color: #222;
   padding: 0;
   display: flex;
@@ -114,100 +113,12 @@ body {
 
 .catalog {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas fijas */
   gap: 2rem;
   justify-items: center;
   padding: 2rem 1rem;
 }
 
-.product-card {
-  background-color: white;
-  padding: 2rem;
-  width: 100%;
-  max-width: 250px;
-  height: 250px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-.footer {
-  background-color: #162f8a;
-  color: white;
-  padding: 1.5rem 1rem;
-  text-align: center;
-  margin-top: auto;
-  box-shadow: 0 -2px 8px rgba(30,67,192,0.08);
-}
-
-.footer-content {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-/* Estilos para la sección About Us */
-.about-us-content {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  line-height: 1.6;
-}
-
-.about-us-content h2 {
-  text-align: center;
-  color: #1e43c0;
-  margin-bottom: 1.5rem;
-  font-size: 2.5rem;
-}
-
-.about-us-content p {
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.team-section {
-    margin-top: 3rem;
-    text-align: center;
-}
-
-.team-section h3 {
-    color: #1e43c0;
-    margin-bottom: 2rem;
-    font-size: 2rem;
-}
-
-.team-members {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 2rem;
-}
-
-.member-card {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    width: 280px;
-    text-align: center;
-}
-
-.member-card h4 {
-    color: #3d6de2;
-    margin-bottom: 0.5rem;
-    font-size: 1.4rem;
-}
-
-.member-card p {
-    font-size: 0.95rem;
-    color: #555;
-}
 
 @media (max-width: 768px) {
   .product-card {
