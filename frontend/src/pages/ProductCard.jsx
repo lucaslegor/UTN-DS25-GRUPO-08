@@ -2,6 +2,40 @@ import React from 'react';
 import { Button, Typography, Box, Container, Paper } from '@mui/material';
 import { ShoppingCart } from '@mui/icons-material';
 import '../styles/productCard.css';
+import { useParams } from 'react-router-dom';
+import '../styles/productCard.css';
+
+const defaultProducts = [
+  {
+    id: 1,
+    title: "Seguro de Auto",
+    description: "Protección completa para tu vehículo ante accidentes, robos y daños a terceros.",
+    price: "$10.000/año",
+    image: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 2,
+    title: "Seguro de Hogar",
+    description: "Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.",
+    price: "$8.000/año",
+    image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 3,
+    title: "Seguro de Vida",
+    description: "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
+    price: "$12.000/año",
+    image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 4,
+    title: "Seguro de Salud",
+    description: "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
+    price: "$15.000/año",
+    image: "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80"
+  }
+];
+
 
 const formatPrice = (price) => {
   if (!price) return 'Consultar';
@@ -10,12 +44,32 @@ const formatPrice = (price) => {
 };
 
 const ProductCardPage = () => {
-  const product = {
-    title: 'ProductCard 1',
-    description: 'Este es un producto muy interesante que podés agregar al carrito. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-    price: '$1900',
-    image: '/messi.png',
-  };
+
+  const { id } = useParams();
+  const [product, setProduct] = React.useState(null);
+
+  React.useEffect(() => {
+    const storedProducts = localStorage.getItem('products');
+    const parsedProducts = storedProducts ? JSON.parse(storedProducts) : [];
+    const allProducts = [...defaultProducts, ...parsedProducts];
+    const foundProduct = allProducts.find((p) => p.id === parseInt(id));
+    setProduct(foundProduct);
+  }, [id]);
+
+  if (!product) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '50vh',
+        fontSize: '1.2rem'
+      }}>
+        Producto no encontrado
+      </div>
+    );
+  }
+
 
   const handleAddToCart = () => {
     console.log('Producto agregado al carrito:', product.title);

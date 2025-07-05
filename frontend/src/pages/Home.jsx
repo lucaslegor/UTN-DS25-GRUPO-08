@@ -152,7 +152,7 @@ const Home = () => {
           filteredProducts.map(product => (
             <Link
               key={product.id}
-              to="/productcard"
+              to={`/productcard/${product.id}`}
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <ProductCard {...product} />

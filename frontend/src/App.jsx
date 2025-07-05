@@ -19,7 +19,8 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="nosotros" element={<AboutUs />} />
-          <Route path="productcard" element={<ProductCardPage />} />
+
+          <Route path="productcard/:id" element={<ProductCardPage />} />
           <Route path="userProfile" element={<UserProfile/>} />
           <Route path="adminPanel" element={<AdminPanel/>} />
         </Route>
