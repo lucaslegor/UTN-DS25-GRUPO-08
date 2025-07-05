@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Typography, Box, Container, Paper } from '@mui/material';
 import { ShoppingCart } from '@mui/icons-material';
+import '../styles/productCard.css';
 import { useParams } from 'react-router-dom';
 import '../styles/productCard.css';
 
@@ -35,6 +36,7 @@ const defaultProducts = [
   }
 ];
 
+
 const formatPrice = (price) => {
   if (!price) return 'Consultar';
   if (typeof price === 'string' && price.includes('$')) return price;
@@ -42,6 +44,7 @@ const formatPrice = (price) => {
 };
 
 const ProductCardPage = () => {
+
   const { id } = useParams();
   const [product, setProduct] = React.useState(null);
 
@@ -66,6 +69,7 @@ const ProductCardPage = () => {
       </div>
     );
   }
+
 
   const handleAddToCart = () => {
     console.log('Producto agregado al carrito:', product.title);
