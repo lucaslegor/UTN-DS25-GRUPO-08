@@ -3,6 +3,7 @@ import { Button, Typography, Box, Container, Paper } from '@mui/material';
 import { ShoppingCart } from '@mui/icons-material';
 import '../styles/productCard.css';
 import { useParams } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 import '../styles/productCard.css';
 
 const defaultProducts = [
@@ -10,43 +11,37 @@ const defaultProducts = [
     id: 1,
     title: "Seguro de Auto",
     description: "Protección completa para tu vehículo ante accidentes, robos y daños a terceros.",
-    price: "$10.000/año",
+    price: 10000,
     image: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 2,
     title: "Seguro de Hogar",
     description: "Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.",
-    price: "$8.000/año",
+    price: 8000,
     image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 3,
     title: "Seguro de Vida",
     description: "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
-    price: "$12.000/año",
+    price: 12000,
     image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 4,
     title: "Seguro de Salud",
     description: "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    price: "$15.000/año",
+    price: 15000,
     image: "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80"
   }
 ];
-
-
-const formatPrice = (price) => {
-  if (!price) return 'Consultar';
-  if (typeof price === 'string' && price.includes('$')) return price;
-  return `$${Number(price).toLocaleString('es-AR')}/año`;
-};
 
 const ProductCardPage = () => {
 
   const { id } = useParams();
   const [product, setProduct] = React.useState(null);
+  const { addToCart, isInCart, getItemQuantity, formatPrice } = useCart();
 
   React.useEffect(() => {
     const storedProducts = localStorage.getItem('products');
@@ -70,11 +65,12 @@ const ProductCardPage = () => {
     );
   }
 
-
   const handleAddToCart = () => {
-    console.log('Producto agregado al carrito:', product.title);
-    // Aquí iría la lógica para agregar al carrito
+    addToCart(product);
   };
+
+  const inCart = isInCart(product.id);
+  const quantity = getItemQuantity(product.id);
 
   return (
     <div className="product-detail-container">
@@ -105,6 +101,12 @@ const ProductCardPage = () => {
                   {formatPrice(product.price)}
                 </Typography>
               </Box>
+
+              {inCart && (
+                <Typography variant="body2" color="success.main" sx={{ mb: 2 }}>
+                  ✓ {quantity} {quantity === 1 ? 'unidad' : 'unidades'} en el carrito
+                </Typography>
+              )}
               
               <Button
                 variant="contained"
@@ -113,8 +115,14 @@ const ProductCardPage = () => {
                 onClick={handleAddToCart}
                 className="add-to-cart-button"
                 fullWidth
+                sx={{
+                  backgroundColor: inCart ? '#4caf50' : '#1e43c0',
+                  '&:hover': {
+                    backgroundColor: inCart ? '#45a049' : '#1a3aa0',
+                  },
+                }}
               >
-                Agregar al carrito
+                {inCart ? 'Agregar otra unidad' : 'Agregar al carrito'}
               </Button>
             </div>
           </div>

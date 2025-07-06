@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User } from 'lucide-react';
+import CartIcon from './CartIcon';
 import '../styles/navbar.css';
 
 export const NavBar = () => {
@@ -46,6 +47,9 @@ export const NavBar = () => {
                     </li>
                     <li>
                         <Link className='link' to="/contacto">Contacto</Link>
+                    </li>
+                    <li>
+                        <CartIcon />
                     </li>
                      {isAdmin && (
                         <li>

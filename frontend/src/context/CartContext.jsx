@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { formatPrice } from '../utils/formatPrice';
 
 const CartContext = createContext();
 
@@ -20,7 +21,7 @@ const useLocalStorage = (key, initialValue) => {
       setStoredValue(valueToStore);
       window.localStorage.setItem(key, JSON.stringify(valueToStore));
     } catch (error) {
-      console.error('Error writing to localStorage:', error);
+      console.error('Error setting localStorage:', error);
     }
   };
 
@@ -28,7 +29,7 @@ const useLocalStorage = (key, initialValue) => {
 };
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useLocalStorage('cartItems', []);
+  const [cartItems, setCartItems] = useLocalStorage('cart', []);
 
   // Calcular total de items en el carrito
   const getCartTotal = () => {
@@ -38,25 +39,15 @@ export function CartProvider({ children }) {
   // Calcular precio total
   const getCartPriceTotal = () => {
     return cartItems.reduce((total, item) => {
-      if (typeof item.price !== 'number') return total;
-      return total + item.price * item.quantity;
+      const price = typeof item.price === 'number' ? item.price : 0;
+      return total + (price * item.quantity);
     }, 0);
   };
-  
-  
 
-  // Validar si un producto puede ser agregado
-  const canAddToCart = (product) => {
-    if (!product || !product.id) return false;
-    
-    const existingItem = cartItems.find(item => item.id === product.id);
-    // Limitar a 10 items por producto
-    return !existingItem || existingItem.quantity < 10;
-  };
-
+  // Agregar producto al carrito
   const addToCart = (product) => {
-    if (!canAddToCart(product)) {
-      alert('No se puede agregar más de 10 unidades del mismo producto');
+    if (!product || !product.id) {
+      console.error('Producto inválido:', product);
       return;
     }
 
@@ -72,44 +63,54 @@ export function CartProvider({ children }) {
     });
   };
 
+  // Remover producto del carrito
   const removeFromCart = (productId) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
   };
 
-  const updateQuantity = (productId, newQuantity) => {
-    if (newQuantity <= 0) {
+  // Actualizar cantidad de un producto
+  const updateQuantity = (productId, quantity) => {
+    if (quantity <= 0) {
       removeFromCart(productId);
-      return;
-    }
-    
-    if (newQuantity > 10) {
-      alert('No se puede agregar más de 10 unidades del mismo producto');
       return;
     }
 
     setCartItems(prevItems =>
       prevItems.map(item =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
+        item.id === productId ? { ...item, quantity } : item
       )
     );
   };
 
+  // Limpiar carrito
   const clearCart = () => setCartItems([]);
 
-  const isCartEmpty = cartItems.length === 0;
+  // Verificar si un producto está en el carrito
+  const isInCart = (productId) => {
+    return cartItems.some(item => item.id === productId);
+  };
+
+  // Obtener cantidad de un producto específico
+  const getItemQuantity = (productId) => {
+    const item = cartItems.find(item => item.id === productId);
+    return item ? item.quantity : 0;
+  };
+
+  const value = {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    isInCart,
+    getItemQuantity,
+    getCartTotal,
+    getCartPriceTotal,
+    formatPrice
+  };
 
   return (
-    <CartContext.Provider value={{ 
-      cartItems, 
-      addToCart, 
-      removeFromCart, 
-      updateQuantity,
-      clearCart,
-      getCartTotal,
-      getCartPriceTotal,
-      canAddToCart,
-      isCartEmpty
-    }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

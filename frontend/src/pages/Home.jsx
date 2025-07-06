@@ -44,9 +44,17 @@ const defaultProducts = [
 const Home = () => {
   const navigate = useNavigate();
   const [search, setSearch] = React.useState('');
+  const [products, setProducts] = React.useState([]);
+
+  React.useEffect(() => {
+    const storedProducts = localStorage.getItem('products');
+    const parsedProducts = storedProducts ? JSON.parse(storedProducts) : [];
+    setProducts([...defaultProducts, ...parsedProducts]);
+  }, []);
+
   const filteredProducts = products.filter(product =>
-    product.title.toLowerCase().includes(search.toLowerCase()) ||
-    product.description.toLowerCase().includes(search.toLowerCase())
+    product.title?.toLowerCase().includes(search.toLowerCase()) ||
+    product.description?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -55,7 +63,7 @@ const Home = () => {
         <NavButton
           image="https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?auto=format&fit=crop&w=400&q=80"
           icon={InfoIcon}
-          label="About Us"
+          label="Nosotros"
           onClick={() => navigate('/nosotros')}
         />
         <NavButton
@@ -132,7 +140,6 @@ const Home = () => {
               borderBottom: 'none !important',
             },
             input: {
-              padding: '20px 18px',
               fontSize: '1.3rem',
               fontWeight: 500,
             },
@@ -141,20 +148,24 @@ const Home = () => {
       </section>
 
       <main className="catalog">
-       <ProductCard
-          title="Pelota de fútbol"
-          description="Pelota oficial tamaño 5, ideal para partidos y entrenamientos."
-          price="$1"
-          image="https://images.unsplash.com/photo-1614632537190-23e4146777db?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        /> 
-        {filteredProducts.map(product => (
-          <Link key={product.id} to="/productcard" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <ProductCard {...product} />
-          </Link>
-        ))}
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map(product => (
+            <Link
+              key={product.id}
+              to={`/productcard/${product.id}`}
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              <ProductCard {...product} />
+            </Link>
+          ))
+        ) : (
+          <p style={{ textAlign: 'center', fontSize: '1.2rem' }}>
+            No se encontraron productos que coincidan con la búsqueda.
+          </p>
+        )}
       </main>
     </>
   );
 };
 
-export default Home; 
+export default Home;
