@@ -30,7 +30,6 @@ export const AboutUs = () => {
         </div>
       </div>
 
-      {/* Equipo */}
       <section className="team-section">
         <h3>Nuestro Equipo</h3>
         <div className="team-members">
