@@ -15,28 +15,28 @@ const defaultProducts = [
     id: 1,
     title: "Seguro de Auto",
     description: "Protección completa para tu vehículo ante accidentes, robos y daños a terceros.",
-    price: "$10.000/año",
+    price: 10000,
     image: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 2,
     title: "Seguro de Hogar",
     description: "Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.",
-    price: "$8.000/año",
+    price: 8000,
     image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 3,
     title: "Seguro de Vida",
     description: "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
-    price: "$12.000/año",
+    price: 12000,
     image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 4,
     title: "Seguro de Salud",
     description: "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    price: "$15.000/año",
+    price: 15000,
     image: "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80"
   }
 ];
@@ -44,17 +44,9 @@ const defaultProducts = [
 const Home = () => {
   const navigate = useNavigate();
   const [search, setSearch] = React.useState('');
-  const [products, setProducts] = React.useState([]);
-
-  React.useEffect(() => {
-    const storedProducts = localStorage.getItem('products');
-    const parsedProducts = storedProducts ? JSON.parse(storedProducts) : [];
-    setProducts([...defaultProducts, ...parsedProducts]);
-  }, []);
-
   const filteredProducts = products.filter(product =>
-    product.title?.toLowerCase().includes(search.toLowerCase()) ||
-    product.description?.toLowerCase().includes(search.toLowerCase())
+    product.title.toLowerCase().includes(search.toLowerCase()) ||
+    product.description.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -63,14 +55,14 @@ const Home = () => {
         <NavButton
           image="https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?auto=format&fit=crop&w=400&q=80"
           icon={InfoIcon}
-          label="Nosotros"
+          label="About Us"
           onClick={() => navigate('/nosotros')}
         />
         <NavButton
           image="https://plus.unsplash.com/premium_photo-1661434758776-faf568a8a34f?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           icon={ShoppingCartIcon}
           label="Carrito"
-          onClick={() => alert('Ir al carrito (próximamente)')}
+          onClick={() => navigate('/cart')}
         />
         <NavButton
           image="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&q=80"
@@ -140,6 +132,7 @@ const Home = () => {
               borderBottom: 'none !important',
             },
             input: {
+              padding: '20px 18px',
               fontSize: '1.3rem',
               fontWeight: 500,
             },
@@ -148,24 +141,20 @@ const Home = () => {
       </section>
 
       <main className="catalog">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map(product => (
-            <Link
-              key={product.id}
-              to={`/productcard/${product.id}`}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <ProductCard {...product} />
-            </Link>
-          ))
-        ) : (
-          <p style={{ textAlign: 'center', fontSize: '1.2rem' }}>
-            No se encontraron productos que coincidan con la búsqueda.
-          </p>
-        )}
+       <ProductCard
+          title="Pelota de fútbol"
+          description="Pelota oficial tamaño 5, ideal para partidos y entrenamientos."
+          price="$1"
+          image="https://images.unsplash.com/photo-1614632537190-23e4146777db?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        /> 
+        {filteredProducts.map(product => (
+          <Link key={product.id} to="/productcard" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <ProductCard {...product} />
+          </Link>
+        ))}
       </main>
     </>
   );
 };
 
-export default Home;
+export default Home; 
