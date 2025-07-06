@@ -364,6 +364,7 @@ textarea.form-input {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  margin-bottom: 10px;
   transition: background-color 0.3s ease;
 }
 
@@ -447,7 +448,6 @@ textarea.form-input {
 .edit-button,
 .delete-button {
   padding: 0.5rem 1rem;
-  margin: 0 0.5rem;
   font-size: 0.9rem;
 }
 

@@ -41,27 +41,27 @@ export default function OtherGallery() {
 
 const itemData = [
   {
-    img: "messi.png",
-    title: "soldadura",
+    img: "asesoria.png",
+    title: "asesoria",
   },
   {
-    img: "messi.png",
-    title: "soldadura",
+    img: "oficina.png",
+    title: "oficina",
   },
   {
-   img: "messi.png",
-   title: "soldadura",
+   img: "IA.png",
+   title: "IA",
   },
   {
-    img: "messi.png",
-    title: "soldadura",
+    img: "equipo.png",
+    title: "equipo",
   },
   {
-    img: "messi.png",
-    title: "soldadura",
+    img: "seguro.png",
+    title: "seguro",
   },
   {
-    img: "messi.png",
-    title: "soldadura",
+    img: "cont.png",
+    title: "cont",
   },
 ];
