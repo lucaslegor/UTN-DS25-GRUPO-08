@@ -47,10 +47,14 @@ const Home = () => {
   const [products, setProducts] = React.useState([]);
 
   React.useEffect(() => {
-    const storedProducts = localStorage.getItem('products');
-    const parsedProducts = storedProducts ? JSON.parse(storedProducts) : [];
-    setProducts([...defaultProducts, ...parsedProducts]);
-  }, []);
+  const storedProducts = localStorage.getItem('products');
+  if (storedProducts) {
+    setProducts(JSON.parse(storedProducts));
+  } else {
+    setProducts(defaultProducts);
+    localStorage.setItem('products', JSON.stringify(defaultProducts));
+  }
+}, []);
 
   const filteredProducts = products.filter(product =>
     product.title?.toLowerCase().includes(search.toLowerCase()) ||

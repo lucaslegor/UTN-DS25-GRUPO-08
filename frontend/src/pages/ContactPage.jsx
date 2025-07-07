@@ -13,7 +13,7 @@ const initialForm = {
   message: ''
 };
 
-const ContactPage = () => {
+export const ContactPage = () => {
   const [form, setForm] = useState(initialForm);
 
   const handleChange = (e) => {
