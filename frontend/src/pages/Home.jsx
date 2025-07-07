@@ -48,12 +48,8 @@ const Home = () => {
 
   React.useEffect(() => {
     const storedProducts = localStorage.getItem('products');
-  if (storedProducts) {
-    setProducts(JSON.parse(storedProducts));
-  } else {
-    setProducts(defaultProducts);
-    localStorage.setItem('products', JSON.stringify(defaultProducts));
-  }
+    const parsedProducts = storedProducts ? JSON.parse(storedProducts) : [];
+    setProducts([...defaultProducts, ...parsedProducts]);
   }, []);
 
   const filteredProducts = products.filter(product =>
