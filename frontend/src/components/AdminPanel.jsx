@@ -17,7 +17,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
 
  useEffect(() => {
-  const savedProducts = localStorage.getItem('products');
+    const savedProducts = localStorage.getItem('products');
   if (savedProducts) {
     setProducts(JSON.parse(savedProducts));
   } else {

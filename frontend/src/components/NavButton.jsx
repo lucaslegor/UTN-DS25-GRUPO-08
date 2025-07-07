@@ -62,4 +62,6 @@ const NavButton = ({ image, icon: Icon, label, onClick }) => {
   );
 };
 
-export default NavButton; 
+export default NavButton;
+
+ 
