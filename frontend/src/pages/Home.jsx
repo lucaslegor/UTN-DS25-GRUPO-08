@@ -47,10 +47,25 @@ const Home = () => {
   const [products, setProducts] = React.useState([]);
 
   React.useEffect(() => {
-    const storedProducts = localStorage.getItem('products');
-    const parsedProducts = storedProducts ? JSON.parse(storedProducts) : [];
-    setProducts([...defaultProducts, ...parsedProducts]);
-  }, []);
+  const storedProducts = localStorage.getItem('products');
+
+  if (storedProducts) {
+    const parsed = JSON.parse(storedProducts).map(p => ({
+      ...p,
+      price: Number(p.price), // forzamos a número
+    }));
+    setProducts(parsed);
+    localStorage.setItem('products', JSON.stringify(parsed)); // lo volvemos a guardar corregido
+  } else {
+    const correctedDefaults = defaultProducts.map(p => ({
+      ...p,
+      price: Number(p.price),
+    }));
+    setProducts(correctedDefaults);
+    localStorage.setItem('products', JSON.stringify(correctedDefaults));
+  }
+}, []);
+
 
   const filteredProducts = products.filter(product =>
     product.title?.toLowerCase().includes(search.toLowerCase()) ||

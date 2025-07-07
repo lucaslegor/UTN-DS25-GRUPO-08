@@ -16,7 +16,8 @@ const AdminPanel = () => {
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate();
 
- useEffect(() => {
+ // USE EFFECT ADMIN PANEL arrelado por luquita
+useEffect(() => {
   const savedProducts = localStorage.getItem('products');
   if (savedProducts) {
     setProducts(JSON.parse(savedProducts));
@@ -27,7 +28,7 @@ const AdminPanel = () => {
         name: "Seguro de Auto",
         title: "Seguro de Auto",
         description: "Protección completa para tu vehículo ante accidentes, robos y daños a terceros.",
-        price: "$10.000/año",
+        price: 10.000,
         image: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80"
       },
       {
@@ -35,7 +36,7 @@ const AdminPanel = () => {
         name: "Seguro de Hogar",
         title: "Seguro de Hogar",
         description: "Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.",
-        price: "$8.000/año",
+        price: 8.000,
         image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
       },
       {
@@ -43,7 +44,7 @@ const AdminPanel = () => {
         name: "Seguro de Vida",
         title: "Seguro de Vida",
         description: "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
-        price: "$12.000/año",
+        price: 12.000,
         image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80"
       },
       {
@@ -51,7 +52,7 @@ const AdminPanel = () => {
         name: "Seguro de Salud",
         title: "Seguro de Salud",
         description: "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-        price: "$15.000/año",
+        price: 15.000,
         image: "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80"
       }
     ];
