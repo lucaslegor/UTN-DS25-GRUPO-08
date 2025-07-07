@@ -2,12 +2,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import ProductCardPage from './pages/ProductCard';
-import CartPage from './pages/CartPage';
+import ContactPage from './pages/ContactPage';
 import Layout from './components/Layout';
 import { LoginPage } from './pages/Login';
 import UserProfile from './pages/UserProfile';
 import RegisterPage from './pages/Register';
 import AdminPanel from './pages/AdminPanelPage';
+import ContactPage from './pages/ContactPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="nosotros" element={<AboutUs />} />
           <Route path="cart" element={<CartPage />} />
+          <Route path="contacto" element={<ContactPage />} />
           <Route path="productcard/:id" element={<ProductCardPage />} />
           <Route path="userProfile" element={<UserProfile/>} />
           <Route path="adminPanel" element={<AdminPanel/>} />

@@ -18,7 +18,7 @@
 
 .nosotros-texts {
   flex: 1 1 500px;
-  margin-top: 10em;
+  margin-top: 7em;
   margin-right: 8em;
 }
 
@@ -27,9 +27,11 @@
 }
 
 .nosotros-title {
+  display: flex;
+  position: relative;
+  bottom: 30px;
   font-size: 2.5rem;
   color: #3d6de2;
-  margin-bottom: 30px;
   font-weight: bold;
   text-align: left;
 }

@@ -12,15 +12,15 @@ export const AboutUs = () => {
           <h2 className="nosotros-title">¿Quiénes somos?</h2>
           <div className="texts">
             <p className="nosotros-text">
-              En <strong>Maps</strong>, nos dedicamos a ofrecer las mejores soluciones de mapas y servicios relacionados para nuestros clientes.
-              Nuestra misión es hacer que la navegación y la exploración sean más fáciles y accesibles para todos.
-              Con años de experiencia en la industria, nuestro equipo se esfuerza por brindar productos innovadores
-              y un servicio al cliente excepcional.
+              Nuestra organización esta formada por mas de 80 asesorxs y pensada para que todos seamos parte,
+              los nuevos y no tanto, con mas experiencia y los noveles. Aprovechando todas las tecnologías posibles pero sin dejar de lado lo mas importante,
+              el grupo humano que la forma. Somos engranajes que hacen que funcione como Organización. Nos interesa la capacitación continua en la actividad,
+              reuniones de trabajo aunque también solo para juntarnos y charlar. Todo esto suma, no vas a estar solo en la actividad que tan difícil es al arrancar y para sostenerse.
+              Trabajamos con la <strong>Compañía líder</strong> en el mercado asegurador argentino: Federación Patronal Seguros S.A con el sistema mas moderno de gestión de cartera el SELF.
             </p>
             <p className="nosotros-text">
-              Creemos firmemente en la calidad, la precisión y la facilidad de uso. Ya sea que estés buscando un seguro de viaje,
-              paquetes turísticos o simplemente mapas detallados, en Maps encontrarás lo que necesitás.
-              ¡Explorá el mundo con nosotros!
+              Somos una organización de asesores de seguros con mas de <strong>20 años de experiencia</strong>, que está comprometida con el éxito de cada uno de nuestros miembros.
+              Trabajamos en equipo para alcanzar nuestras metas y, lo más importante, nos enfocamos en la satisfacción de nuestros
             </p>
           </div>
         </div>
@@ -35,7 +35,7 @@ export const AboutUs = () => {
         <h3>Nuestro Equipo</h3>
         <div className="team-members">
           <TeamMember
-            name="Juan Pérez"
+            name="Juan Rodríguez"
             role="CEO y Fundador"
             description="Con más de 15 años de experiencia en venta de seguros."
             image="https://images.unsplash.com/photo-1695230981824-8edd894a6c2c"
