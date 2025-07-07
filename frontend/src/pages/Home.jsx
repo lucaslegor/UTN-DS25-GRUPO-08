@@ -15,28 +15,28 @@ const defaultProducts = [
     id: 1,
     title: "Seguro de Auto",
     description: "Protección completa para tu vehículo ante accidentes, robos y daños a terceros.",
-    price: "$10.000/año",
+    price: 10000,
     image: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 2,
     title: "Seguro de Hogar",
     description: "Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.",
-    price: "$8.000/año",
+    price: 8000,
     image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 3,
     title: "Seguro de Vida",
     description: "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
-    price: "$12.000/año",
+    price: 12000,
     image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 4,
     title: "Seguro de Salud",
     description: "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    price: "$15.000/año",
+    price: 15000,
     image: "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80"
   }
 ];
@@ -48,12 +48,8 @@ const Home = () => {
 
   React.useEffect(() => {
     const storedProducts = localStorage.getItem('products');
-  if (storedProducts) {
-    setProducts(JSON.parse(storedProducts));
-  } else {
-    setProducts(defaultProducts);
-    localStorage.setItem('products', JSON.stringify(defaultProducts));
-  }
+    const parsedProducts = storedProducts ? JSON.parse(storedProducts) : [];
+    setProducts([...defaultProducts, ...parsedProducts]);
   }, []);
 
   const filteredProducts = products.filter(product =>
@@ -74,7 +70,7 @@ const Home = () => {
           image="https://plus.unsplash.com/premium_photo-1661434758776-faf568a8a34f?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           icon={ShoppingCartIcon}
           label="Carrito"
-          onClick={() => alert('Ir al carrito (próximamente)')}
+          onClick={() => navigate('/cart')}
         />
         <NavButton
           image="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&q=80"
@@ -156,7 +152,7 @@ const Home = () => {
           filteredProducts.map(product => (
             <Link
               key={product.id}
-              to="/productcard"
+              to={`/productcard/${product.id}`}
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <ProductCard {...product} />

@@ -1,13 +1,16 @@
 import React from 'react';
+import { useCart } from '../context/CartContext';
 import '../styles/productCard.css';
 
-const formatPrice = (price) => {
-  if (!price) return 'Consultar';
-  if (typeof price === 'string' && price.includes('$')) return price;
-  return `$${Number(price).toLocaleString('es-AR')}/año`;
-};
+const ProductCard = ({ id, title, description, price, image }) => {
+  const { addToCart, isInCart, formatPrice } = useCart();
+  const inCart = isInCart(id);
 
-const ProductCard = ({ title, description, price, image }) => {
+  const handleAddToCart = (e) => {
+    e.preventDefault(); // Prevenir navegación al hacer click
+    addToCart({ id, title, description, price, image });
+  };
+
   return (
     <div className="product-card-horizontal">
       <div className="product-image-horizontal">
@@ -18,7 +21,12 @@ const ProductCard = ({ title, description, price, image }) => {
         <p className="product-description-horizontal">{description || 'Sin descripción.'}</p>
         <div className="product-footer-horizontal">
           <span className="product-price-horizontal">{formatPrice(price)}</span>
-          <button className="product-button-horizontal">Agregar al carrito</button>
+          <button 
+            className={`product-button-horizontal ${inCart ? 'in-cart' : ''}`}
+            onClick={handleAddToCart}
+          >
+            {inCart ? '✓ En carrito' : 'Agregar al carrito'}
+          </button>
         </div>
       </div>
     </div>
