@@ -48,13 +48,24 @@ const Home = () => {
 
   React.useEffect(() => {
   const storedProducts = localStorage.getItem('products');
+
   if (storedProducts) {
-    setProducts(JSON.parse(storedProducts));
+    const parsed = JSON.parse(storedProducts).map(p => ({
+      ...p,
+      price: Number(p.price), // forzamos a número
+    }));
+    setProducts(parsed);
+    localStorage.setItem('products', JSON.stringify(parsed)); // lo volvemos a guardar corregido
   } else {
-    setProducts(defaultProducts);
-    localStorage.setItem('products', JSON.stringify(defaultProducts));
+    const correctedDefaults = defaultProducts.map(p => ({
+      ...p,
+      price: Number(p.price),
+    }));
+    setProducts(correctedDefaults);
+    localStorage.setItem('products', JSON.stringify(correctedDefaults));
   }
 }, []);
+
 
   const filteredProducts = products.filter(product =>
     product.title?.toLowerCase().includes(search.toLowerCase()) ||

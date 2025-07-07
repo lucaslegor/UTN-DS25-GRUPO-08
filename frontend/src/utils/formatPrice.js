@@ -1,6 +1,7 @@
 // Formatear el precio de los productos, src/utils/formatPrice.js
 
 export const formatPrice = (price) => {
-    if (typeof price !== 'number') return 'Consultar';
-    return `$${price.toLocaleString('es-AR')}/año`;
-  };
+  const numericPrice = Number(price);
+  if (isNaN(numericPrice)) return 'Consultar';
+  return `$${numericPrice.toLocaleString('es-AR')}/año`;
+};
