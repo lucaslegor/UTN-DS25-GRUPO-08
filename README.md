@@ -72,5 +72,3 @@ El proyecto busca potenciar el alcance comercial de la Empresa MAPS, facilitando
 4. Mejorar la experiencia de compra para los usuarios, ampliando el alcance a nivel nacional.
 5. Automatizar el proceso de ventas para reducir la carga operativa.
 6. Aumentar el número de ventas y la exposición de la empresa.
-# UTN-DS25-PRACTICAS
-# UTN-DS25-PRACTICAS
