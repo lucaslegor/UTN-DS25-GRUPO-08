@@ -38,12 +38,12 @@ export const createUsuario = async (
 type UpdateUsuarioBody = { username?: string; password?: string; rol?: Rol };
 
 export const updateUsuario = async (
-  req: Request<{ id: string }, {}, UpdateUsuarioBody>,
+  req: Request<{ username: string }, {}, UpdateUsuarioBody>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const id = Number(req.params.id);
+    const usernameParam = req.params.username;
     const { username, password, rol } = req.body;
 
     const data: Partial<Omit<Usuario, "idUsuario" | "createdAt">> = {};
@@ -51,7 +51,7 @@ export const updateUsuario = async (
     if (password) data.passwordHash = password;
     if (rol) data.rol = rol;
 
-    const usuario = actualizarUsuario(id, data); // UsuarioPublic | null
+    const usuario = actualizarUsuario(usernameParam, data); // UsuarioPublic | null
     if (!usuario) return res.status(404).json({ usuario: null, message: "Usuario no encontrado" });
 
     res.json({ usuario, message: "Usuario actualizado" });
