@@ -1,20 +1,20 @@
 import { Pedido, PedidoItem, CrearPedidoRequest } from '../types/pedidos.types';
 
-// Catálogo mock para resolver productId → {titulo, precio}
+// Catálogo simple (mock). En siguiente etapa: DB real.
 const catalogo = [
   { id: 101, titulo: 'Plan Básico', precio: 15000 },
   { id: 102, titulo: 'Plan Full', precio: 28000 },
   { id: 103, titulo: 'Adicional Hogar', precio: 9000 },
 ];
 
-// Datos en memoria (MVP)
+// Persistencia en memoria (MVP)
 let pedidos: Pedido[] = [];
 let lastId = 0;
 
 // Helpers internos
-function resolveItems(input: { productId: number; cantidad?: number }[]): PedidoItem[] {
+function resolverItems(input: { productId: number; cantidad?: number }[]): PedidoItem[] {
   if (!Array.isArray(input) || input.length === 0) {
-    const e: any = new Error('Pedido must have at least one item');
+    const e: any = new Error('El pedido debe tener al menos un ítem');
     e.statusCode = 400;
     throw e;
   }
@@ -34,25 +34,25 @@ function resolveItems(input: { productId: number; cantidad?: number }[]): Pedido
   });
 }
 
-function calcSubtotal(items: PedidoItem[]): number {
+function calcularSubtotal(items: PedidoItem[]): number {
   return items.reduce((acc, it) => acc + it.precio * it.cantidad, 0);
 }
 
-function calcTotal(subtotal: number): number {
-  // Espacio para impuestos/descuentos futuros
+function calcularTotal(subtotal: number): number {
+  // Lugar para impuestos/descuentos futuros
   return subtotal;
 }
 
 // GET all
-export async function getAllPedidos(): Promise<Pedido[]> {
+export async function listarPedidos(): Promise<Pedido[]> {
   return pedidos;
 }
 
 // GET by id
-export async function getPedidoById(id: number): Promise<Pedido> {
+export async function obtenerPedidoPorId(id: number): Promise<Pedido> {
   const pedido = pedidos.find(p => p.idPedido === id);
   if (!pedido) {
-    const error: any = new Error('Pedido not found');
+    const error: any = new Error('Pedido no encontrado');
     error.statusCode = 404;
     throw error;
   }
@@ -60,53 +60,51 @@ export async function getPedidoById(id: number): Promise<Pedido> {
 }
 
 // CREATE
-export async function createPedido(data: CrearPedidoRequest): Promise<Pedido> {
-  // Validaciones mínimas estilo clase
+export async function crearPedido(data: CrearPedidoRequest): Promise<Pedido> {
   if (!data || !data.items) {
-    const e: any = new Error('Invalid request body');
+    const e: any = new Error('Body inválido');
     e.statusCode = 400;
     throw e;
   }
   if (data.moneda !== 'ARS') {
-    const e: any = new Error("Only 'ARS' currency is supported");
+    const e: any = new Error("Solo se admite moneda 'ARS'");
     e.statusCode = 400;
     throw e;
   }
 
-  const items = resolveItems(data.items);
-  const subtotal = calcSubtotal(items);
-  const total = calcTotal(subtotal);
-  const now = new Date();
+  const items = resolverItems(data.items);
+  const subtotal = calcularSubtotal(items);
+  const total = calcularTotal(subtotal);
+  const ahora = new Date();
 
-  const newPedido: Pedido = {
+  const nuevoPedido: Pedido = {
     idPedido: ++lastId,
-    idUsuario: 1, // en producción, desde el token
+    idUsuario: 1, // En producción: desde token/auth
     items,
     subtotal,
     total,
     moneda: 'ARS',
     estado: 'CREADO',
-    createdAt: now,
-    updatedAt: now,
+    createdAt: ahora,
+    updatedAt: ahora,
   };
 
-  pedidos.push(newPedido);
-  return newPedido;
+  pedidos.push(nuevoPedido);
+  return nuevoPedido;
 }
 
 // UPDATE
-export async function updatePedido(id: number, data: Partial<Pedido>): Promise<Pedido> {
+export async function actualizarPedido(id: number, data: Partial<Pedido>): Promise<Pedido> {
   const index = pedidos.findIndex(p => p.idPedido === id);
   if (index === -1) {
-    const error: any = new Error('Pedido not found');
+    const error: any = new Error('Pedido no encontrado');
     error.statusCode = 404;
     throw error;
   }
 
-  // Si cambian items, recalculamos; si cambian moneda, validamos
+  // Si actualizan items: recalcular desde catálogo
   let items = pedidos[index].items;
   if (data.items) {
-    // Permitimos actualización con productId/cantidad y recalculamos desde catálogo
     items = data.items.map(it => {
       const prod = catalogo.find(p => p.id === it.productId);
       if (!prod) {
@@ -123,15 +121,16 @@ export async function updatePedido(id: number, data: Partial<Pedido>): Promise<P
     });
   }
 
+  // Validar moneda si viene
   const moneda = data.moneda ?? pedidos[index].moneda;
   if (moneda !== 'ARS') {
-    const e: any = new Error("Only 'ARS' currency is supported");
+    const e: any = new Error("Solo se admite moneda 'ARS'");
     e.statusCode = 400;
     throw e;
   }
 
-  const subtotal = calcSubtotal(items);
-  const total = calcTotal(subtotal);
+  const subtotal = calcularSubtotal(items);
+  const total = calcularTotal(subtotal);
 
   pedidos[index] = {
     ...pedidos[index],
