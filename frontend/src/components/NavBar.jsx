@@ -48,14 +48,14 @@ export const NavBar = () => {
                     <li>
                         <Link className='link' to="/contacto">Contacto</Link>
                     </li>
-                    <li>
-                        <CartIcon />
-                    </li>
                      {isAdmin && (
                         <li>
                             <Link className='link' to={"/adminpanel"}>Panel Admin</Link>
                         </li>
                     )}
+                    <li>
+                        <Link className='link' to="/cart"> <CartIcon/> </Link>
+                    </li>
                     {isLogin ? (
                         <>
                             <li>

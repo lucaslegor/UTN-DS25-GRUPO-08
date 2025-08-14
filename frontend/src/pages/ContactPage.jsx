@@ -1,134 +1,96 @@
-import React, { useState } from 'react';
-import { Box, Grid, Typography, TextField, Button, Paper } from '@mui/material';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import React from 'react'
 import '../styles/contact.css';
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  SendHorizonal,
+  CircleUserRoundIcon,
+} from "lucide-react";
+import "../styles/contact.css";
 
-const initialForm = {
-  first: '',
-  last: '',
-  email: '',
-  phone: '',
-  message: ''
-};
-
-export const ContactPage = () => {
-  const [form, setForm] = useState(initialForm);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Formulario enviado:', form);
-    setForm(initialForm);
-  };
-
+export const Contact = () => {
   return (
-    <div className="contact-root">
-      <div className="contact-container">
-        {/* Columna izquierda */}
-        <div className="contact-info">
-          <Typography className="contact-title" variant="h3" component="h1" gutterBottom>
-            Contáctanos
-          </Typography>
-          <Typography className="contact-description" variant="body1" gutterBottom>
-            No dudes en usar el formulario o enviarnos un correo electrónico. Las llamadas telefónicas tradicionales también funcionan.
-          </Typography>
-          <div className="contact-detail">
-            <PhoneIcon sx={{ color: '#1e43c0' }} />
-            <span>+54 11 1234–5678</span>
-          </div>
-          <div className="contact-detail">
-            <EmailIcon sx={{ color: '#1e43c0' }} />
-            <span>mapsaseguradora@gmail.com</span>
-          </div>
-          <div className="contact-detail">
-            <LocationOnIcon sx={{ color: '#1e43c0' }} />
-            <span>
-              Calle 59,<br />Nro: 415, La Plata
-            </span>
-          </div>
+    <section style={{fontFamily:'Poppins, sans-serif'}} id="contacto" className="contacto">
+      <div className="container">
+        <div className="contact-header">
+          <h2 className="title-contact">
+            <CircleUserRoundIcon size={24} color="#3d6de2" /> Contacto
+          </h2>
         </div>
-        {/* Columna derecha: Formulario */}
-        <Paper elevation={3} sx={{ flex: 1, minWidth: 320, p: { xs: 2, sm: 4 } }} className="contact-form">
-          <form onSubmit={handleSubmit} autoComplete="off">
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Nombre"
-                  name="first"
-                  value={form.first}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  variant="outlined"
-                  size="medium"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Apellido"
-                  name="last"
-                  value={form.last}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  variant="outlined"
-                  size="medium"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  variant="outlined"
-                  size="medium"
-                  type="email"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Teléfono (opcional)"
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  size="medium"
-                  type="tel"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Mensaje"
-                  name="message"
-                  value={form.message}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  variant="outlined"
-                  size="medium"
-                  multiline
-                  rows={4}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <button className='submit-button-contact' type="submit">Enviar</button>
-                 
-              </Grid>
-            </Grid>
+
+        <div className="contact-content">
+          <div className="contact-info">
+            <div className="contact-item">
+              <div>
+                <h3 className="heading">
+                  <Phone className="icon" size={24} color="#3d6de2" /> Teléfono
+                </h3>
+                <p className="text">+54 11 1234-5678</p>
+              </div>
+            </div>
+
+            <div className="contact-item">
+              <div>
+                <h3 className="heading">
+                  <Mail className="icon" size={24} color="#3d6de2" /> Email
+                </h3>
+                <p className="text">info@mapsasesores.com</p>
+              </div>
+            </div>
+
+            <div className="contact-item">
+              <div>
+                <h3 className="heading">
+                  <MapPin size={24} color="#3d6de2" /> Dirección
+                </h3>
+                <iframe
+                  className="map-iframe"
+                  src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d13083.547451431052!2d-57.95527201033044!3d-34.934374287603944!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses-419!2sar!4v1742495053963!5m2!1ses-419!2sar"
+                ></iframe>
+                <p className="map-text">
+                  Dirección: Calle Ficticia 123, Ciudad
+                </p>
+
+              </div>
+            </div>
+
+            <div className="contact-item">
+              <div>
+                <h3 className="heading">
+                  <Clock className="icon" size={24} color="#3d6de2" /> Horarios
+                </h3>
+                <p className="text">Lunes a Viernes: 9:00 - 18:00</p>
+                <p className="text">Sábados: 9:00 - 13:00</p>
+              </div>
+            </div>
+          </div>
+          <form className="form">
+            <h2 className="subtitle-form">
+              Envia tu mail {<SendHorizonal size={24} color="#3d6de2" />}
+            </h2>
+            <div>
+              <input type="text" placeholder="Nombre" className="input-field" />
+            </div>
+            <div>
+              <input type="email" placeholder="Email" className="input-field" />
+            </div>
+            <div>
+              <textarea
+                rows={4}
+                placeholder="Mensaje"
+                className="input-field"
+              ></textarea>
+            </div>
+            <button style={{fontFamily:'Poppins, sans-serif'}} type="submit" className="submit-button">
+              Enviar Mensaje
+            </button>
           </form>
-        </Paper>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default ContactPage;
+export default Contact;

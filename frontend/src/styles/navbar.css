@@ -24,7 +24,7 @@
 .link-list {
     display: flex;
     position: relative;
-    right: 40px;
+    top: 8px;
     text-decoration: none;
     justify-content: space-between;
     list-style-type: none;

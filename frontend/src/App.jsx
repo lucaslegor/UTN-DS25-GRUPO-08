@@ -8,7 +8,7 @@ import { LoginPage } from './pages/Login';
 import UserProfile from './pages/UserProfile';
 import RegisterPage from './pages/Register';
 import AdminPanel from './pages/AdminPanelPage';
-import { ContactPage } from './pages/ContactPage';
+import { Contact } from './pages/ContactPage';
 
 function App() {
   return (
@@ -26,7 +26,7 @@ function App() {
           <Route path="productcard/:id" element={<ProductCardPage />} />
           <Route path="userProfile" element={<UserProfile/>} />
           <Route path="adminPanel" element={<AdminPanel/>} />
-          <Route path="contacto" element={<ContactPage/>} />
+          <Route path="contacto" element={<Contact/>} />
         </Route>
       </Routes>
     </Router>

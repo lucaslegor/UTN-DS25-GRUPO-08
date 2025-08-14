@@ -1,89 +1,144 @@
-/* contact.css */
-
-.contact-root {
-  min-height: 80vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  padding: 40px 0;
-}
-
-.contact-container {
-  display: flex;
-  flex-wrap: wrap;
-  max-width: 1100px;
-  width: 100%;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px 0 rgba(30,67,192,0.10);
-  padding: 32px;
-  gap: 32px;
-}
-
-.contact-info {
-  flex: 1;
-  min-width: 320px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-.contact-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #1e43c0;
-  font-family: 'Roboto', 'Arial', sans-serif;
-}
-
-.contact-description {
-  color: #111111;
-  margin-bottom: 32px;
-  font-size: 1.1rem;
-  font-family: 'Roboto', 'Arial', sans-serif;
-}
-
-.contact-detail {
-  display: flex;
-  align-items: center;
-  margin-bottom: 18px;
-  color: #1e43c0;
-  font-size: 1.1rem;
-}
-
-.contact-detail span {
-  color: #222;
-  margin-left: 12px;
-  font-family: 'Roboto', 'Arial', sans-serif;
-
-}
-
-.submit-button-contact {
-    width:100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 18px;
-    margin-top: 20px;
-}
-
-.submit-button-contact:hover {
-    background-color: #0056b3;
-}
-
-
-@media (max-width: 768px) {
-  .contact-container {
+.contacto {
+    padding-top: 5rem; 
+    padding-bottom: 5rem; 
+    background-color: #ffffff; 
+  }
+  
+  .container {
+    max-width: 90rem; 
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; 
+    padding-right: 1rem; 
+  }
+  
+  
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem; 
+      padding-right: 2rem; 
+    }
+  }
+  
+  .header {
+    text-align: center;
+    margin-bottom: 4rem; 
+  }
+  
+  .title-contact {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem; 
+    font-weight: bold;
+    color: #3d6de2 ;
+    margin-bottom: 1rem; 
+    margin-top: 2rem;
+    gap: 10px;
+    right: 5rem;;
+  }
+  
+  .subtitle {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    color: #9ca3af; 
+    font-size: 1.125rem; 
+  }
+  
+  .contact-content {
+    display: flex;
+    gap: 4rem; 
+    justify-content: space-between;
+    border: 4px white;
+  }
+  
+  .contact-info {
+    display: flex;
     flex-direction: column;
-    padding: 20px;
-    gap: 24px;
-    margin-top: 25px;
+    gap: 2rem; 
+    flex: 1;
+    margin-top: 1.2rem;
   }
-  .contact-info, .contact-form {
-    min-width: 0;
+  
+  .contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem; 
+
+    h3 {
+        display: flex;
+        position: relative;
+        bottom: 10px;
+    }
   }
-} 
+  
+  
+  .heading {
+    font-weight: 600; 
+    color: #3d6de2;
+    margin-bottom: 0.25rem; 
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .text {
+    color: #9ca3af; 
+  }
+
+  .subtitle-form {
+    color: #3d6de2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+    justify-content: flex-start; /* Asegura que los elementos estén alineados arriba */
+  }
+  
+  .input-field {
+    width: 90%;
+    padding: 1rem; 
+    background-color: #c5c5c5; 
+    font-weight: bold;
+    border-radius: 0.75rem; 
+    border: none;
+    resize: none;
+  }
+  
+  .input-field:focus {
+    border: 2px solid #ffffff; 
+  }
+  
+  .submit-button {
+    background-color: #3d6de2; /* Color de fondo */
+    color: white;
+    padding: 10px; /* Asegura que tenga la misma altura que los input */
+    font-size: 12px;
+    border: solid 1px white;
+    border-radius: 8px;
+    font-weight: bold;
+    font-family: 'Poppins', 'sans-serif';
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: relative; /* Asegura que el botón esté en su lugar */
+    width: 200px;; /* Asegura que el botón ocupe todo el ancho disponible */
+  }
+  
+  .submit-button:hover {
+    background-color: #004cff; /* Cambiar solo el color de fondo */
+    transform: none; /* Eliminar cualquier transformación que cambie el tamaño */
+  }
+  
+
+  .map-text {
+    display: none;
+  }
+
