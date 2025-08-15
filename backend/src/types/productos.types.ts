@@ -29,6 +29,11 @@ export interface UpdateProductRequest {
   isActive?: boolean;
 }
 
+export interface ProductResponse {
+  product: Product;
+  message: string;
+}
+
 export interface ProductsListResponse {
   products: Product[];
   total: number;
