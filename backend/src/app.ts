@@ -3,7 +3,9 @@ import { logRequest } from "./middlewares/logger.middleware";
 import { usuarioRoutes } from "../src/routes/usuario.routes";
 import { pedidoRoutes } from "../src/routes/pedido.routes";
 import { polizaRoutes } from "../src/routes/poliza.routes"; 
-import { productoRoutes } from "./routes/producto.routes"; 
+import { productoRoutes } from "./routes/producto.routes";
+import carritoRoutes from './routes/carrito.routes';
+
 
 const express = require("express");
 const cors = require("cors");
@@ -24,7 +26,9 @@ app.use(logRequest);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/pedidos", pedidoRoutes);
 app.use("/api/polizas", polizaRoutes);
-app.use("/api/productos", productoRoutes); 
+app.use("/api/productos", productoRoutes);
+app.use('/api/cart', carritoRoutes);
+
 
 app.use(handleError);
 
