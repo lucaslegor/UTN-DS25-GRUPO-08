@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RolUsuario {
+  ADMINISTRADOR
+  USUARIO
+}
+
+enum TipoSeguro {
+  AUTO
+  HOGAR
+  VIDA
+  SALUD
+}
+
+enum EstadoPoliza {
+  PENDIENTE
+  CARGADA
+}
+
+enum EstadoPedido {
+  CREADO
+  PENDIENTE_POLIZA
+  POLIZA_CARGADA
+  PAGO_PENDIENTE
+  PAGO_APROBADO
+  PAGO_RECHAZADO
+  CANCELADO
+}
+
+enum Moneda {
+  ARS
+}
+
+model Usuario {
+  id Int @id @default(autoincrement())
+  username String @unique
+  passwordHash String
+  rol RolUsuario
+  createdAt DateTime @default(now())
+
+  adminProfile AdminProfile? 
+  pedidos Pedido[]
+}
+
+model AdminProfile {
+  idAdmin Int @id @default(autoincrement())
+  idUsuario Int @unique
+  nombre String
+  email String @unique
+  telefono String?
+  activo Boolean
+  createdAt DateTime @default(now())
+
+  usuario Usuario @relation(fields: [idUsuario],references: [id])
+}
+
+model Producto {
+  id Int @id @default(autoincrement())
+  titulo String
+  descripcion String
+  precio Decimal @db.Money
+  cobertura String
+  tipo TipoSeguro
+  isActive Boolean
+  createdAt DateTime @default(now())
+
+  itemsPedido PedidoItem[]
+  itemsCarrito CarritoItem[]
+}
+
+model Poliza {
+  id Int @id @default(autoincrement())
+  idPedido Int @unique
+  archivoUrl String
+  estado EstadoPoliza @default(PENDIENTE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+
+  pedido Pedido @relation(fields: [idPedido], references: [id])
+}
+
+model PedidoItem {
+  idProducto Int 
+  idPedido Int
+  titulo String
+  precio Decimal @db.Money
+  cantidad Int
+  
+  @@id([idPedido,idProducto])
+  producto Producto @relation(fields: [idProducto], references: [id])
+  pedido Pedido @relation(fields: [idPedido], references: [id])
+}
+
+model Pedido {
+  id Int @id @default(autoincrement())
+  idUsuario Int 
+  subtotal Decimal @db.Money
+  total Decimal @db.Money
+  moneda Moneda @default(ARS)
+  estado EstadoPedido @default(CREADO)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usuario Usuario @relation(fields: [idUsuario], references: [id])
+  items PedidoItem[] 
+  poliza Poliza? 
+}
+
+model CarritoItem {
+  idProducto Int
+  idCarrito Int
+  cantidad Int @default(1)
+
+  @@id([idCarrito,idProducto])
+  producto Producto @relation(fields: [idProducto], references: [id])
+  carrito Carrito @relation(fields: [idCarrito], references: [id])
+}
+
+model Carrito {
+  id Int @id @default(autoincrement())
+  total Decimal @db.Money @default(0)
+  moneda Moneda @default(ARS)
+  updatedAt DateTime @updatedAt
+
+  items CarritoItem[]
+}
