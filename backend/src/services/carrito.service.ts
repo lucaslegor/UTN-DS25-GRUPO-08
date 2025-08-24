@@ -1,15 +1,15 @@
 // src/services/cart.service.ts
 import { Cart, CartItem, AddToCartRequest } from '../types/carrito.types';
-import { randomUUID } from 'crypto';
+import prisma from '../config/prisma';
 
-// ✅ Store en memoria
-const carts = new Map<string, Cart>();
+// 🔧 Helper: parsear idCarrito (string) -> int (DB)
+function parseCarritoId(idCarrito: string): number | null {
+  const n = Number(idCarrito);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
 
-// 🔧 Si en el futuro deben calcular $total en base a precios,
-// reemplacen esta función para consultar productos/DB:
 function recalcTotal(_items: CartItem[]): number {
-  // Por ahora, dejamos total=0 para no romper nada del resto del equipo.
-  // Si quieren contar unidades: return items.reduce((a, i) => a + (i.cantidad ?? 1), 0);
+  // Si en el futuro queremos calcular: sumar precio*cantidad desde Producto.
   return 0;
 }
 
@@ -17,52 +17,116 @@ function ensureCantidad(n?: number): number {
   return typeof n === 'number' && n > 0 ? Math.floor(n) : 1;
 }
 
+// 🔧 Mapper DB -> DTO
+function toCartDTO(row: any, items: any[]): Cart {
+  return {
+    idCarrito: String(row.id),
+    items: items.map((it: any) => ({
+      productId: it.idProducto,
+      cantidad: it.cantidad ?? 1,
+    })),
+    total: Number(row.total) || 0,
+    moneda: row.moneda, // "ARS"
+    updatedAt: row.updatedAt,
+  };
+}
+
+// 🔧 Cargar un carrito completo desde DB
+async function loadCart(intId: number): Promise<Cart | null> {
+  const row = await prisma.carrito.findUnique({
+    where: { id: intId },
+    include: { items: true },
+  });
+  if (!row) return null;
+  return toCartDTO(row, row.items);
+}
+
+// -------------------------------------------------------------
+
 export async function listAll(): Promise<Cart[]> {
-  return Array.from(carts.values());
+  const rows = await prisma.carrito.findMany({
+    include: { items: true },
+    orderBy: { id: 'asc' },
+  });
+  return rows.map(r => toCartDTO(r, r.items));
 }
 
 export async function createCart(): Promise<Cart> {
-  const idCarrito = randomUUID();
-  const now = new Date();
-  const cart: Cart = {
-    idCarrito,
+  const created = await prisma.carrito.create({
+    data: {
+      // total y moneda tienen defaults; igual dejo explícito total=0 por claridad
+      total: 0,
+      // moneda: 'ARS' // default en el schema
+    },
+  });
+  // Sin items al crear
+  return {
+    idCarrito: String(created.id),
     items: [],
-    total: 0,
-    moneda: 'ARS',
-    updatedAt: now,
+    total: Number(created.total) || 0,
+    moneda: created.moneda,
+    updatedAt: created.updatedAt,
   };
-  carts.set(idCarrito, cart);
-  return cart;
 }
 
 export async function getCart(idCarrito: string): Promise<Cart | null> {
-  return carts.get(idCarrito) ?? null;
+  const intId = parseCarritoId(idCarrito);
+  if (!intId) return null;
+
+  return loadCart(intId);
 }
 
 export async function deleteCart(idCarrito: string): Promise<boolean> {
-  return carts.delete(idCarrito);
+  const intId = parseCarritoId(idCarrito);
+  if (!intId) return false;
+
+  const exists = await prisma.carrito.findUnique({ where: { id: intId } });
+  if (!exists) return false;
+
+  await prisma.$transaction([
+    prisma.carritoItem.deleteMany({ where: { idCarrito: intId } }),
+    prisma.carrito.delete({ where: { id: intId } }),
+  ]);
+
+  return true;
 }
 
 export async function addItem(idCarrito: string, req: AddToCartRequest): Promise<Cart | null> {
-  const cart = carts.get(idCarrito);
+  const intId = parseCarritoId(idCarrito);
+  if (!intId) return null;
+
+  const cart = await prisma.carrito.findUnique({ where: { id: intId } });
   if (!cart) return null;
 
   const cantidad = ensureCantidad(req.cantidad);
-  const idx = cart.items.findIndex(i => i.productId === req.productId);
 
-  if (idx >= 0) {
-    cart.items[idx] = {
-      ...cart.items[idx],
-      cantidad: (cart.items[idx].cantidad ?? 1) + cantidad,
-    };
+  // PK compuesta: @@id([idCarrito, idProducto])
+  const key = { idCarrito_idProducto: { idCarrito: intId, idProducto: req.productId } };
+
+  const existing = await prisma.carritoItem.findUnique({ where: key });
+
+  if (existing) {
+    await prisma.carritoItem.update({
+      where: key,
+      data: { cantidad: (existing.cantidad ?? 1) + cantidad },
+    });
   } else {
-    cart.items.push({ productId: req.productId, cantidad });
+    await prisma.carritoItem.create({
+      data: {
+        idCarrito: intId,
+        idProducto: req.productId,
+        cantidad,
+      },
+    });
   }
 
-  cart.total = recalcTotal(cart.items);
-  cart.updatedAt = new Date();
-  carts.set(idCarrito, cart);
-  return cart;
+  // Mantengo total=0 (igual que mock) y fuerzo update para updatedAt
+  await prisma.carrito.update({
+    where: { id: intId },
+    data: { total: 0 },
+  });
+
+  return loadCart(intId);
 }
 
 export async function setItemCantidad(
@@ -70,49 +134,70 @@ export async function setItemCantidad(
   productId: number,
   cantidad: number
 ): Promise<Cart | null> {
-  const cart = carts.get(idCarrito);
+  const intId = parseCarritoId(idCarrito);
+  if (!intId) return null;
+
+  const cart = await prisma.carrito.findUnique({ where: { id: intId } });
   if (!cart) return null;
 
-  const idx = cart.items.findIndex(i => i.productId === productId);
-  if (idx < 0) {
-    // Si no existe el ítem, no rompemos: devolvemos el carrito tal cual.
-    return cart;
+  const key = { idCarrito_idProducto: { idCarrito: intId, idProducto: productId } };
+  const existing = await prisma.carritoItem.findUnique({ where: key });
+
+  if (!existing) {
+    // Igual que tu mock: si no existe, devolvemos el carrito tal cual.
+    return loadCart(intId);
   }
 
   const qty = ensureCantidad(cantidad);
   if (qty <= 0) {
-    cart.items.splice(idx, 1);
+    await prisma.carritoItem.delete({ where: key });
   } else {
-    cart.items[idx] = { ...cart.items[idx], cantidad: qty };
+    await prisma.carritoItem.update({
+      where: key,
+      data: { cantidad: qty },
+    });
   }
 
-  cart.total = recalcTotal(cart.items);
-  cart.updatedAt = new Date();
-  carts.set(idCarrito, cart);
-  return cart;
+  await prisma.carrito.update({
+    where: { id: intId },
+    data: { total: 0 },
+  });
+
+  return loadCart(intId);
 }
 
-export async function removeItem(
-  idCarrito: string,
-  productId: number
-): Promise<Cart | null> {
-  const cart = carts.get(idCarrito);
+export async function removeItem(idCarrito: string, productId: number): Promise<Cart | null> {
+  const intId = parseCarritoId(idCarrito);
+  if (!intId) return null;
+
+  const cart = await prisma.carrito.findUnique({ where: { id: intId } });
   if (!cart) return null;
 
-  cart.items = cart.items.filter(i => i.productId !== productId);
-  cart.total = recalcTotal(cart.items);
-  cart.updatedAt = new Date();
-  carts.set(idCarrito, cart);
-  return cart;
+  await prisma.carritoItem.deleteMany({
+    where: { idCarrito: intId, idProducto: productId },
+  });
+
+  await prisma.carrito.update({
+    where: { id: intId },
+    data: { total: 0 },
+  });
+
+  return loadCart(intId);
 }
 
 export async function clearItems(idCarrito: string): Promise<Cart | null> {
-  const cart = carts.get(idCarrito);
+  const intId = parseCarritoId(idCarrito);
+  if (!intId) return null;
+
+  const cart = await prisma.carrito.findUnique({ where: { id: intId } });
   if (!cart) return null;
 
-  cart.items = [];
-  cart.total = 0;
-  cart.updatedAt = new Date();
-  carts.set(idCarrito, cart);
-  return cart;
+  await prisma.carritoItem.deleteMany({ where: { idCarrito: intId } });
+
+  await prisma.carrito.update({
+    where: { id: intId },
+    data: { total: 0 },
+  });
+
+  return loadCart(intId);
 }

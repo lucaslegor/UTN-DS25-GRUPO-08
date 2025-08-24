@@ -1,4 +1,12 @@
-import { Pago, CrearPagoRequest, CrearPagoResponse, UpdatePagoRequest, UpdatePagoEstadoRequest } from "../types/pago.types";
+// src/services/pago.service.ts
+import {
+  Pago,
+  CrearPagoRequest,
+  CrearPagoResponse,
+  UpdatePagoRequest,
+  UpdatePagoEstadoRequest,
+} from "../types/pago.types";
+import prisma from "../config/prisma";
 
 const mockPagos: Pago[] = [
   {
@@ -7,9 +15,10 @@ const mockPagos: Pago[] = [
     pasarela: "MERCADOPAGO",
     estado: "APROBADO",
     monto: 15000,
-    moneda: 'ARS',
+    moneda: "ARS",
     preferenceId: "pref_123456789",
-    initPoint: "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_123456789",
+    initPoint:
+      "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_123456789",
     createdAt: new Date("2025-01-15T10:00:00Z"),
     updatedAt: new Date("2025-01-15T10:30:00Z"),
   },
@@ -19,9 +28,10 @@ const mockPagos: Pago[] = [
     pasarela: "MERCADOPAGO",
     estado: "PENDIENTE",
     monto: 8000,
-    moneda: 'ARS',
+    moneda: "ARS",
     preferenceId: "pref_987654321",
-    initPoint: "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_987654321",
+    initPoint:
+      "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_987654321",
     createdAt: new Date("2025-02-01T15:30:00Z"),
     updatedAt: new Date("2025-02-01T15:30:00Z"),
   },
@@ -31,9 +41,10 @@ const mockPagos: Pago[] = [
     pasarela: "MERCADOPAGO",
     estado: "CREADO",
     monto: 12000,
-    moneda: 'ARS',
+    moneda: "ARS",
     preferenceId: "pref_456789123",
-    initPoint: "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_456789123",
+    initPoint:
+      "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_456789123",
     createdAt: new Date("2025-02-10T09:15:00Z"),
     updatedAt: new Date("2025-02-10T09:15:00Z"),
   },
@@ -43,9 +54,10 @@ const mockPagos: Pago[] = [
     pasarela: "MERCADOPAGO",
     estado: "RECHAZADO",
     monto: 20000,
-    moneda: 'ARS',
+    moneda: "ARS",
     preferenceId: "pref_789123456",
-    initPoint: "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_789123456",
+    initPoint:
+      "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_789123456",
     createdAt: new Date("2025-03-05T18:00:00Z"),
     updatedAt: new Date("2025-03-05T18:15:00Z"),
   },
@@ -55,113 +67,156 @@ const mockPagos: Pago[] = [
     pasarela: "MERCADOPAGO",
     estado: "CANCELADO",
     monto: 5000,
-    moneda: 'ARS',
+    moneda: "ARS",
     preferenceId: "pref_321654987",
-    initPoint: "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_321654987",
+    initPoint:
+      "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref_321654987",
     createdAt: new Date("2025-04-20T12:45:00Z"),
     updatedAt: new Date("2025-04-20T13:00:00Z"),
   },
 ];
 
-export const getAllPagos = async(): Promise<Pago[]> => {
-    return mockPagos;
+// DB -> DTO
+function toPagoDTO(row: any): Pago {
+  return {
+    idPago: row.id,
+    idPedido: row.idPedido,
+    pasarela: row.pasarela, // enum Prisma: "MERCADOPAGO"
+    estado: row.estado, // enum Prisma: "CREADO" | "PENDIENTE" | "APROBADO" | "RECHAZADO" | "CANCELADO"
+    monto: Number(row.monto),
+    moneda: row.moneda, // "ARS"
+    // Estos campos NO  aun existen en la tabla; quedan undefined:
+    preferenceId: undefined,
+    initPoint: undefined,
+    createdAt: row.createdAt,
+    // No hay updatedAt en DB -> lo aproximamos
+    updatedAt: (row as any).updatedAt ?? row.createdAt,
+  };
 }
 
-export const getPagoById = async(id: number): Promise<Pago | null> => {
-    const pago = mockPagos.find( p => p.idPago === id);
-    if(pago === undefined){
-        const error = new Error('Pago no encontrado');
-        (error as any).statusCode = 404;
-        throw error;
-    }
-    return pago;
+export const getAllPagos = async (): Promise<Pago[]> => {
+  const rows = await prisma.pago.findMany({ orderBy: { id: "asc" } });
+  return rows.map(toPagoDTO);
+};
+
+export const getPagoById = async (id: number): Promise<Pago | null> => {
+  const row = await prisma.pago.findUnique({ where: { id } });
+  if (!row) {
+    const error = new Error("Pago no encontrado");
+    (error as any).statusCode = 404;
+    throw error;
+  }
+  return toPagoDTO(row);
+};
+
+export const getPagosByPedido = async (idPedido: number): Promise<Pago[]> => {
+  const rows = await prisma.pago.findMany({
+    where: { idPedido },
+    orderBy: { id: "asc" },
+  });
+  return rows.map(toPagoDTO);
+};
+
+export const createPago = async (pagoData: CrearPagoRequest): Promise<Pago> => {
+  if (pagoData.idPedido <= 0) {
+    const error = new Error("El ID del pedido debe ser válido");
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  const created = await prisma.pago.create({
+    data: {
+      idPedido: pagoData.idPedido,
+      pasarela: pagoData.pasarela as any, // "MERCADOPAGO"
+      estado: "CREADO",
+      monto: 0, // tal como tu mock
+      moneda: "ARS", // default del schema
+      // createdAt lo setea Prisma
+    },
+  });
+
+  // Simulamos updatedAt como en el mock (no existe en DB)
+  return { ...toPagoDTO(created), updatedAt: new Date() };
+};
+
+export const updatePagoEstado = async (
+  id: number,
+  estadoData: UpdatePagoEstadoRequest
+): Promise<Pago | null> => {
+  const row = await prisma.pago.findUnique({ where: { id } });
+  if (!row) {
+    const error = new Error("Pago no encontrado");
+    (error as any).statusCode = 404;
+    throw error;
+  }
+
+  const estadosValidos = [
+    "CREADO",
+    "PENDIENTE",
+    "APROBADO",
+    "RECHAZADO",
+    "CANCELADO",
+  ] as const;
+  if (!estadosValidos.includes(estadoData.estado as any)) {
+    const error = new Error("Estado de pago inválido");
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  const updated = await prisma.pago.update({
+    where: { id },
+    data: { estado: estadoData.estado as any },
+  });
+
+  return { ...toPagoDTO(updated), updatedAt: new Date() };
+};
+
+export const updatePago = async (
+  id: number,
+  pagoData: UpdatePagoRequest
+): Promise<Pago | null> => {
+  const row = await prisma.pago.findUnique({ where: { id } });
+  if (!row) {
+    const error = new Error("Pago no encontrado");
+    (error as any).statusCode = 404;
+    throw error;
+  }
+
+  if (pagoData.monto !== undefined && pagoData.monto <= 0) {
+    const error = new Error("El monto debe ser mayor a 0");
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  const payload: any = {};
+if (pagoData.estado) {
+  payload.estado = pagoData.estado; // enum válido
 }
 
-export const getPagosByPedido = async(idPedido: number): Promise<Pago[]> => {
-    return mockPagos.filter( p => p.idPedido === idPedido);
+if (typeof pagoData.monto === "number") {
+  if (pagoData.monto <= 0) {
+    const error = new Error("El monto debe ser mayor a 0");
+    (error as any).statusCode = 400;
+    throw error;
+  }
+  payload.monto = pagoData.monto; // Decimal en DB: Prisma acepta number
 }
 
-export const createPago = async(pagoData: CrearPagoRequest): Promise<Pago> => {
-    if(pagoData.idPedido <= 0){
-        const error = new Error('El ID del pedido debe ser válido');
-        (error as any).statusCode = 400;
-        throw error;
-    }
+// ❌ preferenceId / initPoint: Todavia NO existen en tu modelo Prisma.Pago
+//    Falta agregar al schema y migrarlos.
 
-    const pago: Pago = { 
-        idPago: mockPagos.length ? Math.max(...mockPagos.map( i => i.idPago)) + 1: 1,
-        ...pagoData,
-        estado: "CREADO",
-        monto: 0, // Se calculará basado en el pedido
-        moneda: 'ARS',
-        createdAt: new Date(),
-        updatedAt: new Date()
-    }
-    mockPagos.push(pago);
-    return pago;
-}
+const updated = await prisma.pago.update({
+  where: { id },
+  data: payload,
+});
 
-export const updatePagoEstado = async(id: number, estadoData: UpdatePagoEstadoRequest): Promise<Pago | null> => {
-    const pagoIndex = mockPagos.findIndex( p => p.idPago === id);
-    if(pagoIndex === -1){
-        const error = new Error('Pago no encontrado');
-        (error as any).statusCode = 404;
-        throw error;
-    }
+// Devolvés el DTO como antes; preferenceId/initPoint quedan undefined
+return { ...toPagoDTO(updated), updatedAt: new Date() };
+};
 
-    // Validar que el estado sea válido
-    const estadosValidos = ["CREADO", "PENDIENTE", "APROBADO", "RECHAZADO", "CANCELADO"];
-    if(!estadosValidos.includes(estadoData.estado)){
-        const error = new Error('Estado de pago inválido');
-        (error as any).statusCode = 400;
-        throw error;
-    }
-
-    mockPagos[pagoIndex] = {
-        ...mockPagos[pagoIndex], 
-        estado: estadoData.estado,
-        updatedAt: new Date()
-    };
-    return mockPagos[pagoIndex];
-}
-
-export const updatePago = async(id: number, pagoData: UpdatePagoRequest): Promise<Pago | null> => {
-    const pagoIndex = mockPagos.findIndex( p => p.idPago === id);
-    if(pagoIndex === -1){
-        const error = new Error('Pago no encontrado');
-        (error as any).statusCode = 404;
-        throw error;
-    }
-
-    if(pagoData.monto !== undefined && pagoData.monto <= 0){
-        const error = new Error('El monto debe ser mayor a 0');
-        (error as any).statusCode = 400;
-        throw error;
-    }
-
-    mockPagos[pagoIndex] = {
-        ...mockPagos[pagoIndex], 
-        ...pagoData,
-        updatedAt: new Date()
-    };
-    return mockPagos[pagoIndex];
-}
-
-export const deletePago = async(id: number): Promise<Pago> => {
-    const pagoIndex = mockPagos.findIndex( p => p.idPago === id);
-    if(pagoIndex === -1){
-        const error = new Error('Pago no encontrado');
-        (error as any).statusCode = 404;
-        throw error;
-    }
-    const [pago] = mockPagos.splice(pagoIndex,1);
-    return pago;
-}
-
-export const procesarWebhookMercadoPago = async(webhookData: any): Promise<void> => {
-    // Simular procesamiento de webhook
-    console.log('Procesando webhook de Mercado Pago:', webhookData);
-    
-    // Aquí se actualizaría el estado del pago basado en la respuesta de MP
-    // Por ahora solo es un mock
-}
+export const procesarWebhookMercadoPago = async (
+  webhookData: any
+): Promise<void> => {
+  // Por ahora solo mock
+  console.log("Procesando webhook de Mercado Pago:", webhookData);
+};
