@@ -5,6 +5,7 @@ import { pedidoRoutes } from "../src/routes/pedido.routes";
 import { polizaRoutes } from "../src/routes/poliza.routes"; 
 import { productoRoutes } from "./routes/producto.routes";
 import carritoRoutes from './routes/carrito.routes';
+import { pagoRoutes } from "./routes/pago.routes";
 
 
 const express = require("express");
@@ -28,6 +29,7 @@ app.use("/api/pedidos", pedidoRoutes);
 app.use("/api/polizas", polizaRoutes);
 app.use("/api/productos", productoRoutes);
 app.use('/api/cart', carritoRoutes);
+app.use('/api/pagos', pagoRoutes);
 
 
 app.use(handleError);

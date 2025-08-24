@@ -24,11 +24,23 @@
 .link-list {
     display: flex;
     position: relative;
-    top: 8px;
     text-decoration: none;
     justify-content: space-between;
     list-style-type: none;
     gap: 20px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.link-list li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .link {
@@ -36,10 +48,13 @@
     color: white;
     font-weight: bold;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 
 .link:hover {
-    color: #2725a5;
+    color: #2725a0;
 }
 
 .logout-button {
@@ -53,7 +68,7 @@
 }
 
 .logout-button:hover {
-  color: #2725a5;
+  color: #2725a0;
 }
 
 .session-btn {
@@ -69,6 +84,9 @@
   transition: background 0.3s, color 0.3s, transform 0.2s;
   text-decoration: none;
   outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .session-btn:hover, .session-btn:focus {
   background: #1e43c0;

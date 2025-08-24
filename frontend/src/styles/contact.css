@@ -142,3 +142,105 @@
     display: none;
   }
 
+  /* Estilos para la nueva sección de beneficios */
+  .benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #374151;
+    font-size: 0.9rem;
+  }
+
+  .benefit-item span {
+    font-weight: 500;
+  }
+
+  /* Estilos para estadísticas de clientes */
+  .stats-container {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.5rem;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #3d6de2;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  /* Estilos para el compromiso de calidad */
+  .quality-statement {
+    margin-top: 0.5rem;
+  }
+
+  .quality-text {
+    color: #374151;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rating-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 600;
+    margin-left: 0.5rem;
+  }
+
+  /* Estilos para respuesta garantizada */
+  .response-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .response-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #374151;
+    font-size: 0.9rem;
+  }
+
+  .response-item span {
+    font-weight: 500;
+  }
+
+  /* Responsive para móviles */
+  @media (max-width: 768px) {
+    .stats-container {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .contact-content {
+      flex-direction: column;
+      gap: 2rem;
+    }
+  }
+

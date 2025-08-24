@@ -1,12 +1,14 @@
 import React from 'react'
 import '../styles/contact.css';
 import {
-  Phone,
-  Mail,
-  MapPin,
+  Shield,
+  Users,
+  Award,
   Clock,
   SendHorizonal,
   CircleUserRoundIcon,
+  CheckCircle,
+  Star,
 } from "lucide-react";
 import "../styles/contact.css";
 
@@ -25,44 +27,89 @@ export const Contact = () => {
             <div className="contact-item">
               <div>
                 <h3 className="heading">
-                  <Phone className="icon" size={24} color="#3d6de2" /> Teléfono
+                  <Shield className="icon" size={24} color="#3d6de2" /> ¿Por qué elegirnos?
                 </h3>
-                <p className="text">+54 11 1234-5678</p>
+                <div className="benefits-list">
+                  <div className="benefit-item">
+                    <CheckCircle size={16} color="#4CAF50" />
+                    <span>Más de 15 años de experiencia</span>
+                  </div>
+                  <div className="benefit-item">
+                    <CheckCircle size={16} color="#4CAF50" />
+                    <span>Asesoramiento personalizado</span>
+                  </div>
+                  <div className="benefit-item">
+                    <CheckCircle size={16} color="#4CAF50" />
+                    <span>Las mejores coberturas del mercado</span>
+                  </div>
+                  <div className="benefit-item">
+                    <CheckCircle size={16} color="#4CAF50" />
+                    <span>Respuesta rápida en siniestros</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="contact-item">
               <div>
                 <h3 className="heading">
-                  <Mail className="icon" size={24} color="#3d6de2" /> Email
+                  <Users className="icon" size={24} color="#3d6de2" /> Nuestros Clientes
                 </h3>
-                <p className="text">info@mapsasesores.com</p>
+                <div className="stats-container">
+                  <div className="stat-item">
+                    <div className="stat-number">5000+</div>
+                    <div className="stat-label">Clientes satisfechos</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">98%</div>
+                    <div className="stat-label">Tasa de renovación</div>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="contact-item">
               <div>
                 <h3 className="heading">
-                  <MapPin size={24} color="#3d6de2" /> Dirección
+                  <Award className="icon" size={24} color="#3d6de2" /> Compromiso de Calidad
                 </h3>
-                <iframe
-                  className="map-iframe"
-                  src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d13083.547451431052!2d-57.95527201033044!3d-34.934374287603944!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses-419!2sar!4v1742495053963!5m2!1ses-419!2sar"
-                ></iframe>
-                <p className="map-text">
-                  Dirección: Calle Ficticia 123, Ciudad
-                </p>
-
+                <div className="quality-statement">
+                  <p className="quality-text">
+                    En <strong>Maps Asesores</strong> nos comprometemos a brindarte la mejor experiencia en seguros. 
+                    Nuestro equipo de expertos está disponible para asesorarte en cada paso del proceso, 
+                    desde la elección de la póliza hasta la gestión de siniestros.
+                  </p>
+                  <div className="rating">
+                    <Star size={20} color="#FFD700" fill="#FFD700" />
+                    <Star size={20} color="#FFD700" fill="#FFD700" />
+                    <Star size={20} color="#FFD700" fill="#FFD700" />
+                    <Star size={20} color="#FFD700" fill="#FFD700" />
+                    <Star size={20} color="#FFD700" fill="#FFD700" />
+                    <span className="rating-text">4.9 - Excelente servicio</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="contact-item">
               <div>
                 <h3 className="heading">
-                  <Clock className="icon" size={24} color="#3d6de2" /> Horarios
+                  <Clock className="icon" size={24} color="#3d6de2" /> Respuesta Garantizada
                 </h3>
-                <p className="text">Lunes a Viernes: 9:00 - 18:00</p>
-                <p className="text">Sábados: 9:00 - 13:00</p>
+                <div className="response-info">
+                  <div className="response-item">
+                    <CheckCircle size={16} color="#4CAF50" />
+                    <span>Asesoramiento especializado</span>
+                  </div>
+                  <div className="response-item">
+                    <CheckCircle size={16} color="#4CAF50" />
+                    <span>80 asesores a tu disposición</span>
+                  </div>
+                  <div className="response-item">
+                    <CheckCircle size={16} color="#4CAF50" />
+                    <span>Múltiples opciones de cobertura</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
