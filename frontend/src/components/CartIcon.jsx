@@ -36,7 +36,7 @@ const CartIcon = () => {
             },
           }}
         >
-          <ShoppingCart sx={{ fontSize: 27, display: 'flex', position: 'relative', bottom: '5px' }} />
+          <ShoppingCart sx={{ fontSize: 27, display: 'flex' }} />
         </Badge>
       </IconButton>
     </Tooltip>
