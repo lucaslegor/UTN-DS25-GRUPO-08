@@ -34,6 +34,28 @@ export interface CrearPagoResponse {
   message?: string;
 }
 
+// Tipos adicionales para el CRUD completo
+export interface UpdatePagoRequest {
+  estado?: EstadoPago;
+  monto?: number;
+  preferenceId?: string;
+  initPoint?: string;
+}
+
+export interface PagoResponse {
+  pago: Pago;
+  message: string;
+}
+
+export interface PagosListResponse {
+  pagos: Pago[];
+  total: number;
+}
+
+export interface UpdatePagoEstadoRequest {
+  estado: EstadoPago;
+}
+
 export interface WebhookMercadoPago {
   id: string;          // payment id
   type: "payment";
