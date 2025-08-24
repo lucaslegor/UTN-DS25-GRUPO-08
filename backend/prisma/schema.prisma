@@ -45,6 +45,18 @@ enum Moneda {
   ARS
 }
 
+enum PasarelaPago {
+  MERCADOPAGO
+}
+
+enum EstadoPago {
+  CREADO       
+  PENDIENTE    
+  APROBADO
+  RECHAZADO
+  CANCELADO
+}
+
 model Usuario {
   id Int @id @default(autoincrement())
   username String @unique
@@ -118,6 +130,7 @@ model Pedido {
   usuario Usuario @relation(fields: [idUsuario], references: [id])
   items PedidoItem[] 
   poliza Poliza? 
+  pago Pago?
 }
 
 model CarritoItem {
@@ -138,3 +151,21 @@ model Carrito {
 
   items CarritoItem[]
 }
+
+model Pago {
+  id Int @id @default(autoincrement())
+  idPedido Int @unique 
+  pasarela PasarelaPago
+  estado EstadoPago
+  monto Decimal @db.Money 
+  moneda Moneda @default(ARS)
+ /*  preferenceId?: string;  // Mercado Pago
+  initPoint?: string;     // MP checkout URL
+  No sabemos que hacer todavia con esto ya que
+  lo vamos a conectar con MP
+  */
+  createdAt DateTime @default(now())
+  pedido Pedido @relation(fields: [idPedido], references: [id])
+}
+
+
