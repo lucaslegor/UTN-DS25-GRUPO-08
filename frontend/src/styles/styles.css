@@ -4,6 +4,12 @@
   margin: 0;
   padding: 0;
 }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
 /*estilitos iniciales y provisionales, recontra sujetos a cambios*/
 /* ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
 body {
@@ -43,9 +49,34 @@ body {
   transition: text-shadow 0.2s;
 }
 
+
 .header h1 a:hover {
   text-shadow: none;
 }
+
+.home-header-title {
+  color:#3d6de2;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Asegura altura y resetea márgenes del documento */
+
+
+/* Contenedor del layout en columna ocupando toda la pantalla */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* El main ocupa el espacio entre nav y footer */
+.app-content {
+  flex: 1;
+  min-height: 0; /* evita problemas de overflow si hay contenedores con alturas */
+}
+
 
 .auth-buttons {
   display: flex;
@@ -75,19 +106,14 @@ body {
 }
 
 .filters {
-  margin: 1.5rem 2rem 1rem 2rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 6px rgba(30,67,192,0.04);
   padding: 1rem 1.5rem;
 }
 
 .filters input {
   border: 1px solid #d1d5db;
-  border-radius: 5px;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   outline: none;
@@ -117,6 +143,11 @@ body {
   gap: 2rem;
   justify-items: center;
   padding: 2rem 1rem;
+}
+
+.filtros-busqueda {
+  display: flex;
+  flex-direction: row;
 }
 
 

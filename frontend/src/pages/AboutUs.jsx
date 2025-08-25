@@ -12,15 +12,10 @@ export const AboutUs = () => {
           <h2 className="nosotros-title">¿Quiénes somos?</h2>
           <div className="texts">
             <p className="nosotros-text">
-              Nuestra organización esta formada por mas de 80 asesorxs y pensada para que todos seamos parte,
-              los nuevos y no tanto, con mas experiencia y los noveles. Aprovechando todas las tecnologías posibles pero sin dejar de lado lo mas importante,
-              el grupo humano que la forma. Somos engranajes que hacen que funcione como Organización. Nos interesa la capacitación continua en la actividad,
-              reuniones de trabajo aunque también solo para juntarnos y charlar. Todo esto suma, no vas a estar solo en la actividad que tan difícil es al arrancar y para sostenerse.
-              Trabajamos con la <strong>Compañía líder</strong> en el mercado asegurador argentino: Federación Patronal Seguros S.A con el sistema mas moderno de gestión de cartera el SELF.
+              <strong>MAPS Asesores</strong> es una empresa argentina especializada en brindar soluciones integrales en seguros, inversiones y planificación financiera. Su misión es acompañar a personas y organizaciones en la protección de su patrimonio y en la toma de decisiones estratégicas que les permitan crecer con tranquilidad.
             </p>
             <p className="nosotros-text">
-              Somos una organización de asesores de seguros con mas de <strong>20 años de experiencia</strong>, que está comprometida con el éxito de cada uno de nuestros miembros.
-              Trabajamos en equipo para alcanzar nuestras metas y, lo más importante, nos enfocamos en la satisfacción de nuestros
+              Con un enfoque cercano, profesional y transparente, MAPS se distingue por ofrecer un asesoramiento personalizado, adaptado a las necesidades de cada cliente. A través de alianzas con compañías líderes del sector, pone a disposición una amplia gama de productos y servicios que cubren desde seguros de vida, hogar y automotores, hasta seguros corporativos y planes de inversión.
             </p>
           </div>
         </div>
@@ -35,22 +30,22 @@ export const AboutUs = () => {
         <h3>Nuestro Equipo</h3>
         <div className="team-members">
           <TeamMember
-            name="Juan Rodríguez"
+            name="Maximiliano Perez"
             role="CEO y Fundador"
             description="Con más de 15 años de experiencia en venta de seguros."
-            image="https://images.unsplash.com/photo-1695230981824-8edd894a6c2c"
+            image="/public/maxi.jpg"
           />
           <TeamMember
-            name="María García"
+            name="Diana Niz"
             role="Directora"
             description="Experta en seguros y pólizas."
-            image="https://plus.unsplash.com/premium_photo-1661394915648-8ce7bb49e4e8"
+            image="/public/diana.jpg"
           />
           <TeamMember
-            name="Carlos López"
+            name="Cesar Doporto"
             role="Jefe de Venta"
             description="Líder en la sección de ventas."
-            image="https://images.unsplash.com/photo-1659355894000-b8617fc7cf8d"
+            image="/public/cesar.jpg"
           />
         </div>
       </section>

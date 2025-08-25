@@ -26,6 +26,7 @@ const AdminPanel = () => {
     name: '',
     description: '',
     image: null,
+    rubro: '',
     price: ''
   });
 
@@ -170,13 +171,6 @@ const AdminPanel = () => {
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
-          <IconButton 
-            onClick={() => navigate('/')}
-            className="back-button"
-            sx={{ color: '#fff' }}
-          >
-            <ArrowBack />
-          </IconButton>
           <div className="admin-header-text">
             <Dashboard className="header-icon" />
             <h1>Panel de Administración</h1>
@@ -237,7 +231,6 @@ const AdminPanel = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="admin-form">
-              <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="name">
                     <span className="label-icon">📝</span>
@@ -254,7 +247,8 @@ const AdminPanel = () => {
                   />
                 </div>
 
-                <div className="form-group">
+              <div className='form-grid'>
+                 <div className="form-group">
                   <label htmlFor="price">
                     <span className="label-icon">💰</span>
                     Precio
@@ -268,7 +262,20 @@ const AdminPanel = () => {
                     placeholder="Ej: 15000"
                   />
                 </div>
+
+                <div className="form-group">
+                  <label htmlFor="price">
+                    <span className="label-icon">💼</span>
+                    Rubro
+                  </label>
+                   <select name="rubro" id="rubro">
+                        <option value="salud" selected>Salud</option>
+                        <option value="automotor">Automotor</option>
+                        <option value="mascota">Mascota</option>
+                   </select>
+                </div>
               </div>
+             
 
               <div className="form-group">
                 <label htmlFor="description">

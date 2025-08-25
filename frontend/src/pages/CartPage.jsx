@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const CartPage = () => {
   const { 
@@ -29,6 +30,7 @@ const CartPage = () => {
     getCartPriceTotal,
     formatPrice
   } = useCart();
+  
   const navigate = useNavigate();
 
   const handleQuantityChange = (productId, currentQuantity, change) => {
@@ -41,20 +43,36 @@ const CartPage = () => {
   };
 
   const handleClearCart = () => {
-    if (window.confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
-      clearCart();
-    }
+     Swal.fire({
+  title: "<strong>Estas Seguro</strong>",
+  icon: "question",
+  html: `
+    Se eliminaran <b>todos</b> tus productos
+    del carrito
+  `,
+  showCancelButton: true,
+  focusConfirm: false,
+  confirmButtonText: `
+    <i class="fa fa-thumbs-up"></i> Si
+  `,
+  cancelButtonText: `
+    <i class="fa fa-thumbs-down"></i> No
+  `,
+}).then((result) => {
+if (result.isConfirmed) {
+    clearCart()
+  } 
+});
   };
 
   const handleCheckout = () => {
-    // Aquí iría la lógica de checkout
     alert('Funcionalidad de checkout próximamente');
   };
 
   if (cartItems.length === 0) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box textAlign="center" py={8}>
+      <Container maxWidth="md" sx={{ py: 4 }} style={{marginTop: "5em", alignItems: "center"}}>
+        <Box textAlign="center" py={8} >
           <ShoppingCart sx={{ fontSize: 80, color: '#ccc', mb: 2 }} />
           <Typography variant="h4" color="text.secondary" gutterBottom>
             Tu carrito está vacío

@@ -2,6 +2,7 @@
 .navbar {
     background-color: #3d6de2;
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
@@ -19,6 +20,50 @@
     align-items: center;
     gap: 10px;
 }
+
+/* Contenedor del buscador: más chico y responsivo */
+.search {
+  width: 200px;    
+  min-width: 220px;
+  margin: 0 16px;
+}
+
+/* Estilo pill, sombra suave y enfoque accesible */
+.searchField .MuiOutlinedInput-root {
+  display: flex;
+  position: relative;
+  right: 1em;
+  height: 44px;                 /* más baja que antes */
+  border-radius: 999px;         /* pastilla */
+  width: 25em;
+  background: #ffffff;
+  box-shadow: 0 2px 14px rgba(30, 67, 192, 0.10);
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+.searchField .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(30, 67, 192, 0.15);
+}
+
+.searchField .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1e43c0;
+  box-shadow: 0 0 0 3px rgba(30, 67, 192, 0.15);
+}
+
+/* Texto más compacto y legible */
+.searchField .MuiInputBase-input {
+  display: flex;
+  padding: 10px 14px;           /* vertical + horizontal */
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Separación sutil de los adornos (iconos) */
+.searchField .MuiInputAdornment-root {
+  margin: 0 4px;
+  opacity: .8;
+}
+
 
 /* Estilos para la lista de enlaces */
 .link-list {
@@ -104,6 +149,14 @@
 }
 
 /* Estilos responsive */
+
+@media (max-width: 992px) {
+  .search { max-width: 420px; }
+}
+@media (max-width: 768px) {
+  .search { max-width: 100%; margin: 8px 12px; }
+}
+
 @media (max-width: 768px) {
     .menu-toggle {
         display: block;

@@ -21,12 +21,6 @@ const ProductCard = ({ id, title, description, price, image }) => {
         <p className="product-description-horizontal">{description || 'Sin descripción.'}</p>
         <div className="product-footer-horizontal">
           <span className="product-price-horizontal">{formatPrice(price)}</span>
-          <button 
-            className={`product-button-horizontal ${inCart ? 'in-cart' : ''}`}
-            onClick={handleAddToCart}
-          >
-            {inCart ? '✓ En carrito' : 'Agregar al carrito'}
-          </button>
         </div>
       </div>
     </div>
