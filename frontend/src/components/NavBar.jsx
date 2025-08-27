@@ -59,8 +59,7 @@ export const NavBar = () => {
   };
 
   const handlePoliciesClick = () => {
-    // TODO: Implementar navegación a Mis Pólizas
-    console.log("Navegar a Mis Pólizas");
+    navigate("/misPolizas");
     handleUserMenuClose();
   };
 
