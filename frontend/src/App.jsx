@@ -9,6 +9,7 @@ import UserProfile from './pages/UserProfile';
 import RegisterPage from './pages/Register';
 import AdminPanel from './pages/AdminPanelPage';
 import { Contact } from './pages/ContactPage';
+import MisPolizasPage from './pages/MisPolizasPage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="userProfile" element={<UserProfile/>} />
           <Route path="adminPanel" element={<AdminPanel/>} />
           <Route path="contacto" element={<Contact/>} />
+          <Route path="misPolizas" element={<MisPolizasPage/>} />
         </Route>
       </Routes>
     </Router>
