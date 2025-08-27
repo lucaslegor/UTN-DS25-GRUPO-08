@@ -42,7 +42,7 @@ export const AboutUs = () => {
             image="/public/diana.jpg"
           />
           <TeamMember
-            name="Cesar Doporto"
+            name="Cesar Do porto"
             role="Jefe de Venta"
             description="Líder en la sección de ventas."
             image="/public/cesar.jpg"

@@ -72,10 +72,13 @@ export const NavBar = () => {
 
   return (
     <header className="navbar">
-      <h1 className="title">
+      <Link style={{ textDecoration: "none" }} to="/">
+        <h1 className="title">
         <img src="MaxiColor.png" alt="" width={70} />
-        MAPSASESORES
+        MAPS ASESORES
       </h1>
+      </Link>
+      
 
       <div className="search">
         <TextField

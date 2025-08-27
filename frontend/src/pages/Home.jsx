@@ -48,6 +48,42 @@ export const defaultProducts = [
     image:
       "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
   },
+  {
+    id: 5,
+    title: "Seguro de Salud",
+    description:
+      "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
+    price: 15000,
+    image:
+      "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 6,
+    title: "Seguro de Salud",
+    description:
+      "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
+    price: 15000,
+    image:
+      "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 7,
+    title: "Seguro de Salud",
+    description:
+      "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
+    price: 15000,
+    image:
+      "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
+  },
+   {
+    id: 3,
+    title: "Seguro de Vida",
+    description:
+      "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
+    price: 12000,
+    image:
+      "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
+  },
 ];
 
 const Home = () => {
@@ -101,8 +137,8 @@ const Home = () => {
 
       <main>
         <div className="catalog">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+          {defaultProducts.length > 0 ? (
+            defaultProducts.map((product) => (
               <Link
                 key={product.id}
                 to={`/productcard/${product.id}`}
