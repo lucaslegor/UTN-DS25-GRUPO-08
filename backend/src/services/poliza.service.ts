@@ -1,26 +1,22 @@
+// src/services/poliza.service.ts
 import prisma from '../config/prisma';
 import { Poliza, EstadoPoliza, CargarPolizaRequest } from '../types/poliza.types';
-
-// Datos en memoria (MVP)
-let polizas: Poliza[] = [];
-let lastId = 0;
 
 // GET all
 export async function getAllPolizas(): Promise<Poliza[]> {
   const polizas = await prisma.poliza.findMany({
-   orderBy: { id: 'asc' },
- });
- // Prisma ya devuelve objetos con las mismas claves del modelo
-   return polizas;
+    orderBy: { id: 'asc' },
+  });
+  return polizas;
 }
 
 // GET by id
 export async function getPolizaById(id: number): Promise<Poliza | null> {
-  const poliza = await prisma.poliza.findUnique({where: {id}})
+  const poliza = await prisma.poliza.findUnique({ where: { id } });
   if (!poliza) {
-  const error = new Error('Book not found');
-  (error as any).statusCode = 404;
-  throw error;
+    const error = new Error('Póliza no encontrada');
+    (error as any).statusCode = 404;
+    throw error;
   }
   return poliza;
 }
@@ -36,23 +32,15 @@ export async function createPoliza(idPedido: number, data: CargarPolizaRequest):
   try {
     const row = await prisma.poliza.create({
       data: {
-        idPedido,                 
+        idPedido,
         archivoUrl: data.archivoUrl,
-        estado: "PENDIENTE",      
+        estado: "PENDIENTE",
       },
     });
 
-    return {
-      id: row.id,
-      idPedido: row.idPedido,
-      archivoUrl: row.archivoUrl,
-      estado: row.estado,         
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
+    return row;
   } catch (err: any) {
-    // Manejo de errores comunes
-    if (err.code === "P2003") { // FK violation: Pedido inexistente
+    if (err.code === "P2003") {
       const e: any = new Error("El pedido no existe (violación de clave foránea)");
       e.statusCode = 400;
       throw e;
@@ -66,29 +54,33 @@ export async function createPoliza(idPedido: number, data: CargarPolizaRequest):
   }
 }
 
-// FALTAN HACER ESTOS
+// UPDATE
 export async function updatePoliza(id: number, data: Partial<Poliza>): Promise<Poliza> {
-  const index = polizas.findIndex(p => p.id === id);
-  if (index === -1) {
-    const error: any = new Error('Póliza no encontrada');
-    error.statusCode = 404;
-    throw error;
+  try {
+    const updated = await prisma.poliza.update({
+      where: { id },
+      data: {
+        archivoUrl: data.archivoUrl,
+        estado: data.estado,
+      },
+    });
+    return updated;
+  } catch (err: any) {
+    if (err.code === 'P2025') {
+      const error: any = new Error('Póliza no encontrada');
+      error.statusCode = 404;
+      throw error;
+    }
+    throw err;
   }
-
-  polizas[index] = {
-    ...polizas[index],
-    ...data,
-    updatedAt: new Date(),
-  };
-
-  return polizas[index];
 }
 
 // DELETE
 export async function deletePoliza(id: number): Promise<Poliza | null> {
-  const index = polizas.findIndex(p => p.id === id);
-  if (index === -1) return null;
-
-  const [removed] = polizas.splice(index, 1);
-  return removed;
+  try {
+    return await prisma.poliza.delete({ where: { id } });
+  } catch (err: any) {
+    if (err.code === 'P2025') return null;
+    throw err;
+  }
 }
