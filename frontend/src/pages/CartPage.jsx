@@ -71,7 +71,7 @@ if (result.isConfirmed) {
 
   if (cartItems.length === 0) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }} style={{marginTop: "5em", alignItems: "center"}}>
+      <Container maxWidth="md" sx={{ py: 4 }} style={{ alignItems: "center"}}>
         <Box textAlign="center" py={8} >
           <ShoppingCart sx={{ fontSize: 80, color: '#ccc', mb: 2 }} />
           <Typography variant="h4" color="text.secondary" gutterBottom>

@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import "../styles/productDetail.css";
 
-// Demo data (podés mover a un data.js)
+// Seed solo por si el storage está vacío
 const defaultProducts = [
   {
     id: 1,
@@ -43,79 +43,113 @@ const defaultProducts = [
   },
 ];
 
+// Normaliza lo que venga del storage (por si quedaron precios como string o registros antiguos)
+const normalize = (list) =>
+  (list || []).map((p) => {
+    const priceNum =
+      typeof p.price === "number"
+        ? p.price
+        : parseInt(String(p.price).replace(/\D/g, "") || "0", 10);
+
+    return {
+      ...p,
+      id: typeof p.id === "number" ? p.id : Number(p.id),
+      title: p.title || p.name || "",
+      description: p.description || "Descripción no disponible.",
+      image: p.image || "",
+      price: Number.isFinite(priceNum) ? priceNum : 0,
+    };
+  });
+
 export default function ProductDetailPage() {
   const { id } = useParams();
   const numericId = Number(id);
-
   const { addToCart, updateQuantity, isInCart, getItemQuantity, formatPrice } =
     useCart();
 
-  // estado del producto actual
-  const [product, setProduct] = React.useState(() => {
-    const initial =
-      defaultProducts.find((p) => p.id === numericId) || defaultProducts[0];
-    return initial || null;
-  });
-
-  const [qty, setQty] = React.useState(1);
+  const [allProducts, setAllProducts] = React.useState([]);
+  const [product, setProduct] = React.useState(null);
   const [mainImg, setMainImg] = React.useState("");
 
-
-  // actualizar producto si cambia el id en la URL
+  // Carga de productos desde localStorage (con seed si está vacío)
   React.useEffect(() => {
-    const found = defaultProducts.find((p) => p.id === numericId) || null;
+    const stored = localStorage.getItem("products");
+    if (stored) {
+      const parsed = normalize(JSON.parse(stored));
+      setAllProducts(parsed);
+      if (parsed.length === 0) {
+        // Si por alguna razón está vacío, seed
+        setAllProducts(defaultProducts);
+        localStorage.setItem("products", JSON.stringify(defaultProducts));
+      }
+    } else {
+      setAllProducts(defaultProducts);
+      localStorage.setItem("products", JSON.stringify(defaultProducts));
+    }
+  }, []);
+
+  // Cuando cambia la lista o el id de la URL, selecciona el producto adecuado
+  React.useEffect(() => {
+    if (!allProducts.length) return;
+    const found = allProducts.find((p) => Number(p.id) === numericId) || null;
     setProduct(found);
-  }, [numericId]);
+  }, [allProducts, numericId]);
 
-  // setear imagen principal cuando cambia el producto
-React.useEffect(() => {
-  if (!product) return;
-  setMainImg(product.image || "");
-}, [product]);
+  // Actualiza imagen principal al cambiar el producto
+  React.useEffect(() => {
+    if (!product) return;
+    setMainImg(product.image || "");
+  }, [product]);
 
-  if (!product)
-    return <div className="pd-not-found">Producto no encontrado</div>;
+  if (!product) {
+    return (
+      <div className="pd-not-found">
+        Producto no encontrado · <Link to="/">Volver al catálogo</Link>
+      </div>
+    );
+  }
 
-
-  // relacionados (simple: otros productos)
-  const related = defaultProducts
-    .filter((p) => p.id !== product.id)
+  // Relacionados: otros productos distintos al actual (toma hasta 4)
+  const related = allProducts
+    .filter((p) => Number(p.id) !== Number(product.id))
     .slice(0, 4);
 
-  // info carrito
+  // Info carrito
   const inCart = isInCart(product.id);
   const currentQty = getItemQuantity(product.id);
 
   const handleAddToCart = () => {
     if (inCart) {
-      updateQuantity(product.id, currentQty + qty);
+      updateQuantity(product.id, currentQty + 1);
     } else {
-      addToCart(product); // agrega 1
-      if (qty > 1) updateQuantity(product.id, 1 + (qty - 1));
+      addToCart(product);
     }
   };
 
+  const displayTitle = product.title || product.name || "Producto";
+
   return (
     <div className="pd-container">
-      <h1 className="pd-title">{product.title}</h1>
+      <h1 className="pd-title">{displayTitle}</h1>
 
       <div className="pd-main">
-        {/* Galería */}
-       <div className="pd-images">
-          <img className="pd-main-img" src={mainImg} alt={product.title} />
+        {/* Imagen principal */}
+        <div className="pd-images">
+          <img className="pd-main-img" src={mainImg} alt={displayTitle} />
         </div>
 
         {/* Buy box */}
         <div className="pd-buy">
           <div className="pd-price-wrap">
             <div className="pd-price">
-              <span>Precio</span>
-              {formatPrice(product.price)}{" "}
+              <span>Precio </span>
+              {formatPrice(product.price)}
             </div>
           </div>
 
           <div className="pd-stock">Stock disponible</div>
-          <div className="pd-desc">
+
+          <div className="pd-desc" style={{ marginTop: "20px" }}>
             <h2 className="pd-section-title">Descripción del producto</h2>
             <ul className="pd-feature-list">
               <li className="pd-feature-item">{product.description}</li>
@@ -137,35 +171,32 @@ React.useEffect(() => {
         </div>
       </div>
 
-      {/* Descripción */}
-
       {/* Vendedor */}
       <div className="pd-seller">
-        Vendido por <strong>MAPS Asesores</strong>
+        Auspicia <strong>Federacion Patronal Seguros</strong>
       </div>
 
       {/* Relacionados */}
       <div className="pd-related">
-        <h2 className="pd-section-title">Productos relacionados</h2>
+        <h2 className="pd-section-title">Recomendados de Nuestro Catalogo</h2>
         <div className="pd-related-grid">
           {related.map((item) => (
             <div key={`rel-${item.id}`} className="pd-related-card">
-              {/* Navega al producto al hacer click en imagen/título */}
               <Link to={`/productcard/${item.id}`} className="pd-related-link">
                 <img
                   className="pd-related-img"
                   src={item.image}
-                  alt={item.title}
+                  alt={item.title || item.name}
                 />
                 <div className="pd-related-content">
-                  <h3 className="pd-related-title">{item.title}</h3>
+                  <h3 className="pd-related-title">
+                    {item.title || item.name}
+                  </h3>
                   <div className="pd-related-price">
                     {formatPrice(item.price)}
                   </div>
                 </div>
               </Link>
-
-              {/* Solo este botón agrega al carrito */}
               <button
                 className="pd-related-btn"
                 onClick={(e) => {

@@ -1,16 +1,9 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../styles/styles.css";
 import ProductCard from "../components/ProductCard";
-import NavButton from "../components/NavButton";
-import InfoIcon from "@mui/icons-material/Info";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import SearchIcon from "@mui/icons-material/Search";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
-import { Autocomplete } from "@mui/material";
 
+// 👉 Seed solo para la primera carga si no hay nada en localStorage
 export const defaultProducts = [
   {
     id: 1,
@@ -48,90 +41,59 @@ export const defaultProducts = [
     image:
       "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
   },
-  {
-    id: 4,
-    title: "Seguro de Salud",
-    description:
-      "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    price: 15000,
-    image:
-      "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    title: "Seguro de Salud",
-    description:
-      "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    price: 15000,
-    image:
-      "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    title: "Seguro de Salud",
-    description:
-      "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    price: 15000,
-    image:
-      "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
-  },
-   {
-    id: 3,
-    title: "Seguro de Vida",
-    description:
-      "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
-    price: 12000,
-    image:
-      "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
-  },
 ];
 
 const Home = () => {
-  const navigate = useNavigate();
   const [search, setSearch] = React.useState("");
   const [products, setProducts] = React.useState([]);
 
-  React.useEffect(() => {
-    const storedProducts = localStorage.getItem("products");
+  // Normaliza lo que haya en localStorage (por si algunos precios quedaron como string)
+  const normalize = (list) =>
+    (list || []).map((p) => ({
+      ...p,
+      // aseguro number
+      price:
+        typeof p.price === "number"
+          ? p.price
+          : parseInt(String(p.price).replace(/\D/g, "") || "0", 10),
+      // aseguro title (AdminPanel guarda name y title iguales)
+      title: p.title || p.name || "",
+    }));
 
-    if (storedProducts) {
-      const parsed = JSON.parse(storedProducts).map((p) => ({
-        ...p,
-        price: Number(p.price), // forzamos a número
-      }));
+  React.useEffect(() => {
+    const stored = localStorage.getItem("products");
+    if (stored) {
+      const parsed = normalize(JSON.parse(stored));
       setProducts(parsed);
-      localStorage.setItem("products", JSON.stringify(parsed)); // lo volvemos a guardar corregido
+      // guardo normalizado de vuelta
+      localStorage.setItem("products", JSON.stringify(parsed));
     } else {
-      const correctedDefaults = defaultProducts.map((p) => ({
-        ...p,
-        price: Number(p.price),
-      }));
-      setProducts(correctedDefaults);
-      localStorage.setItem("products", JSON.stringify(correctedDefaults));
+      // seed inicial si no hay nada guardado
+      setProducts(defaultProducts);
+      localStorage.setItem("products", JSON.stringify(defaultProducts));
     }
   }, []);
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.title?.toLowerCase().includes(search.toLowerCase()) ||
-      product.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const visible = (search.trim()
+    ? products.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(search.toLowerCase()) ||
+          p.description?.toLowerCase().includes(search.toLowerCase())
+      )
+    : products) ;
 
-  const opciones = ["Salud", "Hogar"];
   return (
     <>
-      <section
-        className="filters"
-      >
-       <h1 className="home-header-title">
-        Nuestros Seguros
-       </h1>
+      <section className="filters" style={{ textAlign: "center" }}>
+        <h1 className="home-header-title">Nuestros Seguros</h1>
+        {/* Si querés buscar desde Home directamente, agrega un input aquí */}
+        {/* <input value={search} onChange={(e) => setSearch(e.target.value)} /> */}
       </section>
 
       <main>
         <div className="catalog">
-          {defaultProducts.length > 0 ? (
-            defaultProducts.map((product) => (
+          {visible.length > 0 ? (
+            visible.map((product) => (
               <Link
                 key={product.id}
                 to={`/productcard/${product.id}`}
