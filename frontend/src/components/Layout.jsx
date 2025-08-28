@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Outlet } from 'react-router-dom';
-import '../styles/styles.css';
+import '../styles/app.css';
 import Footer from './Footer';
 import { NavBar } from './NavBar';
 import Login from './Login';

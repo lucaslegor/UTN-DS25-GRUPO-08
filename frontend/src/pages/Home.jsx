@@ -49,7 +49,7 @@ export const defaultProducts = [
       "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 5,
+    id: 4,
     title: "Seguro de Salud",
     description:
       "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
@@ -58,7 +58,7 @@ export const defaultProducts = [
       "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 6,
+    id: 4,
     title: "Seguro de Salud",
     description:
       "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
@@ -67,7 +67,7 @@ export const defaultProducts = [
       "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 7,
+    id: 3,
     title: "Seguro de Salud",
     description:
       "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
@@ -122,13 +122,6 @@ const Home = () => {
     <>
       <section
         className="filters"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          marginTop: "8em",
-        }}
       >
        <h1 className="home-header-title">
         Nuestros Seguros

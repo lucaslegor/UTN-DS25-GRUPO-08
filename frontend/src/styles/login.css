@@ -1,156 +1,323 @@
+/* =========================
+   LOGIN – ESTILOS BASE
+   ========================= */
+
 .principal-container-login {
-    background-color: #3d6de2;
-    color: #000;
-    line-height: 1.6;
-    overflow: hidden;
-    height: 100vh;
+  background-color: #3d6de2;
+  color: #000;
+  line-height: 1.6;
+  overflow: hidden;
+  height: 100vh;
 }
 
 .content-wrapper-login {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100vh - 50px); /* Altura de la pantalla menos el padding superior */
-    text-align: left;
-    padding: 0; /* Elimina el padding para asegurar que los divs estén pegados */
-    margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(
+    100vh - 50px
+  ); /* Altura de la pantalla menos el padding superior */
+  text-align: left;
+  padding: 0;
+  margin-top: 20px;
 }
-
 
 .form-inicio-login {
-    width: 50%; /* Igualar el ancho de ambos divs */
-    max-width: 600px; /* Tamaño máximo ajustado */
-    height: 750px; /* Igualar la altura de ambos divs */
-    background-color: #f9f9f9;
-    padding: 30px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 101;
-    border-radius: 15px;
+  width: 50%;
+  max-width: 600px;
+  height: 750px;
+  background-color: #f9f9f9;
+  padding: 30px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 101;
+  border-radius: 15px;
 }
 
-
 .logo-login {
-    height: 150px;
-    width: auto;
+  height: 150px;
+  width: auto;
 }
 
 .container-login {
-    width: 50%; /* Igualar el ancho de ambos divs */
-    max-width: 600px; /* Tamaño máximo ajustado */
-    height: 750px; /* Igualar la altura de ambos divs */
-    background-color: #1751e4;
-    padding: 30px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 101;
-    border-radius: 15px;
-    opacity: 1;
-    background-size: cover; /* Ajusta el tamaño del fondo */
-    background-repeat: no-repeat; /* Evita la repetición de la imagen */
-    background-position: center; /* Centra la imagen */
-    color: #fff;
-    text-align: center;
+  width: 50%;
+  max-width: 600px;
+  height: 750px;
+  background-color: #1751e4;
+  padding: 30px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 101;
+  border-radius: 15px;
+  opacity: 1;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: #fff;
+  text-align: center;
 }
 
 .container-login h2 {
-    color:rgb(255, 255, 255);
-    font-size: 2em;
+  color: #fff;
+  font-size: 2em;
 }
 
 .form-inicio-login h3 {
-    font-size: 30px;
-    text-align: center;
-    color: black
+  font-size: 30px;
+  text-align: center;
+  color: #000;
 }
 
-
 .form-grupo-login {
-    margin-bottom: 20px;
-    width: 100%; /* Asegura que los elementos ocupen el ancho completo del formulario */
+  margin-bottom: 20px;
+  width: 100%;
 }
 
 .form-grupo-login label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold; /* Hace el texto del label en negrita */
-    color: #333; /* Color del texto del label */
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
 }
 
 .input-login {
-    width: 500px; /* Asegura que los campos de entrada ocupen todo el ancho disponible */
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px; /* Tamaño de fuente de los campos de entrada */
+  width: 500px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
 }
 
 .submit-button-login {
-    width:100%;
-    padding: 15px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 18px;
-    margin-top: 20px;
+  width: 100%;
+  padding: 15px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  margin-top: 20px;
 }
-
 .submit-button-login:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
 .form-inicio-login div {
-    text-align: center;
-    margin-top: 20px;
-    width: 100%;
+  text-align: center;
+  margin-top: 20px;
+  width: 100%;
 }
 
 .form-inicio-login div span {
-    margin-bottom: 5px;
-    display: block;
+  margin-bottom: 5px;
+  display: block;
 }
 
 .form-inicio-login div button a {
-    color: #ffffff;
-    text-decoration: none;
+  color: #fff;
+  text-decoration: none;
 }
-
 .form-inicio-login div button a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .container-register {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
-
-.container-register span{
+.container-register span {
   color: #333;
   font-weight: bold;
 }
 
 .back-btn-login {
-    background: none;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 1rem;
-    margin-left: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  margin-left: 0;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  color: #1e43c0;
+  font-size: 22px;
+  position: relative;
+  z-index: 200;
+}
+
+/* Imagen siempre responsive dentro de la tarjeta azul */
+.container-login img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ===== Fix crítico: si el botón tiene margin-top inline negativo, lo pisamos */
+.form-inicio-login > button[aria-label="Volver atrás"] {
+  margin-top: 0 !important;
+}
+
+/* =========================
+   RESPONSIVE OVERRIDES
+   ========================= */
+
+/* Ajustes suaves para pantallas grandes pero bajas de alto */
+@media (min-width: 993px) and (max-height: 820px) {
+  .content-wrapper-login {
+    height: auto;
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+  .form-inicio-login,
+  .container-login {
+    height: auto;
+    min-height: 560px;
+  }
+}
+
+/* Tablet (≤ 992px): reducir alturas fijas y permitir scroll */
+@media (max-width: 992px) {
+  .principal-container-login {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  .content-wrapper-login {
+    height: auto;
+    padding: 12px;
+    margin-top: 40px;
+    gap: 18px;
+  }
+
+  .form-inicio-login,
+  .container-login {
+    height: auto;
+    padding: 24px;
+  }
+
+  .input-login {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .container-login h2 {
+    font-size: 1.7em;
+  }
+}
+
+/* Mobile (≤ 768px): apilar tarjetas, inputs al 100% */
+@media (max-width: 768px) {
+  .content-wrapper-login {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .form-inicio-login,
+  .container-login {
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto;
+    border-radius: 14px;
+  }
+
+  /* Orden sugerido: primero tarjeta azul, luego formulario */
+  .container-login {
+    order: 1;
+  }
+  .form-inicio-login {
+    order: 2;
+  }
+
+  .form-inicio-login > button[aria-label="Volver atrás"] {
     align-self: flex-start;
-    display: flex;
-    align-items: center;
-    color: #1e43c0;
-    font-size: 22px;
-    position: relative;
-    z-index: 200;
+    margin-bottom: 12px;
+  }
+
+  .input-login {
+    width: 100%;
+    padding: 16px;
+    font-size: 15px;
+  }
+
+  .submit-button-login {
+    font-size: 16px;
+    padding: 14px;
+  }
+
+  .container-login img {
+    width: 240px;
+  }
+  .container-login h2 {
+    font-size: 1.5em;
+  }
+}
+
+/* Phones pequeños (≤ 560px) */
+@media (max-width: 560px) {
+  .form-inicio-login,
+  .container-login {
+    padding: 20px;
+  }
+
+  .form-inicio-login h3 {
+    font-size: 26px;
+  }
+  .input-login {
+    padding: 14px;
+    font-size: 14.5px;
+  }
+  .submit-button-login {
+    font-size: 15.5px;
+    padding: 12px;
+  }
+
+  .container-login img {
+    width: 200px;
+  }
+  .container-login h2 {
+    font-size: 1.3em;
+  }
+}
+
+/* Muy estrechos (≤ 380px) */
+@media (max-width: 380px) {
+  .form-inicio-login,
+  .container-login {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .form-inicio-login h3 {
+    font-size: 24px;
+  }
+  .submit-button-login {
+    font-size: 15px;
+    padding: 11px;
+  }
+}
+
+/* Alturas muy bajas en desktop/tablet */
+@media (max-height: 780px) and (min-width: 769px) {
+  .content-wrapper-login {
+    height: auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+  .form-inicio-login,
+  .container-login {
+    height: auto;
+    min-height: 520px;
+  }
 }

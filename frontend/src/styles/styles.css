@@ -1,187 +1,51 @@
-/* Reset global */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* ===== Home (solo lo usado en Home.jsx) ===== */
+
+/* Bloque superior (título) */
+.filters{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap: .5rem;
+  /* separa del navbar fijo; ajustá si tu nav mide distinto */
+  margin-top: clamp(4rem, 12vw, 4rem);
+  padding: 0 1rem;
+  text-align:center;
 }
 
-html, body, #root {
-  height: 100%;
-  margin: 0;
-}
-
-/*estilitos iniciales y provisionales, recontra sujetos a cambios*/
-/* ideas: definir una var con un color "primary", y elegir un color primario, y posiblemente uno secundario con una var "secundary" */
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background-color: #e7ecf7;
-  color: #222;
-  padding: 0;
-  display: flex;
-  flex-direction: column; 
-  min-height: 100vh; 
-}
-
-.header {
-  background: linear-gradient(90deg, #1e43c0 70%, #3d6de2 100%);
-  color: white;
-  padding: 1.5rem 2.5rem 1.2rem 2.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 12px rgba(30,67,192,0.10);
-  min-height: 70px;
-}
-
-.header h1 {
-  margin: 0;
-  display: flex;
-  align-items: center;
-}
-
-.header h1 a {
-  color: white;
-  text-decoration: none;
-  font-size: 2.3rem;
-  letter-spacing: 2px;
-  font-weight: 700;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  transition: text-shadow 0.2s;
-}
-
-
-.header h1 a:hover {
-  text-shadow: none;
-}
-
-.home-header-title {
+.home-header-title{
   color:#3d6de2;
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
+  font-weight:700;
+  font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+  line-height: 1.2;
 }
 
-/* Asegura altura y resetea márgenes del documento */
-
-
-/* Contenedor del layout en columna ocupando toda la pantalla */
-.app-layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* El main ocupa el espacio entre nav y footer */
-.app-content {
-  flex: 1;
-  min-height: 0; /* evita problemas de overflow si hay contenedores con alturas */
-}
-
-
-.auth-buttons {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-}
-
-.auth-buttons button {
-  margin: 0;
-  background-color: #fff;
-  color: #1e43c0;
-  border: none;
-  padding: 0.5rem 1.3rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: background 0.3s, color 0.3s, transform 0.2s;
-  box-shadow: 0 1px 4px rgba(61,109,226,0.10);
-}
-
-.auth-buttons button:hover {
-  background: #1e43c0;
-  color: #fff;
-  border: 2px solid #3d6de2;
-  transform: translateY(-2px) scale(1.07);
-}
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem;
-  padding: 1rem 1.5rem;
-}
-
-.filters input {
-  border: 1px solid #d1d5db;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  outline: none;
-  margin-right: 0.5rem;
-}
-
-.filter-buttons button {
-  background-color: #1e43c0;
-  color: white;
-  border: none;
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
-  margin-right: 0.3rem;
-}
-
-.filter-buttons button:hover {
-  background-color: #6a3fcf;
-  transform: scale(1.07);
-}
-
-.catalog {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 3 columnas fijas */
-  gap: 2rem;
-  justify-items: center;
+/* Catálogo responsive */
+.catalog{
+  display:grid;
+  /* auto-fill con minmax da 1→N columnas fluidas */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
   padding: 2rem 1rem;
+  justify-items: stretch;
+  align-items: stretch;
 }
 
-.filtros-busqueda {
-  display: flex;
-  flex-direction: row;
+/* Enlace de la card ocupa toda la celda */
+.catalog a{
+  display:block;
+  width:100%;
+  text-decoration:none;
+  color:inherit;
 }
 
-
-@media (max-width: 768px) {
-  .product-card {
-    width: 100%;
-  }
-
-  .filters {
-    flex-direction: column;
-  }
+/* Ajustes por breakpoint (opcional para anclar cantidad de columnas) */
+@media (min-width: 640px){
+  .catalog{ grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 }
-
-/* Nueva sección de navegación debajo del header */
-.page-nav {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin: 5.5rem 0 1rem 0;
+@media (min-width: 900px){
+  .catalog{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-
-.page-nav button, .page-nav a {
-  background-color: var(--buttonColour, #1e43c0);
-  color: white;
-  border: none;
-  padding: 0.6rem 1.4rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background-color 0.2s, transform 0.2s;
-}
-
-.page-nav button:hover, .page-nav a:hover {
-  background-color: #6a3fcf;
-  transform: scale(1.07);
+@media (min-width: 1200px){
+  .catalog{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }

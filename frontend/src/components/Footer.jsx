@@ -4,17 +4,14 @@ import '../styles/footer.css';
 
 export const Footer = () => {
   return (
-    <>
+    <footer className="footer-root">
       {/* Sección superior de contacto */}
       <div className="footer-contact">
         <div className="footer-container">
-
-          {/* Título centrado */}
           <h2 className="footer-title">
             <UserRound size={24} color="#fff" /> Maps Asesores
           </h2>
 
-          {/* Ítems de contacto */}
           <div className="footer-info">
             <div className="footer-item">
               <Phone size={20} color="#fff" />
@@ -55,7 +52,7 @@ export const Footer = () => {
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} Maps Asesores. Todos los derechos reservados.</p>
       </div>
-    </>
+    </footer>
   );
 };
 

@@ -81,7 +81,7 @@ export const Login = () => {
             </form>
             <div className='container-register'>
               <span>Todavia no tenes tu cuenta? Registrate aca</span>
-              <Link className='link' to={"/register"}><Button variant="outlined" >Registrarse</Button></Link> 
+              <Link className='link-register' to={"/register"}><Button variant="outlined" >Registrarse</Button></Link> 
             </div>
           </div>
           <div className="container-login">

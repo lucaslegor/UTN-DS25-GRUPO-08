@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import '../styles/contact.css';
 import {
   Shield,
@@ -10,11 +10,10 @@ import {
   CheckCircle,
   Star,
 } from "lucide-react";
-import "../styles/contact.css";
 
 export const Contact = () => {
   return (
-    <section style={{fontFamily:'Poppins, sans-serif'}} id="contacto" className="contacto">
+    <section id="contacto" className="contacto" style={{ fontFamily: 'Poppins, sans-serif' }}>
       <div className="container">
         <div className="contact-header">
           <h2 className="title-contact">
@@ -23,6 +22,7 @@ export const Contact = () => {
         </div>
 
         <div className="contact-content">
+          {/* Columna izquierda */}
           <div className="contact-info">
             <div className="contact-item">
               <div>
@@ -74,10 +74,15 @@ export const Contact = () => {
                   <Award className="icon" size={24} color="#3d6de2" /> Compromiso de Calidad
                 </h3>
                 <div className="quality-statement">
-                  <p className="quality-text">
-                    En <strong>Maps Asesores</strong> nos comprometemos a brindarte la mejor experiencia en seguros. 
-                    Nuestro equipo de expertos está disponible para asesorarte en cada paso del proceso, 
+                  {/* Versión larga (solo desktop) */}
+                  <p className="quality-text long-only">
+                    En <strong>Maps Asesores</strong> nos comprometemos a brindarte la mejor experiencia en seguros.
+                    Nuestro equipo de expertos está disponible para asesorarte en cada paso del proceso,
                     desde la elección de la póliza hasta la gestión de siniestros.
+                  </p>
+                  {/* Versión corta (solo mobile) */}
+                  <p className="quality-text short-only">
+                    En <strong>Maps Asesores</strong> te asesoramos en todo: elección de póliza y gestión de siniestros.
                   </p>
                   <div className="rating">
                     <Star size={20} color="#FFD700" fill="#FFD700" />
@@ -113,24 +118,24 @@ export const Contact = () => {
               </div>
             </div>
           </div>
-          <form className="form">
+
+          {/* Columna derecha: FORM */}
+          <form className="contact-form" onSubmit={(e)=>e.preventDefault()}>
             <h2 className="subtitle-form">
               Envia tu mail {<SendHorizonal size={24} color="#3d6de2" />}
             </h2>
+
             <div>
-              <input type="text" placeholder="Nombre" className="input-field" />
+              <input type="text" placeholder="Nombre" className="contact-input" />
             </div>
             <div>
-              <input type="email" placeholder="Email" className="input-field" />
+              <input type="email" placeholder="Email" className="contact-input" />
             </div>
             <div>
-              <textarea
-                rows={4}
-                placeholder="Mensaje"
-                className="input-field"
-              ></textarea>
+              <textarea rows={4} placeholder="Mensaje" className="contact-textarea"></textarea>
             </div>
-            <button style={{fontFamily:'Poppins, sans-serif'}} type="submit" className="submit-button">
+
+            <button type="submit" className="contact-button">
               Enviar Mensaje
             </button>
           </form>
