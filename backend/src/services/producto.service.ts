@@ -1,5 +1,8 @@
 
 import { Product, CreateProductRequest, UpdateProductRequest} from "../types/productos.types"; 
+import { TipoSeguro } from '../types/productos.types'
+import prisma from "../config/prisma";
+import { Prisma } from "../generated/prisma";
 
 const mockProducts: Product[] = [
   {
@@ -54,18 +57,55 @@ const mockProducts: Product[] = [
   },
 ];
 
+type DbProducto = Prisma.ProductoGetPayload<{}>;
+
+function mapProducto(row: DbProducto): Product {
+  return {
+    id: row.id,
+    titulo: row.titulo,
+    descripcion: row.descripcion,
+    // 👇 Convertimos Decimal -> number
+    precio: (row.precio as Prisma.Decimal).toNumber(),
+    cobertura: row.cobertura,
+    tipo: row.tipo as Product["tipo"],
+    isActive: row.isActive,
+    createdAt: row.createdAt,
+  };
+}
+
+const tipoSeguroToPrisma = (tipo: TipoSeguro) => {
+  switch (tipo) {
+    case "auto":  return "AUTO";
+    case "hogar": return "HOGAR";
+    case "vida":  return "VIDA";
+    case "salud": return "SALUD";
+  }
+};
+
+const tipoSeguroFromPrisma = (tipo: "AUTO" | "HOGAR" | "VIDA" | "SALUD"): TipoSeguro => {
+  switch (tipo) {
+    case "AUTO":  return "auto";
+    case "HOGAR": return "hogar";
+    case "VIDA":  return "vida";
+    case "SALUD": return "salud";
+  }
+};
+
 export const getAllProducts = async(): Promise<Product[]> => {
-    return mockProducts;
+    const products = await prisma.producto.findMany({
+      orderBy: { id: 'asc'},
+    })
+  return products.map(mapProducto);
 }
 
 export const getProductById = async(id: number): Promise<Product | null> => {
-    const product = mockProducts.find( p => p.id === id);
-    if(product === undefined){
+    const product = await prisma.producto.findUnique({ where: { id } });
+    if(!product){
         const error = new Error('Producto no encontrado');
         (error as any).statusCode = 404;
         throw error;
     }
-    return product;
+    return mapProducto(product);
 
 }
 
@@ -75,39 +115,54 @@ export const createProduct = async(productData: CreateProductRequest): Promise<P
         (error as any).statusCode = 400;
         throw error;
     }
-    const product: Product = { 
-        id:mockProducts.length ? Math.max(...mockProducts.map( i => i.id)) + 1: 1,
-        ...productData,
-        createdAt: new Date()
-    }
-    mockProducts.push(product);
-    return product;
+    const product = await prisma.producto.create({
+      data: {
+        titulo: productData.titulo,
+        descripcion: productData.descripcion,
+        precio: productData.precio,
+        cobertura: productData.cobertura,
+        tipo: tipoSeguroToPrisma(productData.tipo),
+        isActive: productData.isActive
+      }
+    })
+    return mapProducto(product);
 }
 
-export const updateProduct = async(id: number, productData: UpdateProductRequest): Promise<Product | null> => {
-    const productIndex = mockProducts.findIndex( p => p.id === id);
-    if(productIndex === -1){
-        const error = new Error('Producto no encontrado');
-        (error as any).statusCode = 404;
-        throw error;
-    }
+export const updateProduct = async (id: number, productData: UpdateProductRequest): Promise<Product | null> => {
+  if (productData.precio !== undefined && productData.precio <= 0) {
+    const error: any = new Error("El precio debe ser mayor a 0");
+    error.statusCode = 400;
+    throw error;
+  }
 
-    if(productData.precio !== undefined && productData.precio <= 0){
-        const error = new Error('El precio debe ser mayor a 0');
-        (error as any).statusCode = 400;
-        throw error;
-    }
-    mockProducts[productIndex] = {...mockProducts[productIndex], ...productData};
-    return mockProducts[productIndex];
-}
+  const dataSinFiltro = {
+    titulo:      productData.titulo !== undefined ? productData.titulo.trim() : undefined,
+    descripcion: productData.descripcion !== undefined ? productData.descripcion.trim() : undefined,
+    cobertura:   productData.cobertura !== undefined ? productData.cobertura.trim() : undefined,
+    isActive:    productData.isActive !== undefined ? productData.isActive : undefined,
+    precio:      productData.precio !== undefined ? new Prisma.Decimal(productData.precio) : undefined,
+    tipo:        productData.tipo !== undefined ? { set: tipoSeguroToPrisma(productData.tipo)! } : undefined,
+  };
 
-export const deleteProduct = async(id: number): Promise<Product> => {
-    const productIndex = mockProducts.findIndex( p => p.id === id);
-    if(productIndex === -1){
-        const error = new Error('Producto no encontrado');
-        (error as any).statusCode = 404;
-        throw error;
-    }
-    const [product] = mockProducts.splice(productIndex,1);
-    return product;
+  const data = Object.fromEntries(
+    Object.entries(dataSinFiltro).filter(([, v]) => v !== undefined)
+  ) as Prisma.ProductoUpdateInput;
+
+  try {
+    const productUpdated = await prisma.producto.update({ where: { id }, data });
+    return mapProducto(productUpdated);
+  } catch (error: any) {
+    if (error?.code === "P2025") return null;
+    throw error;
+  }
+};
+
+export const deleteProduct = async(id: number): Promise<Product | null> => {
+    try {
+      const productDeleted = await prisma.producto.delete({ where: { id } });
+      return mapProducto(productDeleted)
+    } catch (error: any) {
+      if(error?.code === "P2025" ) return null;
+      throw error;
+    };
 }
