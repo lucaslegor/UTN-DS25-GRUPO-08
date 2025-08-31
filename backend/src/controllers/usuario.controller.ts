@@ -1,23 +1,41 @@
+// src/controllers/usuarios.controller.ts
 import { Request, Response, NextFunction } from "express";
-import { Usuario, UsuarioPublic, Rol } from "../types/usuarios.types";
-import {crearUsuario, listarUsuarios, obtenerUsuarioPorId, actualizarUsuario, eliminarUsuario} from '../services/usuarios.service'
+import { UsuarioPublic, Rol, Usuario } from "../types/usuarios.types";
+import {
+  crearUsuario,
+  listarUsuarios,
+  obtenerUsuarioPorUsername,
+  actualizarUsuario,
+  eliminarUsuario,
+} from "../services/usuarios.service";
 
-//Listar todos los usuarios
-
-
-export const getUsuarios = (req: Request, res: Response) => {
-  const usuarios: UsuarioPublic[] = listarUsuarios();
-  res.json({ usuarios, total: usuarios.length });
+// Listar todos los usuarios
+export const getUsuarios = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const usuarios: UsuarioPublic[] = await listarUsuarios();
+    res.json({ usuarios, total: usuarios.length });
+  } catch (err) {
+    next(err);
+  }
 };
 
-export const getUsuarioById = (req: Request<{ id: string }>, res: Response) => {
-  const id = Number(req.params.id);
-  const usuario = obtenerUsuarioPorId(id); // debe devolver UsuarioPublic | null
-  if (!usuario) return res.status(404).json({ usuario: null, message: "Usuario no encontrado" });
-  res.json({ usuario });
+export const getUsuarioByUsername = async (
+  req: Request<{ username: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const username = req.params.username;
+    const usuario = await obtenerUsuarioPorUsername(username); // UsuarioPublic | null
+    if (!usuario) return res.status(404).json({ usuario: null, message: "Usuario no encontrado" });
+    res.json({ usuario });
+  } catch (err) {
+    next(err);
+  }
 };
 
-type CreateUsuarioBody = { username: string; password: string; rol?: Rol };
+// Body para crear (incluye mail)
+type CreateUsuarioBody = { username: string; mail: string; password: string; rol?: Rol };
 
 export const createUsuario = async (
   req: Request<{}, {}, CreateUsuarioBody>,
@@ -25,17 +43,19 @@ export const createUsuario = async (
   next: NextFunction
 ) => {
   try {
-    const { username, password, rol } = req.body;
-    if (!username || !password)
+    const { username, mail, password, rol } = req.body;
+    if (!username || !mail || !password) {
       return res.status(400).json({ usuario: null, message: "Faltan campos" });
-    const usuario = await crearUsuario(username, password, rol ?? "Usuario"); // UsuarioPublic
+    }
+    const usuario = await crearUsuario(username, mail, password, rol ?? "Usuario"); // UsuarioPublic
     res.status(201).json({ usuario, message: "Usuario creado" });
   } catch (err) {
     next(err);
   }
 };
 
-type UpdateUsuarioBody = { username?: string; password?: string; rol?: Rol };
+// Body para actualizar (opcionales)
+type UpdateUsuarioBody = { username?: string; mail?: string; password?: string; rol?: Rol };
 
 export const updateUsuario = async (
   req: Request<{ username: string }, {}, UpdateUsuarioBody>,
@@ -44,14 +64,16 @@ export const updateUsuario = async (
 ) => {
   try {
     const usernameParam = req.params.username;
-    const { username, password, rol } = req.body;
+    const { username, mail, password, rol } = req.body;
 
-    const data: Partial<Omit<Usuario, "idUsuario" | "createdAt">> = {};
-    if (username) data.username = username;  
-    if (password) data.passwordHash = password;
+    // El service espera passwordHash, no password
+    const data: Partial<Pick<Usuario, "username" | "mail" | "rol" | "passwordHash">> = {};
+    if (username) data.username = username;
+    if (mail) data.mail = mail;
     if (rol) data.rol = rol;
+    if (password) data.passwordHash = password; // si tu service hashea, lo hará internamente
 
-    const usuario = actualizarUsuario(usernameParam, data); // UsuarioPublic | null
+    const usuario = await actualizarUsuario(usernameParam, data); // UsuarioPublic | null
     if (!usuario) return res.status(404).json({ usuario: null, message: "Usuario no encontrado" });
 
     res.json({ usuario, message: "Usuario actualizado" });
@@ -60,9 +82,18 @@ export const updateUsuario = async (
   }
 };
 
-export const deleteUsuario = (req: Request<{ id: string }>, res: Response) => {
-  const id = Number(req.params.id);
-  const usuario = eliminarUsuario(id); // UsuarioPublic | null
-  if (!usuario) return res.status(404).json({ message: "Usuario no encontrado" });
-  res.json({ usuario, message: "Usuario eliminado" });
+// Eliminar usuario por username (string), no por id
+export const deleteUsuario = async (
+  req: Request<{ username: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const username = req.params.username;
+    const usuario = await eliminarUsuario(username); // UsuarioPublic | null
+    if (!usuario) return res.status(404).json({ message: "Usuario no encontrado" });
+    res.json({ usuario, message: "Usuario eliminado" });
+  } catch (err) {
+    next(err);
+  }
 };

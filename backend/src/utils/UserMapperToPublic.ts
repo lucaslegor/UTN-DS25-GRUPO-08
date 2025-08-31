@@ -4,6 +4,7 @@ export function toUsuarioPublic(u: Usuario): UsuarioPublic {
   return {
     idUsuario: u.idUsuario,
     username: u.username,
+    mail: u.mail,
     rol: u.rol,
     createdAt: u.createdAt
   };
