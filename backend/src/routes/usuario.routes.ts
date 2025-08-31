@@ -12,4 +12,4 @@ router.post("/", validate(crearUsuarioSchema), controllerUsuario.createUsuario);
 router.put("/:username", validate(actualizarUsuarioSchema), controllerUsuario.updateUsuario);
 router.delete("/:username", controllerUsuario.deleteUsuario);
 
-export default router;
+export const usuariosRoutes = router;
