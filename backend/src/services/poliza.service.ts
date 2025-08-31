@@ -47,11 +47,13 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
       throw error;
     }
 
+    const estadoInicial: EstadoPoliza = "PENDIENTE";
+    
     const poliza = await prisma.poliza.create({
       data: {
         idPedido,
         archivoUrl: data.archivoUrl,
-        estado: "PENDIENTE"
+        estado: estadoInicial
       }
     });
 
