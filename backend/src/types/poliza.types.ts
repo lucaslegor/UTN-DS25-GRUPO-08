@@ -9,11 +9,11 @@ export interface Poliza {
   updatedAt: Date;
 }
 
-export interface CargarPolizaRequest {
-  archivoUrl: string;   
+export interface CrearPolizaRequest {
+  archivoUrl: string;
 }
 
-export interface CargarPolizaResponse {
+export interface CrearPolizaResponse {
   poliza: Poliza;
   message: string;
 }
@@ -21,4 +21,9 @@ export interface CargarPolizaResponse {
 export interface ObtenerPolizaResponse {
   poliza: Poliza | null;
   message?: string;
+}
+
+export interface ActualizarPolizaRequest {
+  archivoUrl?: string;
+  estado?: EstadoPoliza;
 }
