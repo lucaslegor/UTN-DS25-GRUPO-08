@@ -1,18 +1,26 @@
-// src/validations/usuario.validation.ts
 import { z } from "zod";
 
 export const rolUsuarioEnum = z.enum(["ADMINISTRADOR", "USUARIO"]);
 
 export const crearUsuarioSchema = z.object({
-  username: z.string()
-  .min(3, "El nombre de usuario debe tener al menos 3 caracteres")
-  .max(50)
-  .trim(),
-  mail: z.string()
-  .email("Formato de email inválido"),
-  password: z.string()
-  .min(8, "La contraseña debe tener al menos 8 caracteres"),
+  username: z.string().min(3).max(50).trim(),
+  mail: z.string().email(),
+  password: z.string().min(8),
   rol: rolUsuarioEnum.default("USUARIO"),
 });
 
-export const actualizarUsuarioSchema = crearUsuarioSchema.partial();
+export const loginSchema = z.object({
+  username: z.string().min(1).trim().optional(),
+  mail: z.string().email().optional(),
+  password: z.string().min(8),
+}).refine((data) => !!data.username || !!data.mail, {
+  message: "Debe enviar username o mail",
+  path: ["username"],
+});
+
+export const actualizarUsuarioSchema = z.object({
+  username: z.string().min(3).max(50).trim().optional(),
+  mail: z.string().email().optional(),
+  password: z.string().min(8).optional(),
+  rol: rolUsuarioEnum.optional(),
+});

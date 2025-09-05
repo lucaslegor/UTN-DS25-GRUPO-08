@@ -60,9 +60,9 @@ enum EstadoPago {
 model Usuario {
   id           Int         @id @default(autoincrement())
   username     String      @unique
-  mail         String      @unique   // <- importante
+  mail         String      @unique
   passwordHash String
-  rol          RolUsuario
+  rol          RolUsuario  @default(USUARIO) // <- default
   createdAt    DateTime    @default(now())
   adminProfile AdminProfile?
   pedidos      Pedido[]

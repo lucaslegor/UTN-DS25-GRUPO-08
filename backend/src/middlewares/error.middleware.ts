@@ -1,13 +1,10 @@
-import { Request, Response , NextFunction } from 'express' ;
+import { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
 
-export function handleError (err: any, req: Request, res: Response , next:
-NextFunction ) {
- const timestamp = new Date().toISOString ();
- console.log(`[${timestamp }] Error:` , err.message);
- const statusCode = err.statusCode || 500;
- res.status(statusCode ).json({
- error: 'Internal server error' ,
- message: err.message,
- timestamp: new Date().toISOString ()
- });
+export function handleError(err: any, _req: Request, res: Response, _next: NextFunction) {
+  if (err instanceof ZodError) {
+    return res.status(400).json({ message: "Validación inválida", issues: err.flatten() });
+  }
+  const status = err?.status || 500;
+  res.status(status).json({ message: err?.message || "Error interno" });
 }

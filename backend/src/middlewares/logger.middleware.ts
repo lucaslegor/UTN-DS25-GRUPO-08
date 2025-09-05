@@ -1,8 +1,6 @@
- import { Request, Response, NextFunction } from 'express';
- export function logRequest(req: Request, res: Response, next: NextFunction) {
-  const timestamp = new Date().toISOString();
-  const method = req.method;
-  const url = req.url;
-  console.log(`[${timestamp}] ${method} ${url}`);
+import { NextFunction, Request, Response } from "express";
+
+export function logRequest(req: Request, _res: Response, next: NextFunction) {
+  console.log(`${req.method} ${req.originalUrl}`);
   next();
- }
+}

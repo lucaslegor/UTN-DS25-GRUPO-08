@@ -1,15 +1,21 @@
-// src/routes/usuarios.routes.ts
 import { Router } from "express";
-import * as controllerUsuario from "../controllers/usuario.controller";
+import { getUsuarios, getUsuario, postUsuario, putUsuario, deleteUsuario, login, register } from "../controllers/usuario.controller";
+import {
+  crearUsuarioSchema,
+  loginSchema,
+  actualizarUsuarioSchema,
+} from "../validations/usuarios.validation";
 import { validate } from "../middlewares/validation.middleware";
-import { crearUsuarioSchema, actualizarUsuarioSchema } from "../validations/usuarios.validation";
 
-const router = Router();
+export const usuariosRoutes = Router();
 
-router.get("/", controllerUsuario.getUsuarios);
-router.get("/:username", controllerUsuario.getUsuarioByUsername);
-router.post("/", validate(crearUsuarioSchema), controllerUsuario.createUsuario);
-router.put("/:username", validate(actualizarUsuarioSchema), controllerUsuario.updateUsuario);
-router.delete("/:username", controllerUsuario.deleteUsuario);
+// CRUD
+usuariosRoutes.get("/", getUsuarios);
+usuariosRoutes.get("/:username", getUsuario);
+usuariosRoutes.post("/", validate(crearUsuarioSchema), postUsuario);
+usuariosRoutes.put("/:username", validate(actualizarUsuarioSchema), putUsuario);
+usuariosRoutes.delete("/:username", deleteUsuario);
 
-export const usuariosRoutes = router;
+// Auth
+usuariosRoutes.post("/login", validate(loginSchema), login);
+usuariosRoutes.post("/register", register);
