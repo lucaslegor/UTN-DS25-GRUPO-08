@@ -187,6 +187,7 @@ body {
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid #f3f4f6;
+  padding: 1rem;
 }
 
 .form-header h2, .products-header h2 {
@@ -510,6 +511,52 @@ body {
   background: rgba(239, 68, 68, 0.2) !important;
   transform: scale(1.1);
 }
+
+/* ====== Users Tab ====== */
+.users-container { 
+  padding-top: 8px;
+  padding: 1rem;
+
+}
+
+.users-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 16px;
+  flex-wrap: wrap;
+}
+
+.users-search-wrap {
+  position: relative;
+  min-width: 260px;
+  flex: 1 1 320px;
+  max-width: 520px;
+}
+
+.users-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  opacity: .7;
+}
+
+.users-search {
+  width: 100%;
+  padding: 10px 12px 10px 34px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: box-shadow .2s, border-color .2s;
+}
+
+.users-search:focus {
+  border-color: #3d6de2;
+  box-shadow: 0 0 0 3px rgba(61, 109, 226, .15);
+}
+
 
 /* Responsive Design */
 @media (max-width: 1024px) {

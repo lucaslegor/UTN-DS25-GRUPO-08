@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/images/maxiColor.png";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, X } from "lucide-react";
 import { AccountCircle, Menu as MenuIcon } from "@mui/icons-material";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@mui/material";
 import { Person, Policy, Logout } from "@mui/icons-material";
 import CartIcon from "./CartIcon";
-import { defaultProducts as products } from "../pages/Home";
+import { defaultProducts } from "../pages/Home";
 import "../styles/navbar.css";
 
 export const NavBar = () => {
@@ -27,17 +28,26 @@ export const NavBar = () => {
   const [highlight, setHighlight] = useState(-1);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const searchWrapRef = useRef(null);
 
+  // === Auth desde localStorage.auth ===
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    setIsAdmin(!!token);
-    setIsLogin(!!token);
-  }, []);
+    const raw = localStorage.getItem("auth");
+    try {
+      const auth = raw ? JSON.parse(raw) : null;
+      setIsLogin(!!auth?.token);
+      setIsAdmin(auth?.user?.rol === "Administrador");
+    } catch {
+      setIsLogin(false);
+      setIsAdmin(false);
+    }
+  }, [location.pathname]); // se recalcula al cambiar de ruta (p.ej. tras login/register)
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
+    localStorage.removeItem("auth");
     setIsLogin(false);
+    setIsAdmin(false);
     setUserMenuAnchor(null);
     navigate("/");
   };
@@ -55,7 +65,17 @@ export const NavBar = () => {
   };
 
   // ---------- FILTRO ----------
-  const list = Array.isArray(products) ? products : [];
+  // Tomamos productos de localStorage; si no hay, usamos defaultProducts
+  const stored = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("products") || "[]");
+    } catch {
+      return [];
+    }
+  })();
+  const base = stored.length ? stored : defaultProducts;
+  const list = Array.isArray(base) ? base : [];
+
   const filteredProducts = search.trim()
     ? list.filter(
         (p) =>
@@ -93,7 +113,7 @@ export const NavBar = () => {
     <header className="navbar" id="main-navbar">
       <Link className="brand" to="/" style={{ textDecoration: "none" }}>
         <h1 className="title">
-          <img src="/public/maxiColor.png" alt="Maps Asesores" width={70} />
+          <img src={logo} alt="Maps Asesores" width={70} />
           MAPS ASESORES
         </h1>
       </Link>
@@ -169,7 +189,12 @@ export const NavBar = () => {
                   onMouseEnter={() => setHighlight(idx)}
                   onClick={() => selectProduct(p)}
                 >
-                  <img className="sb-thumb" src={p.image} alt={p.title} loading="lazy" />
+                  <img
+                    className="sb-thumb"
+                    src={p.image}
+                    alt={p.title}
+                    loading="lazy"
+                  />
                   <div className="sb-meta">
                     <span className="sb-title">{p.title}</span>
                     <span className="sb-price">{fp(p.price)}</span>
@@ -181,7 +206,7 @@ export const NavBar = () => {
         )}
       </div>
 
-      {/* HAMBURGUER */}
+      {/* HAMBURGUESA */}
       <button
         className="menu-toggle"
         onClick={() => setMenuOpen(!menuOpen)}
@@ -193,15 +218,33 @@ export const NavBar = () => {
       {/* LINKS */}
       <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
         <ul className="link-list" onClick={() => setMenuOpen(false)}>
-          <li><Link className="link" to="/">Inicio</Link></li>
-          <li><Link className="link" to="/nosotros">Nosotros</Link></li>
-          <li><Link className="link" to="/contacto">Contacto</Link></li>
+          <li>
+            <Link className="link" to="/">
+              Inicio
+            </Link>
+          </li>
+          <li>
+            <Link className="link" to="/nosotros">
+              Nosotros
+            </Link>
+          </li>
+          <li>
+            <Link className="link" to="/contacto">
+              Contacto
+            </Link>
+          </li>
           {isAdmin && (
-            <li><Link className="link" to="/adminpanel">Panel Admin</Link></li>
+            <li>
+              <Link className="link" to="/adminpanel">
+                Panel Admin
+              </Link>
+            </li>
           )}
           {isLogin && (
             <li>
-              <Link className="link" to="/cart"><CartIcon /></Link>
+              <Link className="link" to="/cart">
+                <CartIcon />
+              </Link>
             </li>
           )}
           {isLogin ? (
@@ -224,23 +267,32 @@ export const NavBar = () => {
                 PaperProps={{ sx: { mt: 1, minWidth: 200, borderRadius: 2 } }}
               >
                 <MenuItem onClick={handleProfileClick}>
-                  <ListItemIcon><Person fontSize="small" /></ListItemIcon>
+                  <ListItemIcon>
+                    <Person fontSize="small" />
+                  </ListItemIcon>
                   <ListItemText>Mi perfil</ListItemText>
                 </MenuItem>
                 <MenuItem onClick={handlePoliciesClick}>
-                  <ListItemIcon><Policy fontSize="small" /></ListItemIcon>
+                  <ListItemIcon>
+                    <Policy fontSize="small" />
+                  </ListItemIcon>
                   <ListItemText>Mis pólizas</ListItemText>
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={handleLogout}>
-                  <ListItemIcon><Logout fontSize="small" /></ListItemIcon>
+                  <ListItemIcon>
+                    <Logout fontSize="small" />
+                  </ListItemIcon>
                   <ListItemText>Cerrar sesión</ListItemText>
                 </MenuItem>
               </MuiMenu>
             </li>
           ) : (
             <li>
-              <button className="session-btn" onClick={() => navigate("/login")}>
+              <button
+                className="session-btn"
+                onClick={() => navigate("/login")}
+              >
                 Iniciar sesión
               </button>
             </li>

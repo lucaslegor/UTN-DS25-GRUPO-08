@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/AdminPanel.css';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,9 +11,15 @@ import {
   Dashboard,
   Inventory,
   Settings,
+  People,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { IconButton, Tooltip, Chip } from '@mui/material';
 
+/** ========= Config API ========= */
+const RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+const API_BASE = RAW_BASE.endsWith('/api') ? RAW_BASE : `${RAW_BASE}/api`;
+/** ========= Datos por defecto ========= */
 const DEFAULT_PRODUCTS = [
   {
     id: 1,
@@ -21,7 +27,7 @@ const DEFAULT_PRODUCTS = [
     title: 'Seguro de Auto',
     description:
       'Protección completa para tu vehículo ante accidentes, robos y daños a terceros.',
-    price: 10000, // número
+    price: 10000,
     image:
       'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80',
     rubro: 'automotor',
@@ -61,13 +67,12 @@ const DEFAULT_PRODUCTS = [
   },
 ];
 
-// Normaliza precios y estructura de productos leídos de localStorage
+/** Normaliza precios y estructura de productos leídos de localStorage */
 const normalizeProducts = (list) =>
   (list || []).map((p) => {
-    // price puede venir como "$12.000/año" o "12000" o 12000
     const raw = String(p.price ?? '')
       .replace(/\s/g, '')
-      .replace(/[^0-9,.]/g, ''); // deja dígitos y , .
+      .replace(/[^0-9,.]/g, '');
     const numeric = raw
       ? parseInt(raw.replace(/\./g, '').replace(/,/g, ''), 10)
       : Number(p.price) || 0;
@@ -83,25 +88,33 @@ const normalizeProducts = (list) =>
     };
   });
 
-// Formatea ARS al mostrar
+/** Formatea ARS al mostrar */
 const formatARS = (n) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(
     typeof n === 'number' ? n : Number(n) || 0
   ) + '/año';
 
 const AdminPanel = () => {
+  /** ======= Productos (CRUD localStorage) ======= */
   const [products, setProducts] = useState([]);
   const [product, setProduct] = useState({
     name: '',
     description: '',
-    image: '', // string (url/base64)
+    image: '',
     rubro: '',
     price: '',
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [message, setMessage] = useState('');
   const [editingId, setEditingId] = useState(null);
-  const [activeTab, setActiveTab] = useState('form'); // 'form' | 'products'
+
+  /** ======= Usuarios (API) ======= */
+  const [activeTab, setActiveTab] = useState('form'); // 'form' | 'products' | 'users'
+  const [users, setUsers] = useState([]);
+  const [userQuery, setUserQuery] = useState('');
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState('');
+
   const navigate = useNavigate();
 
   // Protege la ruta
@@ -124,13 +137,80 @@ const AdminPanel = () => {
     }
   }, []);
 
-  // Inputs genéricos (incluye select rubro)
+  // Cargar usuarios al entrar en pestaña "users"
+  useEffect(() => {
+    if (activeTab === 'users') {
+      loadUsers();
+    }
+  }, [activeTab]);
+
+  /** ======= Helpers API usuarios ======= */
+  const authHeaders = () => {
+    const headers = { 'Content-Type': 'application/json' };
+    // Si tu backend requiere JWT real para listar, agregalo acá:
+    const token = localStorage.getItem('token'); // si guardás el JWT con la key 'token'
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
+  };
+
+  const parseUsersResponse = async (resp) => {
+    const json = await resp.json();
+    if (Array.isArray(json)) return json;
+    if (json.usuarios) return json.usuarios;
+    if (json.usuario) return [json.usuario];
+    if (json.user) return [json.user];
+    if (json.users) return json.users;
+    return json ? [json] : [];
+  };
+
+  async function loadUsers() {
+    setUsersLoading(true);
+    setUsersError('');
+    try {
+      let url = `${API_BASE}/usuarios`;
+      // Si querés hacer búsqueda exacta por username con getUsuario:username:
+      // cuando userQuery tenga algo, probamos GET /usuarios/:username
+      if (userQuery.trim()) {
+        url = `${API_BASE}/usuarios/${encodeURIComponent(userQuery.trim())}`;
+        const r1 = await fetch(url, { headers: authHeaders() });
+        if (r1.ok) {
+          const arr1 = await parseUsersResponse(r1);
+          setUsers(arr1.filter(Boolean));
+        } else if (r1.status === 404) {
+          // No encontrado: dejamos lista vacía
+          setUsers([]);
+        } else {
+          const r2 = await fetch(`${API_BASE}/usuarios`, { headers: authHeaders() });
+          if (!r2.ok) throw new Error('Error listando usuarios');
+          const arr2 = await parseUsersResponse(r2);
+          const q = userQuery.trim().toLowerCase();
+          setUsers(arr2.filter(u =>
+            u?.username?.toLowerCase().includes(q) ||
+            u?.mail?.toLowerCase().includes(q)
+          ));
+        }
+      } else {
+        // lista completa
+        const resp = await fetch(url, { headers: authHeaders() });
+        if (!resp.ok) throw new Error('Error listando usuarios');
+        const arr = await parseUsersResponse(resp);
+        setUsers(arr.filter(Boolean));
+      }
+    } catch (err) {
+      console.error(err);
+      setUsersError('No se pudieron cargar los usuarios');
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  }
+
+  /** ======= Handlers Productos ======= */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProduct((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Imagen: guardamos como DataURL para persistir en localStorage
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -158,9 +238,7 @@ const AdminPanel = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setMessage('');
-
-    try{
-      // limpiamos y convertimos el precio a número
+    try {
       const numericPrice = parseInt(
         String(product.price).replace(/\D/g, '') || '0',
         10
@@ -245,6 +323,7 @@ const AdminPanel = () => {
           </div>
         </div>
 
+        {/* ===== Tabs ===== */}
         <div className="admin-tabs">
           <button
             className={`tab-button ${activeTab === 'form' ? 'active' : ''}`}
@@ -253,6 +332,7 @@ const AdminPanel = () => {
             <Add className="tab-icon" />
             {editingId ? 'Editar Producto' : 'Agregar Producto'}
           </button>
+
           <button
             className={`tab-button ${activeTab === 'products' ? 'active' : ''}`}
             onClick={() => setActiveTab('products')}
@@ -260,8 +340,17 @@ const AdminPanel = () => {
             <Inventory className="tab-icon" />
             Ver Productos ({products.length})
           </button>
+
+          <button
+            className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            <People className="tab-icon" />
+            Ver Usuarios
+          </button>
         </div>
 
+        {/* ======= Form Producto ======= */}
         {activeTab === 'form' && (
           <div className="admin-container form-container">
             <div className="form-header">
@@ -411,6 +500,7 @@ const AdminPanel = () => {
           </div>
         )}
 
+        {/* ======= Tabla Productos ======= */}
         {activeTab === 'products' && (
           <div className="admin-container products-container">
             <div className="products-header">
@@ -494,8 +584,78 @@ const AdminPanel = () => {
                   ))}
                   {products.length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', opacity: .7 }}>
+                      <td colSpan={5} style={{ textAlign: 'center', opacity: 0.7 }}>
                         No hay productos cargados.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ======= Usuarios (API) ======= */}
+        {activeTab === 'users' && (
+          <div className="admin-container users-container">
+            <div className="products-header">
+              <h2>
+                <People className="form-header-icon" />
+                Usuarios
+              </h2>
+            </div>
+
+            <div className="users-toolbar">
+              <div className="users-search-wrap">
+                <SearchIcon className="users-search-icon" fontSize="small" />
+                <input
+                  className="users-search"
+                  type="search"
+                  placeholder="Buscar por username exacto…"
+                  value={userQuery}
+                  onChange={(e) => setUserQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') loadUsers();
+                  }}
+                />
+              </div>
+              <button className="submit-button" onClick={loadUsers}>
+                Buscar
+              </button>
+            </div>
+
+            {usersLoading && <div className="message">Cargando usuarios…</div>}
+            {usersError && <div className="message error">{usersError}</div>}
+
+            <div className="table-responsive">
+              <table className="products-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Creado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.idUsuario || u.id || u.username}>
+                      <td>{u.idUsuario ?? u.id ?? '—'}</td>
+                      <td>{u.username ?? '—'}</td>
+                      <td>{u.mail ?? '—'}</td>
+                      <td>{u.rol ?? '—'}</td>
+                      <td>
+                        {u.createdAt
+                          ? new Date(u.createdAt).toLocaleString('es-AR')
+                          : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                  {!usersLoading && users.length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', opacity: 0.7 }}>
+                        {userQuery ? 'Sin coincidencias' : 'No hay usuarios'}
                       </td>
                     </tr>
                   )}

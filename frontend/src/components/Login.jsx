@@ -1,96 +1,113 @@
-import React, { useState } from 'react'
-import { Hammer, Home, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/login.css'
-import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
+import React, { useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import "../styles/login.css";
+import { Button } from "@mui/material";
+import { loginApi } from "../services/api";
 
-export const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = () => {
+  // Un solo campo para usuario o email
+  const [identifier, setIdentifier] = useState(""); // username o email
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
-    if (username === 'admin' && password === 'admin123') {
-      localStorage.setItem('adminToken', 'demo-token');
-      navigate('/adminPanel');
-    } else {
-      setError('Usuario o contraseña incorrectos');
+    try {
+      setLoading(true);
+
+      // Detecta si el usuario escribió un email o un username
+      const payload = identifier.includes("@")
+        ? { mail: identifier.trim().toLowerCase(), password }
+        : { username: identifier.trim(), password };
+
+      // Llama a la API de login (tu helper)
+      const res = await loginApi(payload);
+
+      // Si tu loginApi NO guarda en localStorage el token, podés descomentar:
+      // if (res?.token && res?.user) {
+      //   localStorage.setItem("auth", JSON.stringify(res));
+      // }
+
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Usuario o contraseña incorrectos");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      <div className='principal-container-login'>
-        <div className="content-wrapper-login">
-          <div className="form-inicio-login">
-            <button
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                alignSelf: 'flex-start',
-                marginTop: '-100px',
-                marginBottom: '2.5rem',
-                color: '#1e43c0',
-                padding: 0,
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: 18
-              }}
-              onClick={() => navigate('/')}
-              aria-label="Volver atrás"
-            >
-              <ArrowLeft size={32} />
-              <span style={{ marginLeft: 8 }}>Volver al inicio</span>
-            </button>
-            <h3>¡Hola, bienvenido!</h3>
-            <form onSubmit={handleSubmit}>
-              <div className="form-grupo-login">
-                <label htmlFor="usuario">Usuario:</label>
-                <input
-                  className='input-login'
-                  type="text"
-                  id="user"
-                  name="user"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Introduce tu usuario"
-                  required
-                />
-              </div>
-              <div className="form-grupo-login">
-                <label htmlFor="password">Contraseña:</label>
-                <input
-                  className='input-login'
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Introduce tu contraseña"
-                  required
-                />
-              </div>
-              {error && <p className="error-message">{error}</p>}
-              <button className='submit-button-login' type="submit">Ingresar</button>
-            </form>
-            <div className='container-register'>
-              <span>Todavia no tenes tu cuenta? Registrate aca</span>
-              <Link className='link-register' to={"/register"}><Button variant="outlined" >Registrarse</Button></Link> 
+    <div className="principal-container-login">
+      <div className="content-wrapper-login">
+        {/* Panel izquierdo (form) */}
+        <div className="form-inicio-login">
+          <button
+            className="back-btn-login"
+            onClick={() => navigate("/")}
+            aria-label="Volver atrás"
+          >
+            <ArrowLeft size={28} />
+            <span style={{ marginLeft: 8 }}>Volver al inicio</span>
+          </button>
+
+          <h3>¡Hola, bienvenido!</h3>
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-grupo-login">
+              <label htmlFor="identifier">Usuario o Email:</label>
+              <input
+                className="input-login"
+                type="text"
+                id="identifier"
+                name="identifier"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="tu-usuario o tu@email.com"
+                required
+              />
             </div>
-          </div>
-          <div className="container-login">
-            <img src="MaxiColor.png" alt="" width={350} />
-            <h2>¡Bienvenido a Maps, tu bienestar es nuestro compromiso!</h2>
+
+            <div className="form-grupo-login">
+              <label htmlFor="password">Contraseña:</label>
+              <input
+                className="input-login"
+                type="password"
+                id="password"
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Introduce tu contraseña"
+                required
+              />
+            </div>
+
+            {error && <p className="error-message">{error}</p>}
+
+            <button className="submit-button-login" type="submit" disabled={loading}>
+              {loading ? "Ingresando..." : "Ingresar"}
+            </button>
+          </form>
+
+          <div className="container-register" style={{ marginTop: 16 }}>
+            <span>¿No tenés cuenta?</span>
+            <Button variant="outlined" onClick={() => navigate("/register")}>
+              Registrarse
+            </Button>
           </div>
         </div>
+
+        {/* Panel derecho (branding) */}
+        <div className="container-login">
+          <img src="/MaxiColor.png" alt="Maps Asesores" width={350} />
+          <h2>¡Bienvenido a Maps, tu bienestar es nuestro compromiso!</h2>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 
