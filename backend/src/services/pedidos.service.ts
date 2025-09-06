@@ -1,146 +1,203 @@
-import { Pedido, PedidoItem, CrearPedidoRequest } from '../types/pedidos.types';
+import prisma from "../config/prisma";
+import {
+  Pedido,
+  PedidoItem,
+  CrearPedidoRequest,
+} from "../types/pedidos.types";
 
-// Catálogo simple (mock). En siguiente etapa: DB real.
-const catalogo = [
-  { id: 101, titulo: 'Plan Básico', precio: 15000 },
-  { id: 102, titulo: 'Plan Full', precio: 28000 },
-  { id: 103, titulo: 'Adicional Hogar', precio: 9000 },
-];
+/* ========================
+ *   Helpers
+ * ======================== */
 
-// Persistencia en memoria (MVP)
-let pedidos: Pedido[] = [];
-let lastId = 0;
+function mapRowToPedido(row: any): Pedido {
+  const items: PedidoItem[] = (row.items ?? []).map((it: any) => ({
+    productId: it.idProducto,
+    titulo: it.titulo,
+    precio: Number(it.precio),
+    cantidad: it.cantidad,
+  }));
 
-// Helpers internos
-function resolverItems(input: { productId: number; cantidad?: number }[]): PedidoItem[] {
-  if (!Array.isArray(input) || input.length === 0) {
-    const e: any = new Error('El pedido debe tener al menos un ítem');
-    e.statusCode = 400;
-    throw e;
+  return {
+    idPedido: row.id,
+    idUsuario: row.idUsuario,
+    items,
+    subtotal: Number(row.subtotal),
+    total: Number(row.total),
+    moneda: row.moneda,
+    estado: row.estado,
+    poliza: row.poliza ? {
+      id: row.poliza.id,
+      idPedido: row.poliza.idPedido,
+      archivoUrl: row.poliza.archivoUrl,
+      estado: row.poliza.estado,
+      createdAt: row.poliza.createdAt,
+      updatedAt: row.poliza.updatedAt,
+    } : undefined,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+/* ========================
+ *   CRUD
+ * ======================== */
+
+export async function listarPedidos(): Promise<Pedido[]> {
+  const rows = await prisma.pedido.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { items: true, poliza: true },
+  });
+  return rows.map(mapRowToPedido);
+}
+
+export async function obtenerPedidoPorId(id: number): Promise<Pedido | null> {
+  const row = await prisma.pedido.findUnique({
+    where: { id },
+    include: { items: true, poliza: true },
+  });
+  return row ? mapRowToPedido(row) : null;
+}
+
+export async function crearPedido(
+  idUsuario: number,
+  data: CrearPedidoRequest
+): Promise<Pedido> {
+  // 1) productos existentes
+  const ids = data.items.map(i => i.productId);
+  const productos = await prisma.producto.findMany({
+    where: { id: { in: ids } },
+  });
+  if (productos.length !== ids.length) {
+    const notFound = ids.filter(id => !productos.find(p => p.id === id));
+    throw new Error(`Productos inexistentes: ${notFound.join(", ")}`);
   }
-  return input.map(({ productId, cantidad }) => {
-    const prod = catalogo.find(p => p.id === productId);
-    if (!prod) {
-      const e: any = new Error(`Producto ${productId} inexistente`);
-      e.statusCode = 400;
-      throw e;
-    }
+
+  // 2) preparar items
+  const itemsToCreate = productos.map(p => {
+    const cant = data.items.find(i => i.productId === p.id)?.cantidad ?? 1;
     return {
-      productId,
-      titulo: prod.titulo,
-      precio: prod.precio,
-      cantidad: cantidad ?? 1,
+      idProducto: p.id,
+      titulo: p.titulo,
+      precio: p.precio, // Decimal en Prisma acepta number
+      cantidad: cant,
     };
   });
+
+  const subtotal = itemsToCreate.reduce((acc, it) => acc + Number(it.precio) * it.cantidad, 0);
+  const total = subtotal; // ajustar si hay recargos/descuentos
+
+  const created = await prisma.pedido.create({
+    data: {
+      idUsuario,
+      subtotal,
+      total,
+      moneda: "ARS",
+      items: {
+        create: itemsToCreate.map(it => ({
+          idProducto: it.idProducto,
+          titulo: it.titulo,
+          precio: it.precio,
+          cantidad: it.cantidad,
+        })),
+      },
+    },
+    include: { items: true, poliza: true },
+  });
+
+  return mapRowToPedido(created);
 }
 
-function calcularSubtotal(items: PedidoItem[]): number {
-  return items.reduce((acc, it) => acc + it.precio * it.cantidad, 0);
-}
+type ActualizarPedidoRequest = {
+  estado?: Pedido["estado"];
+  items?: { productId: number; cantidad?: number }[];
+};
 
-function calcularTotal(subtotal: number): number {
-  // Lugar para impuestos/descuentos futuros
-  return subtotal;
-}
+export async function actualizarPedido(
+  id: number,
+  body: ActualizarPedidoRequest
+): Promise<Pedido | null> {
+  // Si hay items, reemplazamos completamente y recalculamos totales
+  if (body.items && body.items.length > 0) {
+    const productos = await prisma.producto.findMany({
+      where: { id: { in: body.items.map(i => i.productId) } },
+    });
+    if (productos.length !== body.items.length) {
+      const notFound = body.items
+        .map(i => i.productId)
+        .filter(pid => !productos.find(p => p.id === pid));
+      throw new Error(`Productos inexistentes: ${notFound.join(", ")}`);
+    }
 
-// GET all
-export async function listarPedidos(): Promise<Pedido[]> {
-  return pedidos;
-}
-
-// GET by id
-export async function obtenerPedidoPorId(id: number): Promise<Pedido> {
-  const pedido = pedidos.find(p => p.idPedido === id);
-  if (!pedido) {
-    const error: any = new Error('Pedido no encontrado');
-    error.statusCode = 404;
-    throw error;
-  }
-  return pedido;
-}
-
-// CREATE
-export async function crearPedido(data: CrearPedidoRequest): Promise<Pedido> {
-  if (!data || !data.items) {
-    const e: any = new Error('Body inválido');
-    e.statusCode = 400;
-    throw e;
-  }
-  if (data.moneda !== 'ARS') {
-    const e: any = new Error("Solo se admite moneda 'ARS'");
-    e.statusCode = 400;
-    throw e;
-  }
-
-  const items = resolverItems(data.items);
-  const subtotal = calcularSubtotal(items);
-  const total = calcularTotal(subtotal);
-  const ahora = new Date();
-
-  const nuevoPedido: Pedido = {
-    idPedido: ++lastId,
-    idUsuario: 1, // En producción: desde token/auth
-    items,
-    subtotal,
-    total,
-    moneda: 'ARS',
-    estado: 'CREADO',
-    createdAt: ahora,
-    updatedAt: ahora,
-  };
-
-  pedidos.push(nuevoPedido);
-  return nuevoPedido;
-}
-
-// UPDATE
-export async function actualizarPedido(id: number, data: Partial<Pedido>): Promise<Pedido> {
-  const index = pedidos.findIndex(p => p.idPedido === id);
-  if (index === -1) {
-    const error: any = new Error('Pedido no encontrado');
-    error.statusCode = 404;
-    throw error;
-  }
-
-  // Si actualizan items: recalcular desde catálogo
-  let items = pedidos[index].items;
-  if (data.items) {
-    items = data.items.map(it => {
-      const prod = catalogo.find(p => p.id === it.productId);
-      if (!prod) {
-        const e: any = new Error(`Producto ${it.productId} inexistente`);
-        e.statusCode = 400;
-        throw e;
-      }
+    const itemsToCreate = productos.map(p => {
+      const cant = body.items?.find(i => i.productId === p.id)?.cantidad ?? 1;
       return {
-        productId: it.productId,
-        titulo: prod.titulo,
-        precio: prod.precio,
-        cantidad: it.cantidad ?? 1,
+        idProducto: p.id,
+        titulo: p.titulo,
+        precio: p.precio,
+        cantidad: cant,
       };
     });
+
+    const subtotal = itemsToCreate.reduce((acc, it) => acc + Number(it.precio) * it.cantidad, 0);
+    const total = subtotal;
+
+    try {
+      const updated = await prisma.$transaction(async (tx) => {
+        // Fuerza error si no existe
+        await tx.pedido.update({ where: { id }, data: {} });
+
+        await tx.pedidoItem.deleteMany({ where: { idPedido: id } });
+        await tx.pedidoItem.createMany({
+          data: itemsToCreate.map(it => ({
+            idPedido: id,
+            idProducto: it.idProducto,
+            titulo: it.titulo,
+            precio: it.precio,
+            cantidad: it.cantidad,
+          })),
+        });
+
+        return await tx.pedido.update({
+          where: { id },
+          data: {
+            subtotal,
+            total,
+            ...(body.estado ? { estado: body.estado } : {}),
+          },
+          include: { items: true, poliza: true },
+        });
+      });
+
+      return mapRowToPedido(updated);
+    } catch (e: any) {
+      if (e.code === "P2025") return null;
+      throw e;
+    }
   }
 
-  // Validar moneda si viene
-  const moneda = data.moneda ?? pedidos[index].moneda;
-  if (moneda !== 'ARS') {
-    const e: any = new Error("Solo se admite moneda 'ARS'");
-    e.statusCode = 400;
+  // Solo estado (o nada)
+  try {
+    const updated = await prisma.pedido.update({
+      where: { id },
+      data: { ...(body.estado ? { estado: body.estado } : {}) },
+      include: { items: true, poliza: true },
+    });
+    return mapRowToPedido(updated);
+  } catch (e: any) {
+    if (e.code === "P2025") return null;
     throw e;
   }
+}
 
-  const subtotal = calcularSubtotal(items);
-  const total = calcularTotal(subtotal);
-
-  pedidos[index] = {
-    ...pedidos[index],
-    ...data,
-    items,
-    subtotal,
-    total,
-    moneda,
-    updatedAt: new Date(),
-  };
-
-  return pedidos[index];
+export async function eliminarPedido(id: number): Promise<Pedido | null> {
+  try {
+    const deleted = await prisma.pedido.delete({
+      where: { id },
+      include: { items: true, poliza: true },
+    });
+    return mapRowToPedido(deleted);
+  } catch (e: any) {
+    if (e.code === "P2025") return null;
+    throw e;
+  }
 }

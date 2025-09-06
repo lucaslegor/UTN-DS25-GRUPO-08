@@ -1,19 +1,13 @@
-// ## Archivo   src/routes/pedido.routes.ts
-import { Router } from 'express';
-import * as pedidoController from '../controllers/pedido.controller';
+import { Router } from "express";
+import * as ctrl from "../controllers/pedido.controller";
+import { validate } from "../middlewares/validation.middleware";
+import { crearPedidoSchema, actualizarPedidoSchema } from "../validations/pedidos.validation";
 
 const router = Router();
-
-// GET /api/pedidos
-router.get('/', pedidoController.listarPedidos);
-
-// GET /api/pedidos/:id
-router.get('/:id', pedidoController.obtenerPedidoPorId);
-
-// POST /api/pedidos
-router.post('/', pedidoController.crearPedido);
-
-// PUT /api/pedidos/:id
-router.put('/:id', pedidoController.actualizarPedido);
+router.get("/", ctrl.listarPedidos);
+router.get("/:id", ctrl.obtenerPedidoPorId);
+router.post("/", validate(crearPedidoSchema), ctrl.crearPedido);   // 👈 importante
+router.put("/:id", validate(actualizarPedidoSchema), ctrl.actualizarPedido);
+router.delete("/:id", ctrl.eliminarPedido);
 
 export const pedidoRoutes = router;

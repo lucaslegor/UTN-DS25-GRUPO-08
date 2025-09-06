@@ -1,24 +1,20 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 import {
-  Pedido,
   CrearPedidoRequest,
   PedidoResponse,
   PedidosListResponse,
-} from '../types/pedidos.types';
-import * as pedidoService from '../services/pedidos.service';
+} from "../types/pedidos.types";
+import * as pedidoService from "../services/pedidos.service";
 
 // GET /api/pedidos
 export async function listarPedidos(
-  req: Request,
+  _req: Request,
   res: Response<PedidosListResponse>,
   next: NextFunction
 ) {
   try {
     const pedidos = await pedidoService.listarPedidos();
-    res.json({
-      pedidos,
-      total: pedidos.length,
-    });
+    res.json({ pedidos, total: pedidos.length });
   } catch (error) {
     next(error);
   }
@@ -26,17 +22,15 @@ export async function listarPedidos(
 
 // GET /api/pedidos/:id
 export async function obtenerPedidoPorId(
-  req: Request<{ id: string }>,
-  res: Response<PedidoResponse>,
+  req: Request,
+  res: Response<PedidoResponse | { message: string }>,
   next: NextFunction
 ) {
   try {
-    const { id } = req.params;
-    const pedido = await pedidoService.obtenerPedidoPorId(parseInt(id, 10));
-    res.json({
-      pedido,
-      message: 'Pedido recuperado correctamente',
-    });
+    const id = Number(req.params.id);
+    const pedido = await pedidoService.obtenerPedidoPorId(id);
+    if (!pedido) return res.status(404).json({ message: "Pedido no encontrado" });
+    res.json({ pedido });
   } catch (error) {
     next(error);
   }
@@ -44,16 +38,22 @@ export async function obtenerPedidoPorId(
 
 // POST /api/pedidos
 export async function crearPedido(
-  req: Request<{}, PedidoResponse, CrearPedidoRequest>,
-  res: Response<PedidoResponse>,
+  req: Request<{}, {}, CrearPedidoRequest & { idUsuario?: number }>,
+  res: Response<PedidoResponse | { message: string }>,
   next: NextFunction
 ) {
   try {
-    const nuevoPedido = await pedidoService.crearPedido(req.body);
-    res.status(201).json({
-      pedido: nuevoPedido,
-      message: 'Pedido creado correctamente',
-    });
+    const idUsuario =
+      (res.locals?.user && (res.locals.user.idUsuario || res.locals.user.id)) ??
+      ((req as any).user && ((req as any).user.idUsuario || (req as any).user.id)) ??
+      req.body.idUsuario;
+
+    if (!idUsuario) {
+      return res.status(400).json({ message: "idUsuario requerido (token o body)" });
+    }
+
+    const created = await pedidoService.crearPedido(Number(idUsuario), req.body);
+    res.status(201).json({ pedido: created, message: "Pedido creado correctamente" });
   } catch (error) {
     next(error);
   }
@@ -61,20 +61,31 @@ export async function crearPedido(
 
 // PUT /api/pedidos/:id
 export async function actualizarPedido(
-  req: Request<{ id: string }, PedidoResponse, Partial<Pedido>>,
-  res: Response<PedidoResponse>,
+  req: Request,
+  res: Response<PedidoResponse | { message: string }>,
   next: NextFunction
 ) {
   try {
-    const { id } = req.params;
-    const pedidoActualizado = await pedidoService.actualizarPedido(
-      parseInt(id, 10),
-      req.body
-    );
-    res.json({
-      pedido: pedidoActualizado,
-      message: 'Pedido actualizado correctamente',
-    });
+    const id = Number(req.params.id);
+    const updated = await pedidoService.actualizarPedido(id, req.body);
+    if (!updated) return res.status(404).json({ message: "Pedido no encontrado" });
+    res.json({ pedido: updated, message: "Pedido actualizado correctamente" });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// DELETE /api/pedidos/:id
+export async function eliminarPedido(
+  req: Request,
+  res: Response<PedidoResponse | { message: string }>,
+  next: NextFunction
+) {
+  try {
+    const id = Number(req.params.id);
+    const eliminado = await pedidoService.eliminarPedido(id);
+    if (!eliminado) return res.status(404).json({ message: "Pedido no encontrado" });
+    res.json({ pedido: eliminado, message: "Pedido eliminado correctamente" });
   } catch (error) {
     next(error);
   }
