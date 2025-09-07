@@ -13,7 +13,6 @@ Este es el backend de un sistema de gestión de seguros desarrollado con Node.js
 - **TypeScript** - Superset tipado de JavaScript
 - **Prisma** - ORM para base de datos
 - **PostgreSQL** - Base de datos relacional
-- **JWT** - Autenticación con tokens
 - **Zod** - Validación de esquemas
 - **bcryptjs** - Encriptación de contraseñas
 - **CORS** - Configuración de políticas de origen cruzado
@@ -43,7 +42,7 @@ backend/
 
 - Node.js (versión 18 o superior)
 - PostgreSQL
-- npm o yarn
+- npm
 
 ### Pasos de Instalación
 
@@ -62,7 +61,6 @@ backend/
    Crear archivo `.env` en la raíz del backend:
    ```env
    DATABASE_URL="postgresql://usuario:password@localhost:5432/seguros_db"
-   JWT_SECRET="tu-jwt-secret-aqui"
    PORT=3000
    ```
 
@@ -73,20 +71,8 @@ backend/
    
    # Ejecutar migraciones
    npx prisma migrate dev
-   
-   # (Opcional) Sembrar datos iniciales
-   npx prisma db seed
    ```
 
-5. **Ejecutar el servidor**
-   ```bash
-   # Modo desarrollo
-   npm run dev
-   
-   # Modo producción
-   npm run build
-   npm start
-   ```
 
 ## 📊 Modelo de Datos
 
@@ -96,6 +82,7 @@ backend/
 - **Producto**: Catálogo de seguros (AUTO, HOGAR, VIDA, SALUD)
 - **Pedido**: Órdenes de compra con items
 - **Póliza**: Documentos de seguros vinculados a pedidos
+- Lo siguiente no fue realizado por cambios en los requerimientos del cliente
 - **Carrito**: Carrito de compras temporal
 - **Pago**: Gestión de transacciones de pago
 
@@ -112,6 +99,11 @@ backend/
 ## 🔌 API Endpoints
 
 ### Usuarios
+- Esto fue conectado con frontEnd se puede probar directamente desde ahi, si bien solo vimos una conexion basica decidimos probarlo con al menos uno de los CRUDs
+- Para ver el panelAdmin hay que ser usuario administrador
+- Dejo cuenta con rol ADMINISTRADOR.
+- Usuario: joacoro32
+- Password: 12345678 (falta regex de contraseña)
 - `GET /api/usuarios` - Obtener todos los usuarios
 - `GET /api/usuarios/:id` - Obtener usuario por ID
 - `POST /api/usuarios` - Crear nuevo usuario
@@ -139,18 +131,6 @@ backend/
 - `PUT /api/polizas/:id` - Actualizar póliza
 - `DELETE /api/polizas/:id` - Eliminar póliza
 
-### Carrito
-- `GET /api/cart` - Obtener carrito actual
-- `POST /api/cart/items` - Agregar item al carrito
-- `PUT /api/cart/items/:id` - Actualizar cantidad de item
-- `DELETE /api/cart/items/:id` - Eliminar item del carrito
-- `DELETE /api/cart` - Vaciar carrito
-
-### Pagos
-- `GET /api/pagos` - Obtener todos los pagos
-- `GET /api/pagos/:id` - Obtener pago por ID
-- `POST /api/pagos` - Crear nuevo pago
-- `PUT /api/pagos/:id` - Actualizar pago
 
 ## 📝 Ejemplos de Uso
 
@@ -200,11 +180,6 @@ POST /api/polizas/1
 }
 ```
 
-## 🔧 Scripts Disponibles
-
-- `npm run dev` - Ejecutar en modo desarrollo con hot reload
-- `npm run build` - Compilar TypeScript a JavaScript
-- `npm start` - Ejecutar versión compilada en producción
 
 ## 🛡️ Middlewares Implementados
 
@@ -216,7 +191,6 @@ POST /api/polizas/1
 ## 🔐 Autenticación y Seguridad
 
 - Encriptación de contraseñas con bcryptjs
-- Autenticación basada en JWT
 - Validación de datos de entrada con Zod
 - Middleware de manejo de errores
 
@@ -237,18 +211,7 @@ Todas las entradas son validadas usando esquemas Zod:
 - **Migraciones**: Automatizadas con Prisma Migrate
 - **Cliente**: Generado automáticamente en `src/generated/prisma`
 
-### Comandos de Base de Datos
 
-```bash
-# Ver estado de la base de datos
-npx prisma db status
-
-# Resetear base de datos
-npx prisma migrate reset
-
-# Ver datos en Prisma Studio
-npx prisma studio
-```
 
 ## 🚨 Consideraciones Importantes
 
@@ -258,9 +221,9 @@ npx prisma studio
 4. **CORS**: Configurado para aceptar requests desde `http://localhost:5173` (frontend)
 5. **Validaciones**: Todos los endpoints requieren validación de datos de entrada
 
-## 📞 Soporte
 
-Para consultas o problemas técnicos, contactar al equipo de desarrollo del Grupo 08 - UTN DS25.
+
+## Grupo 08 - UTN DS25.
 
 ---
 
