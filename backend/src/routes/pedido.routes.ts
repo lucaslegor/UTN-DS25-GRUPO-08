@@ -6,7 +6,7 @@ import { crearPedidoSchema, actualizarPedidoSchema } from "../validations/pedido
 const router = Router();
 router.get("/", ctrl.listarPedidos);
 router.get("/:id", ctrl.obtenerPedidoPorId);
-router.post("/", validate(crearPedidoSchema), ctrl.crearPedido);   // 👈 importante
+router.post("/", validate(crearPedidoSchema), ctrl.crearPedido);   
 router.put("/:id", validate(actualizarPedidoSchema), ctrl.actualizarPedido);
 router.delete("/:id", ctrl.eliminarPedido);
 
