@@ -21,6 +21,7 @@ app.use(morgan("dev"));
 app.use(logRequest);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
+//RUTAS
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/pedidos", pedidoRoutes);
 app.use("/api/polizas", polizaRoutes);
