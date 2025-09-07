@@ -60,7 +60,7 @@ backend/
 3. **Configurar variables de entorno**
    Crear archivo `.env` en la raíz del backend:
    ```env
-   DATABASE_URL="postgresql://usuario:password@localhost:5432/seguros_db"
+   DATABASE_URL="postgresql://usuario:password@localhost:5432/seguros_db" (Esto es un ejemplo, verificar URL en supabase)
    PORT=3000
    ```
 
@@ -227,6 +227,3 @@ Todas las entradas son validadas usando esquemas Zod:
 
 ---
 
-**Versión**: 1.0.0  
-**Última actualización**: Enero 2025  
-**Equipo**: UTN-DS25-GRUPO-08
