@@ -1,13 +1,15 @@
 import { Router } from "express";
-import * as ctrl from "../controllers/pedido.controller";
+import * as pedidoController from "../controllers/pedido.controller";
 import { validate } from "../middlewares/validation.middleware";
-import { crearPedidoSchema, actualizarPedidoSchema } from "../validations/pedidos.validation";
+import { createPedidoSchema, updatePedidoSchema } from "../validations/pedidos.validation";
+import { authenticate, authorize } from "../middlewares/auth.middleware";
 
 const router = Router();
-router.get("/", ctrl.listarPedidos);
-router.get("/:id", ctrl.obtenerPedidoPorId);
-router.post("/", validate(crearPedidoSchema), ctrl.crearPedido);   
-router.put("/:id", validate(actualizarPedidoSchema), ctrl.actualizarPedido);
-router.delete("/:id", ctrl.eliminarPedido);
 
-export const pedidoRoutes = router;
+router.get("/", authenticate, authorize("ADMIN", "USER"), pedidoController.listarPedidos);
+router.get("/:id", authenticate, authorize("ADMIN", "USER"), pedidoController.obtenerPedidoPorId);
+router.post("/", authenticate, authorize("USER", "ADMIN"), validate(createPedidoSchema), pedidoController.crearPedido);
+router.put("/:id", authenticate, authorize("ADMIN"), validate(updatePedidoSchema), pedidoController.actualizarPedido);
+router.delete("/:id", authenticate, authorize("ADMIN"), pedidoController.eliminarPedido);
+
+export default router;
