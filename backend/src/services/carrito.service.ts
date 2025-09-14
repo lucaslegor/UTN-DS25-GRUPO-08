@@ -2,14 +2,12 @@
 import { Cart, CartItem, AddToCartRequest } from '../types/carrito.types';
 import prisma from '../config/prisma';
 
-// 🔧 Helper: parsear idCarrito (string) -> int (DB)
 function parseCarritoId(idCarrito: string): number | null {
   const n = Number(idCarrito);
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 
 function recalcTotal(_items: CartItem[]): number {
-  // Si en el futuro queremos calcular: sumar precio*cantidad desde Producto.
   return 0;
 }
 
@@ -54,9 +52,7 @@ export async function listAll(): Promise<Cart[]> {
 export async function createCart(): Promise<Cart> {
   const created = await prisma.carrito.create({
     data: {
-      // total y moneda tienen defaults; igual dejo explícito total=0 por claridad
       total: 0,
-      // moneda: 'ARS' // default en el schema
     },
   });
   // Sin items al crear
@@ -100,7 +96,6 @@ export async function addItem(idCarrito: string, req: AddToCartRequest): Promise
 
   const cantidad = ensureCantidad(req.cantidad);
 
-  // PK compuesta: @@id([idCarrito, idProducto])
   const key = { idCarrito_idProducto: { idCarrito: intId, idProducto: req.productId } };
 
   const existing = await prisma.carritoItem.findUnique({ where: key });
@@ -120,7 +115,6 @@ export async function addItem(idCarrito: string, req: AddToCartRequest): Promise
     });
   }
 
-  // Mantengo total=0 (igual que mock) y fuerzo update para updatedAt
   await prisma.carrito.update({
     where: { id: intId },
     data: { total: 0 },
@@ -144,7 +138,6 @@ export async function setItemCantidad(
   const existing = await prisma.carritoItem.findUnique({ where: key });
 
   if (!existing) {
-    // Igual que tu mock: si no existe, devolvemos el carrito tal cual.
     return loadCart(intId);
   }
 

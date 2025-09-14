@@ -42,7 +42,7 @@ export const NavBar = () => {
       setIsLogin(false);
       setIsAdmin(false);
     }
-  }, [location.pathname]); // se recalcula al cambiar de ruta (p.ej. tras login/register)
+  }, [location.pathname]); 
 
   const handleLogout = () => {
     localStorage.removeItem("auth");

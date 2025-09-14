@@ -29,7 +29,7 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body } = {}
   return data;
 }
 
-// === Auth ===
+// === Autenticacion ===
 export async function loginApi({ username, mail, password }) {
   const data = await apiFetch('/api/usuarios/login', {
     method: 'POST',

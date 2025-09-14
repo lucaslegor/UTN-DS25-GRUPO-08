@@ -28,11 +28,6 @@ const Login = () => {
       // Llama a la API de login (tu helper)
       const res = await loginApi(payload);
 
-      // Si tu loginApi NO guarda en localStorage el token, podés descomentar:
-      // if (res?.token && res?.user) {
-      //   localStorage.setItem("auth", JSON.stringify(res));
-      // }
-
       navigate("/");
     } catch (err) {
       setError(err.message || "Usuario o contraseña incorrectos");

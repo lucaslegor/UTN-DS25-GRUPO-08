@@ -15,8 +15,8 @@ router.get('/:idCarrito', ctrl.getCart);
 router.delete('/:idCarrito', ctrl.deleteCart);
 
 // Ítems
-router.post('/:idCarrito/items', ctrl.addItem); // body: { productId, cantidad? }
-router.patch('/:idCarrito/items/:productId', ctrl.setItemCantidad); // body: { cantidad }
+router.post('/:idCarrito/items', ctrl.addItem); 
+router.patch('/:idCarrito/items/:productId', ctrl.setItemCantidad); 
 router.delete('/:idCarrito/items/:productId', ctrl.removeItem);
 router.delete('/:idCarrito/items', ctrl.clearItems);
 

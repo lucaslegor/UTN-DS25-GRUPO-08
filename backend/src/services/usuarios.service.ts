@@ -59,7 +59,6 @@ export async function actualizarUsuario(
   username: string,
   data: { username?: string; mail?: string; password?: string; rol?: Rol }
 ): Promise<UsuarioPublic | null> {
-  // Buscamos insensible a mayúsculas para que "Maxi" o "maxi" funcione
   const row = await prisma.usuario.findFirst({
     where: { username: { equals: username.trim(), mode: "insensitive" } },
   });

@@ -1,8 +1,8 @@
 import { handleError } from "./middlewares/error.middleware";
 import { logRequest } from "./middlewares/logger.middleware";
 import {usuariosRoutes} from './routes/usuario.routes'
-import { pedidoRoutes } from "../src/routes/pedido.routes";
-import { polizaRoutes } from "../src/routes/poliza.routes"; 
+import { pedidoRoutes } from "./routes/pedido.routes";
+import { polizaRoutes } from "./routes/poliza.routes";
 import { productoRoutes } from "./routes/producto.routes";
 import carritoRoutes from './routes/carrito.routes';
 import { pagoRoutes } from "./routes/pago.routes";
@@ -21,6 +21,7 @@ app.use(morgan("dev"));
 app.use(logRequest);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
+//RUTAS
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/pedidos", pedidoRoutes);
 app.use("/api/polizas", polizaRoutes);
