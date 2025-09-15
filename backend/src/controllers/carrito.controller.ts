@@ -9,7 +9,19 @@ export async function listAll(req: Request, res: Response) {
 }
 
 export async function createCart(req: Request, res: Response) {
-  const cart = await cartService.createCart();
+  // Obtener idUsuario del token o del body (como en pedidos)
+  const idUsuario =
+    (res.locals?.user && (res.locals.user.idUsuario || res.locals.user.id)) ??
+    ((req as any).user && ((req as any).user.idUsuario || (req as any).user.id)) ??
+    req.body.idUsuario;
+
+  if (!idUsuario) {
+    return res.status(400).json({ message: "idUsuario requerido (token o body)" });
+  }
+
+  // Pasar items si existen (para crear carrito con items)
+  const items = req.body.items || [];
+  const cart = await cartService.createCart(Number(idUsuario), items);
   const body: CartResponse = { cart };
   res.status(201).json(body);
 }

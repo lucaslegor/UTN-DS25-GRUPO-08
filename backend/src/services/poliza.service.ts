@@ -109,3 +109,41 @@ export async function deletePoliza(id: number): Promise<Poliza | null> {
     throw err;
   }
 }
+
+// FUNCIONES PARA AUTORIZACIÓN
+
+// Función para obtener pólizas filtradas por usuario
+export async function getPolizasByUsuario(idUsuario: number): Promise<Poliza[]> {
+  return await prisma.poliza.findMany({
+    where: {
+      pedido: {
+        idUsuario: idUsuario
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+}
+
+// Función para obtener póliza con verificación de ownership
+export async function getPolizaByIdConOwnership(id: number, idUsuario: number): Promise<Poliza | null> {
+  const poliza = await prisma.poliza.findFirst({
+    where: {
+      id: id,
+      pedido: {
+        idUsuario: idUsuario
+      }
+    }
+  });
+  return poliza;
+}
+
+// Función para verificar ownership de pedido
+export async function verificarOwnershipPedido(idPedido: number, idUsuario: number): Promise<boolean> {
+  const pedido = await prisma.pedido.findFirst({
+    where: {
+      id: idPedido,
+      idUsuario: idUsuario
+    }
+  });
+  return !!pedido;
+}

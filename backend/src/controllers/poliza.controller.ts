@@ -2,9 +2,19 @@ import { Request, Response, NextFunction } from 'express';
 import * as polizaService from '../services/poliza.service';
 
 // GET /api/polizas
-export async function getAllPolizas(_req: Request, res: Response, next: NextFunction) {
+export async function getAllPolizas(req: Request, res: Response, next: NextFunction) {
   try {
-    const polizas = await polizaService.getAllPolizas();
+    const { id, role } = req.user!; // Ya está autenticado por el middleware
+    
+    let polizas;
+    if (role === 'ADMIN') {
+      // Admin puede ver todas las pólizas
+      polizas = await polizaService.getAllPolizas();
+    } else {
+      // Usuario normal solo ve sus pólizas (filtradas por usuario)
+      polizas = await polizaService.getPolizasByUsuario(id);
+    }
+    
     res.json({ polizas, total: polizas.length });
   } catch (err) {
     next(err);
@@ -17,7 +27,18 @@ export async function getPolizaById(req: Request<{ id: string }>, res: Response,
     const id = Number(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: "ID inválido" });
 
-    const poliza = await polizaService.getPolizaById(id);
+    const { id: userId, role } = req.user!;
+    const esAdmin = role === 'ADMIN';
+
+    let poliza;
+    if (esAdmin) {
+      // Admin puede ver cualquier póliza
+      poliza = await polizaService.getPolizaById(id);
+    } else {
+      // Usuario normal solo puede ver sus propias pólizas
+      poliza = await polizaService.getPolizaByIdConOwnership(id, userId);
+    }
+
     if (!poliza) return res.status(404).json({ message: "Póliza no encontrada" });
 
     res.json({ poliza });
@@ -32,6 +53,17 @@ export async function createPoliza(req: Request<{ idPedido: string }>, res: Resp
     const idPedido = Number(req.params.idPedido);
     if (isNaN(idPedido)) return res.status(400).json({ message: "ID de pedido inválido" });
 
+    const { id: userId, role } = req.user!;
+    const esAdmin = role === 'ADMIN';
+
+    // Verificar que el pedido pertenece al usuario (si no es admin)
+    if (!esAdmin) {
+      const pedidoExiste = await polizaService.verificarOwnershipPedido(idPedido, userId);
+      if (!pedidoExiste) {
+        return res.status(403).json({ message: "No tienes permisos para crear pólizas en este pedido" });
+      }
+    }
+
     const nuevaPoliza = await polizaService.createPoliza(idPedido, req.body);
     res.status(201).json({ poliza: nuevaPoliza, message: "Póliza creada exitosamente" });
   } catch (error: any) {
@@ -45,6 +77,8 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
     const id = Number(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: "ID inválido" });
 
+    // La autorización ya se maneja en las rutas con authorize('ADMIN')
+    // Solo los administradores pueden llegar hasta aquí
     const updated = await polizaService.updatePoliza(id, req.body);
     res.json({ poliza: updated, message: "Póliza actualizada exitosamente" });
   } catch (error: any) {
@@ -58,6 +92,8 @@ export async function deletePoliza(req: Request<{ id: string }>, res: Response, 
     const id = Number(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: "ID inválido" });
 
+    // La autorización ya se maneja en las rutas con authorize('ADMIN')
+    // Solo los administradores pueden llegar hasta aquí
     const deleted = await polizaService.deletePoliza(id);
     if (!deleted) return res.status(404).json({ message: "Póliza no encontrada" });
 
