@@ -95,18 +95,21 @@ const formatARS = (n) =>
   ) + '/año';
 
 const AdminPanel = () => {
-  /** ======= Productos (CRUD localStorage) ======= */
+  /** ======= Productos (CRUD API) ======= */
   const [products, setProducts] = useState([]);
   const [product, setProduct] = useState({
-    name: '',
-    description: '',
-    image: '',
-    rubro: '',
-    price: '',
+    titulo: '',
+    descripcion: '',
+    cobertura: '',
+    tipo: '',
+    precio: '',
+    isActive: true,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [message, setMessage] = useState('');
   const [editingId, setEditingId] = useState(null);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState('');
 
   /** ======= Usuarios (API) ======= */
   const [activeTab, setActiveTab] = useState('form'); // 'form' | 'products' | 'users'
@@ -123,19 +126,12 @@ const AdminPanel = () => {
     if (!token) navigate('/login');
   }, [navigate]);
 
-  // Carga / migra productos
+  // Carga productos desde API
   useEffect(() => {
-    const saved = localStorage.getItem('products');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const normalized = normalizeProducts(parsed);
-      setProducts(normalized);
-      localStorage.setItem('products', JSON.stringify(normalized));
-    } else {
-      setProducts(DEFAULT_PRODUCTS);
-      localStorage.setItem('products', JSON.stringify(DEFAULT_PRODUCTS));
+    if (activeTab === 'products') {
+      loadProducts();
     }
-  }, []);
+  }, [activeTab]);
 
   // Cargar usuarios al entrar en pestaña "users"
   useEffect(() => {
@@ -144,7 +140,7 @@ const AdminPanel = () => {
     }
   }, [activeTab]);
 
-  /** ======= Helpers API usuarios ======= */
+  /** ======= Helpers API ======= */
   const authHeaders = () => {
     const headers = { 'Content-Type': 'application/json' };
     // Si tu backend requiere JWT real para listar, agregalo acá:
@@ -152,6 +148,70 @@ const AdminPanel = () => {
     if (token) headers.Authorization = `Bearer ${token}`;
     return headers;
   };
+
+  /** ======= API Productos ======= */
+  async function loadProducts() {
+    setProductsLoading(true);
+    setProductsError('');
+    try {
+      const resp = await fetch(`${API_BASE}/productos`, { headers: authHeaders() });
+      if (!resp.ok) throw new Error('Error cargando productos');
+      const data = await resp.json();
+      setProducts(data.products || []);
+    } catch (err) {
+      console.error(err);
+      setProductsError('No se pudieron cargar los productos');
+      setProducts([]);
+    } finally {
+      setProductsLoading(false);
+    }
+  }
+
+  async function createProduct(productData) {
+    try {
+      const resp = await fetch(`${API_BASE}/productos`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(productData)
+      });
+      if (!resp.ok) throw new Error('Error creando producto');
+      const data = await resp.json();
+      return data.product;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async function updateProduct(id, productData) {
+    try {
+      const resp = await fetch(`${API_BASE}/productos/${id}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(productData)
+      });
+      if (!resp.ok) throw new Error('Error actualizando producto');
+      const data = await resp.json();
+      return data.product;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async function deleteProduct(id) {
+    try {
+      const resp = await fetch(`${API_BASE}/productos/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders()
+      });
+      if (!resp.ok) throw new Error('Error eliminando producto');
+      return true;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
 
   const parseUsersResponse = async (resp) => {
     const json = await resp.json();
@@ -225,73 +285,84 @@ const AdminPanel = () => {
 
   const resetForm = () => {
     setProduct({
-      name: '',
-      description: '',
-      image: '',
-      rubro: '',
-      price: '',
+      titulo: '',
+      descripcion: '',
+      cobertura: '',
+      tipo: '',
+      precio: '',
+      isActive: true,
     });
     setPreviewUrl(null);
     setEditingId(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setProductsLoading(true);
+    
     try {
       const numericPrice = parseInt(
-        String(product.price).replace(/\D/g, '') || '0',
+        String(product.precio).replace(/\D/g, '') || '0',
         10
       );
 
-      const updated = {
-        id: editingId ?? Date.now(),
-        name: product.name.trim(),
-        title: product.name.trim(),
-        description: product.description.trim(),
-        rubro: product.rubro || '',
-        price: Number.isFinite(numericPrice) ? numericPrice : 0,
-        image: product.image || previewUrl || '',
+      const productData = {
+        titulo: product.titulo.trim(),
+        descripcion: product.descripcion.trim(),
+        cobertura: product.cobertura.trim(),
+        tipo: product.tipo,
+        precio: Number.isFinite(numericPrice) ? numericPrice : 0,
+        isActive: product.isActive,
       };
 
-      let next;
+      let updatedProduct;
       if (editingId) {
-        next = products.map((p) => (p.id === editingId ? updated : p));
+        updatedProduct = await updateProduct(editingId, productData);
         setMessage('Producto actualizado exitosamente');
       } else {
-        next = [...products, updated];
+        updatedProduct = await createProduct(productData);
         setMessage('Producto agregado exitosamente');
       }
 
-      setProducts(next);
-      localStorage.setItem('products', JSON.stringify(next));
+      // Recargar la lista de productos
+      await loadProducts();
       resetForm();
       setActiveTab('products');
     } catch (err) {
       console.error(err);
-      setMessage('Error al procesar el producto');
+      setMessage('Error al procesar el producto: ' + err.message);
+    } finally {
+      setProductsLoading(false);
     }
   };
 
   const handleEdit = (p) => {
     setProduct({
-      name: p.name || p.title || '',
-      description: p.description || '',
-      price: p.price ?? '',
-      image: p.image || '',
-      rubro: p.rubro || '',
+      titulo: p.titulo || '',
+      descripcion: p.descripcion || '',
+      cobertura: p.cobertura || '',
+      tipo: p.tipo || '',
+      precio: p.precio ?? '',
+      isActive: p.isActive ?? true,
     });
-    setPreviewUrl(p.image || null);
+    setPreviewUrl(null);
     setEditingId(p.id);
     setActiveTab('form');
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
-    const next = products.filter((p) => p.id !== id);
-    setProducts(next);
-    localStorage.setItem('products', JSON.stringify(next));
-    setMessage('Producto eliminado exitosamente');
+    
+    try {
+      await deleteProduct(id);
+      setMessage('Producto eliminado exitosamente');
+      // Recargar la lista de productos
+      await loadProducts();
+    } catch (err) {
+      console.error(err);
+      setMessage('Error al eliminar el producto: ' + err.message);
+    }
   };
 
   return (
@@ -374,15 +445,15 @@ const AdminPanel = () => {
 
             <form onSubmit={handleSubmit} className="admin-form">
               <div className="form-group">
-                <label htmlFor="name">
+                <label htmlFor="titulo">
                   <span className="label-icon">📝</span>
-                  Nombre del Producto
+                  Título del Producto
                 </label>
                 <input
                   type="text"
-                  id="name"
-                  name="name"
-                  value={product.name}
+                  id="titulo"
+                  name="titulo"
+                  value={product.titulo}
                   onChange={handleInputChange}
                   placeholder="Ej: Seguro de Auto Premium"
                   required
@@ -391,52 +462,69 @@ const AdminPanel = () => {
 
               <div className="form-grid">
                 <div className="form-group">
-                  <label htmlFor="price">
+                  <label htmlFor="precio">
                     <span className="label-icon">💰</span>
                     Precio (ARS)
                   </label>
                   <input
                     type="text"
-                    id="price"
-                    name="price"
-                    value={product.price}
+                    id="precio"
+                    name="precio"
+                    value={product.precio}
                     onChange={handleInputChange}
                     placeholder="Ej: 15000"
+                    required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="rubro">
+                  <label htmlFor="tipo">
                     <span className="label-icon">💼</span>
-                    Rubro
+                    Tipo de Seguro
                   </label>
                   <select
-                    id="rubro"
-                    name="rubro"
-                    value={product.rubro}
+                    id="tipo"
+                    name="tipo"
+                    value={product.tipo}
                     onChange={handleInputChange}
+                    required
                   >
                     <option value="">Seleccionar</option>
-                    <option value="salud">Salud</option>
-                    <option value="automotor">Automotor</option>
+                    <option value="auto">Auto</option>
                     <option value="hogar">Hogar</option>
                     <option value="vida">Vida</option>
-                    <option value="mascota">Mascota</option>
+                    <option value="salud">Salud</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="description">
+                <label htmlFor="descripcion">
                   <span className="label-icon">📄</span>
                   Descripción
                 </label>
                 <textarea
-                  id="description"
-                  name="description"
-                  value={product.description}
+                  id="descripcion"
+                  name="descripcion"
+                  value={product.descripcion}
                   onChange={handleInputChange}
                   placeholder="Describe las características y beneficios del seguro..."
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="cobertura">
+                  <span className="label-icon">🛡️</span>
+                  Cobertura
+                </label>
+                <input
+                  type="text"
+                  id="cobertura"
+                  name="cobertura"
+                  value={product.cobertura}
+                  onChange={handleInputChange}
+                  placeholder="Ej: Cobertura total hasta $5.000.000"
                   required
                 />
               </div>
@@ -470,9 +558,16 @@ const AdminPanel = () => {
               </div>
 
               <div className="form-actions">
-                <button type="submit" className="submit-button">
+                <button 
+                  type="submit" 
+                  className="submit-button"
+                  disabled={productsLoading}
+                >
                   <Save className="button-icon" />
-                  {editingId ? 'Actualizar Producto' : 'Agregar Producto'}
+                  {productsLoading 
+                    ? 'Procesando...' 
+                    : editingId ? 'Actualizar Producto' : 'Agregar Producto'
+                  }
                 </button>
 
                 {editingId && (
@@ -515,14 +610,18 @@ const AdminPanel = () => {
               />
             </div>
 
+            {productsLoading && <div className="message">Cargando productos…</div>}
+            {productsError && <div className="message error">{productsError}</div>}
+
             <div className="table-responsive">
               <table className="products-table">
                 <thead>
                   <tr>
-                    <th>Imagen</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Tipo</th>
                     <th>Precio</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -530,33 +629,40 @@ const AdminPanel = () => {
                   {products.map((p) => (
                     <tr key={p.id}>
                       <td>
-                        <div className="table-image-container">
-                          <img
-                            src={p.image}
-                            alt={p.name || p.title}
-                            className="table-image"
-                          />
+                        <div className="product-id">
+                          <strong>#{p.id}</strong>
                         </div>
                       </td>
                       <td>
                         <div className="product-name">
-                          <strong>{p.name || p.title}</strong>
-                          <Chip label="Activo" color="success" size="small" />
+                          <strong>{p.titulo}</strong>
+                          <div className="product-description">
+                            {p.descripcion?.length > 50
+                              ? `${p.descripcion.substring(0, 50)}...`
+                              : p.descripcion}
+                          </div>
                         </div>
                       </td>
                       <td>
-                        <div className="product-description">
-                          {p.description?.length > 100
-                            ? `${p.description.substring(0, 100)}...`
-                            : p.description}
-                        </div>
+                        <Chip 
+                          label={p.tipo?.toUpperCase() || 'N/A'} 
+                          color="primary" 
+                          size="small" 
+                        />
                       </td>
                       <td>
                         <div className="product-price">
                           <span className="price-amount">
-                            {formatARS(p.price)}
+                            {formatARS(p.precio)}
                           </span>
                         </div>
+                      </td>
+                      <td>
+                        <Chip 
+                          label={p.isActive ? 'Activo' : 'Inactivo'} 
+                          color={p.isActive ? 'success' : 'error'} 
+                          size="small" 
+                        />
                       </td>
                       <td>
                         <div className="action-buttons">
@@ -582,10 +688,10 @@ const AdminPanel = () => {
                       </td>
                     </tr>
                   ))}
-                  {products.length === 0 && (
+                  {!productsLoading && products.length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', opacity: 0.7 }}>
-                        No hay productos cargados.
+                      <td colSpan={6} style={{ textAlign: 'center', opacity: 0.7 }}>
+                        {productsError ? 'Error cargando productos' : 'No hay productos cargados.'}
                       </td>
                     </tr>
                   )}
