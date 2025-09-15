@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { crearUsuario, listarUsuarios, obtenerUsuarioPorUsername, actualizarUsuario, eliminarUsuario, loginUsuario } from "../services/usuarios.service";
+import { crearUsuario, listarUsuarios, obtenerUsuarioPorUsername, actualizarUsuario, eliminarUsuario} from "../services/usuarios.service";
 import { crearUsuarioSchema, loginSchema, actualizarUsuarioSchema } from "../validations/usuarios.validation";
 import type { UsuarioPublic } from "../types/usuarios.types";
+import prisma from "../config/prisma";
 
 // GET /api/usuarios
 export const getUsuarios = async (_req: Request, res: Response, next: NextFunction) => {
@@ -63,29 +64,10 @@ export const deleteUsuario = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-// POST /api/usuarios/auth/login
-export const login = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const parsed = loginSchema.parse(req.body);
-    const { token, user } = await loginUsuario(parsed);
-    res.json({ token, user });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// POST /api/usuarios/auth/register
-export const register = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const parsed = crearUsuarioSchema.parse(req.body);
-    const user = await crearUsuario(
-      parsed.username,
-      parsed.mail,
-      parsed.password,
-      parsed.rol === "ADMINISTRADOR" ? "Administrador" : "Usuario"
-    );
-    res.status(201).json({ user, message: "Registro OK" });
-  } catch (err) {
-    next(err);
-  }
-};
+export async function user(req: Request, res: Response) {
+  if (!req.user) return res.status(401).json({ message: "No autenticado" });
+  const row = await prisma.usuario.findUnique({ where: { id: req.user.id } });
+  if (!row) return res.status(404).json({ message: "Usuario no encontrado" });
+  const { passwordHash, ...safe } = row;
+  res.json({ user: safe });
+}

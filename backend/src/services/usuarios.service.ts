@@ -1,43 +1,29 @@
 import prisma from "../config/prisma";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { toUsuarioPublic } from "../utils/UserMapperToPublic";
 import { mapDbToUsuario, rolToPrisma } from "../utils/userMapperPrisma";
 import type { UsuarioPublic, Rol } from "../types/usuarios.types";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
-
-/** Lista todos los usuarios (público) */
 export async function listarUsuarios(): Promise<UsuarioPublic[]> {
   const rows = await prisma.usuario.findMany({ orderBy: { id: "asc" } });
   return rows.map((r) => toUsuarioPublic(mapDbToUsuario(r)));
 }
 
-/** Obtiene un usuario por username (público) */
-export async function obtenerUsuarioPorUsername(
-  username: string
-): Promise<UsuarioPublic | null> {
-  const row = await prisma.usuario.findFirst({
-    where: { username: { equals: username.trim(), mode: "insensitive" } },
-  });
+export async function obtenerUsuarioPorUsername(username: string): Promise<UsuarioPublic | null> {
+  const row = await prisma.usuario.findUnique({ where: { username } });
   return row ? toUsuarioPublic(mapDbToUsuario(row)) : null;
 }
 
-/** Crea un usuario nuevo */
 export async function crearUsuario(
   username: string,
   mail: string,
   password: string,
   rol: Rol = "Usuario"
 ): Promise<UsuarioPublic> {
-  const existsU = await prisma.usuario.findFirst({
-    where: { username: { equals: username.trim(), mode: "insensitive" } },
-  });
+  const existsU = await prisma.usuario.findUnique({ where: { username } });
   if (existsU) throw new Error("El nombre de usuario ya existe");
 
-  const existsM = await prisma.usuario.findUnique({
-    where: { mail: mail.trim().toLowerCase() },
-  });
+  const existsM = await prisma.usuario.findUnique({ where: { mail: mail.toLowerCase() } });
   if (existsM) throw new Error("El email ya está registrado");
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -47,83 +33,33 @@ export async function crearUsuario(
       username: username.trim(),
       mail: mail.trim().toLowerCase(),
       passwordHash,
-      rol: rolToPrisma(rol), 
+      rol: rolToPrisma(rol), // 'ADMINISTRADOR' | 'USUARIO'
     },
   });
 
   return toUsuarioPublic(mapDbToUsuario(created));
 }
 
-/** Actualiza datos de un usuario identificado por su username */
 export async function actualizarUsuario(
   username: string,
   data: { username?: string; mail?: string; password?: string; rol?: Rol }
 ): Promise<UsuarioPublic | null> {
-  const row = await prisma.usuario.findFirst({
-    where: { username: { equals: username.trim(), mode: "insensitive" } },
-  });
+  const row = await prisma.usuario.findUnique({ where: { username } });
   if (!row) return null;
 
-  // Armamos payload de actualización 
-  const payload: Record<string, any> = {};
+  const payload: any = {};
   if (data.username) payload.username = data.username.trim();
   if (data.mail) payload.mail = data.mail.trim().toLowerCase();
   if (data.password) payload.passwordHash = await bcrypt.hash(data.password, 10);
   if (data.rol) payload.rol = rolToPrisma(data.rol);
 
-  const updated = await prisma.usuario.update({
-    where: { id: row.id }, 
-    data: payload,
-  });
-
+  const updated = await prisma.usuario.update({ where: { username }, data: payload });
   return toUsuarioPublic(mapDbToUsuario(updated));
 }
 
-/** Elimina un usuario por username */
 export async function eliminarUsuario(username: string): Promise<boolean> {
-  const row = await prisma.usuario.findFirst({
-    where: { username: { equals: username.trim(), mode: "insensitive" } },
-  });
+  const row = await prisma.usuario.findUnique({ where: { username } });
   if (!row) return false;
-
-  await prisma.usuario.delete({ where: { id: row.id } });
+  await prisma.usuario.delete({ where: { username } });
   return true;
-}
-
-/** Login con username */
-export async function loginUsuario({
-  username,
-  mail,
-  password,
-}: {
-  username?: string;
-  mail?: string;
-  password: string;
-}): Promise<{ token: string; user: UsuarioPublic }> {
-  let row = null;
-
-  if (username && username.trim()) {
-    row = await prisma.usuario.findFirst({
-      where: { username: { equals: username.trim(), mode: "insensitive" } },
-    });
-  } else if (mail && mail.trim()) {
-    row = await prisma.usuario.findUnique({
-      where: { mail: mail.trim().toLowerCase() },
-    });
-  }
-
-  if (!row) throw new Error("Credenciales inválidas");
-
-  const ok = await bcrypt.compare(password, row.passwordHash);
-  if (!ok) throw new Error("Credenciales inválidas");
-
-  const user = toUsuarioPublic(mapDbToUsuario(row));
-
-  const token = jwt.sign(
-    { sub: row.id, username: row.username, rol: row.rol },
-    JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-
-  return { token, user };
 }
