@@ -1,10 +1,10 @@
 export interface CartItem {
   productId: number;
-  cantidad: number;  // default 1
+  cantidad: number;  
 }
 
 export interface Cart {
-  idCarrito: string;          // p.ej. uuid por sesión
+  idCarrito: string;          
   items: CartItem[];
   total: number;
   moneda: 'ARS';
@@ -13,7 +13,7 @@ export interface Cart {
 
 export interface AddToCartRequest {
   productId: number;
-  cantidad?: number; // default 1
+  cantidad?: number; 
 }
 
 export interface CartResponse {

@@ -1,9 +1,7 @@
 import type { Usuario as DomUsuario, Rol } from "../types/usuarios.types";
 
-/** Enum equivalente al de Prisma (evitamos depender de la exportación) */
 type PrismaRol = "ADMINISTRADOR" | "USUARIO";
 
-/** Row mínimo devuelto por Prisma que necesitamos mapear */
 type PrismaUsuarioRow = {
   id: number;
   username: string;

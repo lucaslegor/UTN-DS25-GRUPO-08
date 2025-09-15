@@ -47,7 +47,7 @@ export async function crearUsuario(
       username: username.trim(),
       mail: mail.trim().toLowerCase(),
       passwordHash,
-      rol: rolToPrisma(rol), // "ADMINISTRADOR" | "USUARIO"
+      rol: rolToPrisma(rol), 
     },
   });
 
@@ -64,7 +64,7 @@ export async function actualizarUsuario(
   });
   if (!row) return null;
 
-  // Armamos payload de actualización (tipado laxo para evitar problemas con tipos generados)
+  // Armamos payload de actualización 
   const payload: Record<string, any> = {};
   if (data.username) payload.username = data.username.trim();
   if (data.mail) payload.mail = data.mail.trim().toLowerCase();
@@ -72,7 +72,7 @@ export async function actualizarUsuario(
   if (data.rol) payload.rol = rolToPrisma(data.rol);
 
   const updated = await prisma.usuario.update({
-    where: { id: row.id }, // usamos id para evitar issues con case
+    where: { id: row.id }, 
     data: payload,
   });
 
@@ -90,7 +90,7 @@ export async function eliminarUsuario(username: string): Promise<boolean> {
   return true;
 }
 
-/** Login con username (case-insensitive) o mail (en minúsculas) */
+/** Login con username */
 export async function loginUsuario({
   username,
   mail,

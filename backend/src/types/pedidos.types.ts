@@ -14,18 +14,18 @@ export interface PedidoItem {
   productId: number;
   titulo: string;
   precio: number;
-  cantidad: number; //Generalmente es 1
+  cantidad: number; 
 }
 
 export interface Pedido {
   idPedido: number;
-  idUsuario: number;         // comprador
+  idUsuario: number;         
   items: PedidoItem[];
   subtotal: number;
   total: number;
   moneda: 'ARS';
   estado: EstadoPedido;
-  poliza?: Poliza;           // asociada al pedido
+  poliza?: Poliza;           
   createdAt: Date;
   updatedAt: Date;
 }

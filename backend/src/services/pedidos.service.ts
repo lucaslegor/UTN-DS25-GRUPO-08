@@ -5,10 +5,6 @@ import {
   CrearPedidoRequest,
 } from "../types/pedidos.types";
 
-/* ========================
- *   Helpers
- * ======================== */
-
 function mapRowToPedido(row: any): Pedido {
   const items: PedidoItem[] = (row.items ?? []).map((it: any) => ({
     productId: it.idProducto,
@@ -38,10 +34,6 @@ function mapRowToPedido(row: any): Pedido {
   };
 }
 
-/* ========================
- *   CRUD
- * ======================== */
-
 export async function listarPedidos(): Promise<Pedido[]> {
   const rows = await prisma.pedido.findMany({
     orderBy: { createdAt: "desc" },
@@ -62,7 +54,6 @@ export async function crearPedido(
   idUsuario: number,
   data: CrearPedidoRequest
 ): Promise<Pedido> {
-  // 1) productos existentes
   const ids = data.items.map(i => i.productId);
   const productos = await prisma.producto.findMany({
     where: { id: { in: ids } },
@@ -72,19 +63,18 @@ export async function crearPedido(
     throw new Error(`Productos inexistentes: ${notFound.join(", ")}`);
   }
 
-  // 2) preparar items
   const itemsToCreate = productos.map(p => {
     const cant = data.items.find(i => i.productId === p.id)?.cantidad ?? 1;
     return {
       idProducto: p.id,
       titulo: p.titulo,
-      precio: p.precio, // Decimal en Prisma acepta number
+      precio: p.precio, 
       cantidad: cant,
     };
   });
 
   const subtotal = itemsToCreate.reduce((acc, it) => acc + Number(it.precio) * it.cantidad, 0);
-  const total = subtotal; // ajustar si hay recargos/descuentos
+  const total = subtotal; 
 
   const created = await prisma.pedido.create({
     data: {
@@ -116,7 +106,6 @@ export async function actualizarPedido(
   id: number,
   body: ActualizarPedidoRequest
 ): Promise<Pedido | null> {
-  // Si hay items, reemplazamos completamente y recalculamos totales
   if (body.items && body.items.length > 0) {
     const productos = await prisma.producto.findMany({
       where: { id: { in: body.items.map(i => i.productId) } },
@@ -143,7 +132,6 @@ export async function actualizarPedido(
 
     try {
       const updated = await prisma.$transaction(async (tx) => {
-        // Fuerza error si no existe
         await tx.pedido.update({ where: { id }, data: {} });
 
         await tx.pedidoItem.deleteMany({ where: { idPedido: id } });
@@ -175,7 +163,6 @@ export async function actualizarPedido(
     }
   }
 
-  // Solo estado (o nada)
   try {
     const updated = await prisma.pedido.update({
       where: { id },

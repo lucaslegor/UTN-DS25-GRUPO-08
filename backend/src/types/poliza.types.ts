@@ -2,9 +2,9 @@ export type EstadoPoliza = "PENDIENTE" | "CARGADA";
 
 export interface Poliza {
   id: number;
-  idPedido: number;       // vinculación al pedido/venta
-  archivoUrl: string;     // URL pública del PDF subido
-  estado: EstadoPoliza;   // si está pendiente o ya cargada
+  idPedido: number;       
+  archivoUrl: string;     
+  estado: EstadoPoliza;   
   createdAt: Date;
   updatedAt: Date;
 }

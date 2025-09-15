@@ -59,8 +59,7 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
 
     return poliza;
   } catch (err: any) {
-    // Manejo de errores comunes
-    if (err.code === "P2003") { // FK violation: Pedido inexistente
+    if (err.code === "P2003") { 
       const e: any = new Error("El pedido no existe (violación de clave foránea)");
       e.statusCode = 400;
       throw e;
@@ -105,7 +104,7 @@ export async function deletePoliza(id: number): Promise<Poliza | null> {
     return poliza;
   } catch (err: any) {
     if (err.code === "P2025") {
-      return null; // Póliza no encontrada
+      return null; 
     }
     throw err;
   }

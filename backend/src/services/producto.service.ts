@@ -64,7 +64,6 @@ function mapProducto(row: DbProducto): Product {
     id: row.id,
     titulo: row.titulo,
     descripcion: row.descripcion,
-    // 👇 Convertimos Decimal -> number
     precio: (row.precio as Prisma.Decimal).toNumber(),
     cobertura: row.cobertura,
     tipo: row.tipo as Product["tipo"],

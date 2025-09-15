@@ -15,7 +15,6 @@ function ensureCantidad(n?: number): number {
   return typeof n === 'number' && n > 0 ? Math.floor(n) : 1;
 }
 
-// 🔧 Mapper DB -> DTO
 function toCartDTO(row: any, items: any[]): Cart {
   return {
     idCarrito: String(row.id),
@@ -29,7 +28,6 @@ function toCartDTO(row: any, items: any[]): Cart {
   };
 }
 
-// 🔧 Cargar un carrito completo desde DB
 async function loadCart(intId: number): Promise<Cart | null> {
   const row = await prisma.carrito.findUnique({
     where: { id: intId },
@@ -39,7 +37,6 @@ async function loadCart(intId: number): Promise<Cart | null> {
   return toCartDTO(row, row.items);
 }
 
-// -------------------------------------------------------------
 
 export async function listAll(): Promise<Cart[]> {
   const rows = await prisma.carrito.findMany({
@@ -55,7 +52,6 @@ export async function createCart(): Promise<Cart> {
       total: 0,
     },
   });
-  // Sin items al crear
   return {
     idCarrito: String(created.id),
     items: [],

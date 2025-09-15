@@ -12,7 +12,6 @@ export const estadoPedidoEnum = z.enum([
 
 // POST /api/pedidos
 export const crearPedidoSchema = z.object({
-  // si tenés JWT, podés omitirlo; lo dejo opcional por compatibilidad
   idUsuario: z.number().int().positive().optional(),
   moneda: z.literal("ARS"),
   items: z.array(

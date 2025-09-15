@@ -4,7 +4,7 @@ export interface Product {
   id: number;
   titulo: string;
   descripcion: string;
-  precio: number;      //Costo del enlatado
+  precio: number;      
   cobertura: string;
   tipo: TipoSeguro;
   isActive: boolean;

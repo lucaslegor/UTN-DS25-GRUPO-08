@@ -1,8 +1,8 @@
 export type PasarelaPago = "MERCADOPAGO";
 
 export type EstadoPago =
-  | "CREADO"       // intención creada
-  | "PENDIENTE"    // esperando confirmación
+  | "CREADO"       
+  | "PENDIENTE"    
   | "APROBADO"
   | "RECHAZADO"
   | "CANCELADO";
@@ -14,9 +14,8 @@ export interface Pago {
   estado: EstadoPago;
   monto: number;
   moneda: 'ARS';
-  // Identificadores por pasarela
-  preferenceId?: string;  // Mercado Pago
-  initPoint?: string;     // MP checkout URL
+  preferenceId?: string;  
+  initPoint?: string;     
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,13 +27,11 @@ export interface CrearPagoRequest {
 
 export interface CrearPagoResponse {
   pago: Pago;
-  // Links/IDs para redirigir al checkout
   initPoint?: string;
   checkoutUrl?: string;
   message?: string;
 }
 
-// Tipos adicionales para el CRUD completo
 export interface UpdatePagoRequest {
   estado?: EstadoPago;
   monto?: number;
@@ -57,7 +54,7 @@ export interface UpdatePagoEstadoRequest {
 }
 
 export interface WebhookMercadoPago {
-  id: string;          // payment id
+  id: string;         
   type: "payment";
   action: string;
   date_created: string;

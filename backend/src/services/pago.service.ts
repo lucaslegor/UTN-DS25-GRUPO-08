@@ -81,15 +81,13 @@ function toPagoDTO(row: any): Pago {
   return {
     idPago: row.id,
     idPedido: row.idPedido,
-    pasarela: row.pasarela, // enum Prisma: "MERCADOPAGO"
-    estado: row.estado, // enum Prisma: "CREADO" | "PENDIENTE" | "APROBADO" | "RECHAZADO" | "CANCELADO"
+    pasarela: row.pasarela, 
+    estado: row.estado, 
     monto: Number(row.monto),
-    moneda: row.moneda, // "ARS"
-    // Estos campos NO  aun existen en la tabla; quedan undefined:
+    moneda: row.moneda, 
     preferenceId: undefined,
     initPoint: undefined,
     createdAt: row.createdAt,
-    // No hay updatedAt en DB -> lo aproximamos
     updatedAt: (row as any).updatedAt ?? row.createdAt,
   };
 }
@@ -127,15 +125,13 @@ export const createPago = async (pagoData: CrearPagoRequest): Promise<Pago> => {
   const created = await prisma.pago.create({
     data: {
       idPedido: pagoData.idPedido,
-      pasarela: pagoData.pasarela as any, // "MERCADOPAGO"
+      pasarela: pagoData.pasarela as any, 
       estado: "CREADO",
-      monto: 0, // tal como tu mock
-      moneda: "ARS", // default del schema
-      // createdAt lo setea Prisma
+      monto: 0, 
+      moneda: "ARS",
     },
   });
 
-  // Simulamos updatedAt como en el mock (no existe en DB)
   return { ...toPagoDTO(created), updatedAt: new Date() };
 };
 
@@ -190,7 +186,7 @@ export const updatePago = async (
 
   const payload: any = {};
 if (pagoData.estado) {
-  payload.estado = pagoData.estado; // enum válido
+  payload.estado = pagoData.estado; 
 }
 
 if (typeof pagoData.monto === "number") {
@@ -199,24 +195,19 @@ if (typeof pagoData.monto === "number") {
     (error as any).statusCode = 400;
     throw error;
   }
-  payload.monto = pagoData.monto; // Decimal en DB: Prisma acepta number
+  payload.monto = pagoData.monto; 
 }
-
-// ❌ preferenceId / initPoint: Todavia NO existen en tu modelo Prisma.Pago
-//    Falta agregar al schema y migrarlos.
 
 const updated = await prisma.pago.update({
   where: { id },
   data: payload,
 });
 
-// Devolvés el DTO como antes; preferenceId/initPoint quedan undefined
 return { ...toPagoDTO(updated), updatedAt: new Date() };
 };
 
 export const procesarWebhookMercadoPago = async (
   webhookData: any
 ): Promise<void> => {
-  // Por ahora solo mock
   console.log("Procesando webhook de Mercado Pago:", webhookData);
 };
