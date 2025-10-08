@@ -57,6 +57,12 @@ export async function loginApi({ mail, password }) {
     method: "POST",
     body: { mail, password },
   });
+// === Autenticacion ===
+export async function loginApi({ username, mail, password }) {
+  const data = await apiFetch('/api/auth/login', {
+    method: 'POST',
+    body: { username, mail, password },
+  }); 
   saveAuth(data);
   return data;
 }
