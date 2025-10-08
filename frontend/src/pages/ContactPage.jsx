@@ -1,5 +1,6 @@
-import React from 'react';
-import '../styles/contact.css';
+import React, { useRef } from "react";
+import emailjs from "@emailjs/browser";
+import "../styles/contact.css";
 import {
   Shield,
   Users,
@@ -12,8 +13,36 @@ import {
 } from "lucide-react";
 
 export const Contact = () => {
+  const form = useRef();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    emailjs
+      .sendForm(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,   // ⚙️ ID del servicio (desde .env)
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,  // ⚙️ ID del template (desde .env)
+        form.current,                              // ⚙️ referencia al formulario
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY    // ⚙️ clave pública (desde .env)
+      )
+      .then(
+        () => {
+          alert("✅ Mensaje enviado con éxito!");
+          form.current.reset();
+        },
+        (error) => {
+          console.error("Error enviando el correo:", error);
+          alert("❌ Hubo un error al enviar el mensaje. Intentalo nuevamente.");
+        }
+      );
+  };
+
   return (
-    <section id="contacto" className="contacto" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <section
+      id="contacto"
+      className="contacto"
+      style={{ fontFamily: "Poppins, sans-serif" }}
+    >
       <div className="container">
         <div className="contact-header">
           <h2 className="title-contact">
@@ -24,115 +53,97 @@ export const Contact = () => {
         <div className="contact-content">
           {/* Columna izquierda */}
           <div className="contact-info">
-            <div className="contact-item">
-              <div>
-                <h3 className="heading">
-                  <Shield className="icon" size={24} color="#3d6de2" /> ¿Por qué elegirnos?
-                </h3>
-                <div className="benefits-list">
-                  <div className="benefit-item">
-                    <CheckCircle size={16} color="#4CAF50" />
-                    <span>Más de 15 años de experiencia</span>
-                  </div>
-                  <div className="benefit-item">
-                    <CheckCircle size={16} color="#4CAF50" />
-                    <span>Asesoramiento personalizado</span>
-                  </div>
-                  <div className="benefit-item">
-                    <CheckCircle size={16} color="#4CAF50" />
-                    <span>Las mejores coberturas del mercado</span>
-                  </div>
-                  <div className="benefit-item">
-                    <CheckCircle size={16} color="#4CAF50" />
-                    <span>Respuesta rápida en siniestros</span>
-                  </div>
-                </div>
-              </div>
+            <div className="contact-benefits">
+              <h3 className="contact-subtitle">
+                <CheckCircle color="#3d6de2" size={20} /> Beneficios
+              </h3>
+              <ul>
+                <li>
+                  <Star color="#ffba00" size={16} /> Descuentos exclusivos para socios.
+                </li>
+                <li>
+                  <Star color="#ffba00" size={16} /> Asistencia personalizada.
+                </li>
+                <li>
+                  <Star color="#ffba00" size={16} /> Participación en eventos especiales.
+                </li>
+              </ul>
             </div>
 
-            <div className="contact-item">
-              <div>
-                <h3 className="heading">
-                  <Users className="icon" size={24} color="#3d6de2" /> Nuestros Clientes
-                </h3>
-                <div className="stats-container">
-                  <div className="stat-item">
-                    <div className="stat-number">5000+</div>
-                    <div className="stat-label">Clientes satisfechos</div>
-                  </div>
-                  <div className="stat-item">
-                    <div className="stat-number">98%</div>
-                    <div className="stat-label">Tasa de renovación</div>
-                  </div>
-                </div>
-              </div>
+            <div className="contact-quality">
+              <h3 className="contact-subtitle">
+                <Award color="#3d6de2" size={20} /> Calidad garantizada
+              </h3>
+              <p>
+                Nuestro compromiso con la excelencia nos impulsa a ofrecer
+                productos y servicios que superen las expectativas de nuestros
+                socios.
+              </p>
             </div>
 
-            <div className="contact-item">
-              <div>
-                <h3 className="heading">
-                  <Award className="icon" size={24} color="#3d6de2" /> Compromiso de Calidad
-                </h3>
-                <div className="quality-statement">
-                  {/* Versión larga (solo desktop) */}
-                  <p className="quality-text long-only">
-                    En <strong>Maps Asesores</strong> nos comprometemos a brindarte la mejor experiencia en seguros.
-                    Nuestro equipo de expertos está disponible para asesorarte en cada paso del proceso,
-                    desde la elección de la póliza hasta la gestión de siniestros.
-                  </p>
-                  {/* Versión corta (solo mobile) */}
-                  <p className="quality-text short-only">
-                    En <strong>Maps Asesores</strong> te asesoramos en todo: elección de póliza y gestión de siniestros.
-                  </p>
-                  <div className="rating">
-                    <Star size={20} color="#FFD700" fill="#FFD700" />
-                    <Star size={20} color="#FFD700" fill="#FFD700" />
-                    <Star size={20} color="#FFD700" fill="#FFD700" />
-                    <Star size={20} color="#FFD700" fill="#FFD700" />
-                    <Star size={20} color="#FFD700" fill="#FFD700" />
-                    <span className="rating-text">4.9 - Excelente servicio</span>
-                  </div>
-                </div>
-              </div>
+            <div className="contact-schedule">
+              <h3 className="contact-subtitle">
+                <Clock color="#3d6de2" size={20} /> Horarios de atención
+              </h3>
+              <p>
+                Lunes a Viernes: 9:00 - 18:00 <br />
+                Sábados: 9:00 - 13:00
+              </p>
             </div>
 
-            <div className="contact-item">
-              <div>
-                <h3 className="heading">
-                  <Clock className="icon" size={24} color="#3d6de2" /> Respuesta Garantizada
-                </h3>
-                <div className="response-info">
-                  <div className="response-item">
-                    <CheckCircle size={16} color="#4CAF50" />
-                    <span>Asesoramiento especializado</span>
-                  </div>
-                  <div className="response-item">
-                    <CheckCircle size={16} color="#4CAF50" />
-                    <span>80 asesores a tu disposición</span>
-                  </div>
-                  <div className="response-item">
-                    <CheckCircle size={16} color="#4CAF50" />
-                    <span>Múltiples opciones de cobertura</span>
-                  </div>
-                </div>
-              </div>
+            <div className="contact-security">
+              <h3 className="contact-subtitle">
+                <Shield color="#3d6de2" size={20} /> Seguridad y confianza
+              </h3>
+              <p>
+                Protegemos tus datos personales bajo los más altos estándares
+                de seguridad. La privacidad de nuestros socios es nuestra prioridad.
+              </p>
+            </div>
+
+            <div className="contact-community">
+              <h3 className="contact-subtitle">
+                <Users color="#3d6de2" size={20} /> Comunidad
+              </h3>
+              <p>
+                Formá parte de nuestra comunidad y disfrutá de todas las ventajas
+                que ofrece la Asociación Cultural y Deportiva Universal.
+              </p>
             </div>
           </div>
 
-          {/* Columna derecha: FORM */}
-          <form className="contact-form" onSubmit={(e)=>e.preventDefault()}>
+          {/* Columna derecha: Formulario */}
+          <form ref={form} className="contact-form" onSubmit={handleSubmit}>
             <h2 className="subtitle-form">
-              Envia tu mail {<SendHorizonal size={24} color="#3d6de2" />}
+              Envia tu mail <SendHorizonal size={24} color="#3d6de2" />
             </h2>
 
             <div>
-              <input type="text" placeholder="Nombre" className="contact-input" />
+              <input
+                type="text"
+                name="user_name"
+                placeholder="Nombre"
+                className="contact-input"
+                required
+              />
             </div>
             <div>
-              <input type="email" placeholder="Email" className="contact-input" />
+              <input
+                type="email"
+                name="user_email"
+                placeholder="Email"
+                className="contact-input"
+                required
+              />
             </div>
             <div>
-              <textarea rows={4} placeholder="Mensaje" className="contact-textarea"></textarea>
+              <textarea
+                name="message"
+                rows={4}
+                placeholder="Mensaje"
+                className="contact-textarea"
+                required
+              ></textarea>
             </div>
 
             <button type="submit" className="contact-button">
@@ -145,4 +156,4 @@ export const Contact = () => {
   );
 };
 
-export default Contact;
+
