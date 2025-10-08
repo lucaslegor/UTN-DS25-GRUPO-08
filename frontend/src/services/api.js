@@ -31,7 +31,7 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body } = {}
 
 // === Autenticacion ===
 export async function loginApi({ username, mail, password }) {
-  const data = await apiFetch('/api/usuarios/login', {
+  const data = await apiFetch('/api/auth/login', {
     method: 'POST',
     body: { username, mail, password },
   }); 
