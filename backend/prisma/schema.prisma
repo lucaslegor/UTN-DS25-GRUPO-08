@@ -84,7 +84,6 @@ model Producto {
   id Int @id @default(autoincrement())
   titulo String
   descripcion String
-  precio Decimal @db.Money
   cobertura String
   tipo TipoSeguro
   isActive Boolean
