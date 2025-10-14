@@ -15,57 +15,11 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { IconButton, Tooltip, Chip } from '@mui/material';
+import { apiFetch } from '../services/api';
 
 /** ========= Config API ========= */
 const RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
 const API_BASE = RAW_BASE.endsWith('/api') ? RAW_BASE : `${RAW_BASE}/api`;
-/** ========= Datos por defecto ========= */
-const DEFAULT_PRODUCTS = [
-  {
-    id: 1,
-    name: 'Seguro de Auto',
-    title: 'Seguro de Auto',
-    description:
-      'Protección completa para tu vehículo ante accidentes, robos y daños a terceros.',
-    price: 10000,
-    image:
-      'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80',
-    rubro: 'automotor',
-  },
-  {
-    id: 2,
-    name: 'Seguro de Hogar',
-    title: 'Seguro de Hogar',
-    description:
-      'Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.',
-    price: 8000,
-    image:
-      'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80',
-    rubro: 'hogar',
-  },
-  {
-    id: 3,
-    name: 'Seguro de Vida',
-    title: 'Seguro de Vida',
-    description:
-      'Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.',
-    price: 12000,
-    image:
-      'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80',
-    rubro: 'vida',
-  },
-  {
-    id: 4,
-    name: 'Seguro de Salud',
-    title: 'Seguro de Salud',
-    description:
-      'Acceso a la mejor atención médica y cobertura de gastos hospitalarios.',
-    price: 15000,
-    image:
-      'https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80',
-    rubro: 'salud',
-  },
-];
 
 /** Normaliza precios y estructura de productos leídos de localStorage */
 const normalizeProducts = (list) =>
@@ -143,29 +97,42 @@ const AdminPanel = () => {
   /** ======= Helpers API ======= */
   const authHeaders = () => {
     const headers = { 'Content-Type': 'application/json' };
-    // Si tu backend requiere JWT real para listar, agregalo acá:
     const token = localStorage.getItem('token'); // si guardás el JWT con la key 'token'
     if (token) headers.Authorization = `Bearer ${token}`;
     return headers;
   };
 
   /** ======= API Productos ======= */
-  async function loadProducts() {
-    setProductsLoading(true);
-    setProductsError('');
+
+async function loadProducts() {
+  setProductsLoading(true);
+  setProductsError("");
+
+  try {
+    // 1) Llamá al backend con apiFetch (ya agrega Authorization si hay token)
+    const data = await apiFetch("/api/productos");
+
+    // 2) Soportá distintos formatos: [{...}] o { products: [...] }
+    const list = Array.isArray(data) ? data : (data.products || []);
+
+    setProducts(list ?? []);
+  } catch (err) {
+    console.error(err);
+
+    // 3) Mensaje visible y fallback local para que el panel sea usable
+    setProductsError("No se pudieron cargar los productos del servidor. Mostrando datos locales si existen.");
+
     try {
-      const resp = await fetch(`${API_BASE}/productos`, { headers: authHeaders() });
-      if (!resp.ok) throw new Error('Error cargando productos');
-      const data = await resp.json();
-      setProducts(data.products || []);
-    } catch (err) {
-      console.error(err);
-      setProductsError('No se pudieron cargar los productos');
+      const saved = localStorage.getItem("products");
+      setProducts(saved ? JSON.parse(saved) : []);
+    } catch {
       setProducts([]);
-    } finally {
-      setProductsLoading(false);
     }
+  } finally {
+    setProductsLoading(false);
   }
+}
+
 
   async function createProduct(productData) {
     try {
@@ -213,57 +180,54 @@ const AdminPanel = () => {
     }
   }
 
-  const parseUsersResponse = async (resp) => {
-    const json = await resp.json();
-    if (Array.isArray(json)) return json;
-    if (json.usuarios) return json.usuarios;
-    if (json.usuario) return [json.usuario];
-    if (json.user) return [json.user];
-    if (json.users) return json.users;
-    return json ? [json] : [];
-  };
+  const normalizeUsers = (data) => {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.usuarios)) return data.usuarios;
+  if (data.usuario) return [data.usuario];
+  return [];
+};
 
-  async function loadUsers() {
-    setUsersLoading(true);
-    setUsersError('');
-    try {
-      let url = `${API_BASE}/usuarios`;
-      // Si querés hacer búsqueda exacta por username con getUsuario:username:
-      // cuando userQuery tenga algo, probamos GET /usuarios/:username
-      if (userQuery.trim()) {
-        url = `${API_BASE}/usuarios/${encodeURIComponent(userQuery.trim())}`;
-        const r1 = await fetch(url, { headers: authHeaders() });
-        if (r1.ok) {
-          const arr1 = await parseUsersResponse(r1);
-          setUsers(arr1.filter(Boolean));
-        } else if (r1.status === 404) {
-          // No encontrado: dejamos lista vacía
-          setUsers([]);
-        } else {
-          const r2 = await fetch(`${API_BASE}/usuarios`, { headers: authHeaders() });
-          if (!r2.ok) throw new Error('Error listando usuarios');
-          const arr2 = await parseUsersResponse(r2);
-          const q = userQuery.trim().toLowerCase();
-          setUsers(arr2.filter(u =>
-            u?.username?.toLowerCase().includes(q) ||
-            u?.mail?.toLowerCase().includes(q)
-          ));
-        }
-      } else {
-        // lista completa
-        const resp = await fetch(url, { headers: authHeaders() });
-        if (!resp.ok) throw new Error('Error listando usuarios');
-        const arr = await parseUsersResponse(resp);
-        setUsers(arr.filter(Boolean));
+async function loadUsers() {
+  setUsersLoading(true);
+  setUsersError("");
+
+  try {
+    const q = userQuery.trim();
+    if (q) {
+      const byUsername = await apiFetch(`/api/usuarios/${encodeURIComponent(q)}`)
+        .then(normalizeUsers)
+        .catch(async (err) => {
+          if (String(err.message).includes("404")) return null;
+          throw err; 
+        });
+
+      if (byUsername && byUsername.length) {
+        setUsers(byUsername.filter(Boolean));
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      setUsersError('No se pudieron cargar los usuarios');
-      setUsers([]);
-    } finally {
-      setUsersLoading(false);
+
+      const all = normalizeUsers(await apiFetch("/api/usuarios"));
+      const lower = q.toLowerCase();
+      const filtered = all.filter(
+        (u) =>
+          u?.username?.toLowerCase().includes(lower) ||
+          u?.mail?.toLowerCase().includes(lower)
+      );
+      setUsers(filtered);
+      return;
     }
+
+    const all = normalizeUsers(await apiFetch("/api/usuarios"));
+    setUsers(all.filter(Boolean));
+  } catch (err) {
+    console.error(err);
+    setUsersError("No se pudieron cargar los usuarios");
+    setUsers([]);
+  } finally {
+    setUsersLoading(false);
   }
+}
 
   /** ======= Handlers Productos ======= */
   const handleInputChange = (e) => {

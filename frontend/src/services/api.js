@@ -1,102 +1,124 @@
-// src/services/api.js
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
+// ===== Helpers de auth en localStorage (sólo access token + user "seguro") =====
 export function getAuth() {
-  try {
-    const raw = localStorage.getItem("auth");
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+  const raw = localStorage.getItem('auth');
+  try { return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
 export function saveAuth(auth) {
-  localStorage.setItem("auth", JSON.stringify(auth));
+  localStorage.setItem('auth', JSON.stringify(auth));
 }
 export function clearAuth() {
-  localStorage.removeItem("auth");
+  localStorage.removeItem('auth');
 }
 
-async function parseJSON(res) {
-  if (res.status === 204) return null;
-  try {
-    return await res.json();
-  } catch {
-    return null;
+// Actualiza sólo el token en localStorage, preservando user
+function setAuthToken(token) {
+  const auth = getAuth() || {};
+  const next = { ...auth, token };
+  saveAuth(next);
+  return next;
+}
+
+// ===== Llamada al backend para refrescar token usando la cookie httpOnly =====
+async function refreshAccessToken() {
+  const res = await fetch(`${API_URL}/api/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // MUY IMPORTANTE para enviar cookies
+  });
+
+  // si no hay refresh cookie válida, el backend devolverá 401/403
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    clearAuth();
+    const msg = data?.error || data?.message || `HTTP ${res.status}`;
+    throw new Error(msg);
   }
+
+  // esperamos { token, user? }
+  if (!data?.token) {
+    clearAuth();
+    throw new Error('No se recibió token nuevo en refresh');
+  }
+  return setAuthToken(data.token);
 }
 
-export async function apiFetch(
-  path,
-  { method = "GET", headers = {}, body } = {}
-) {
+// ===== Wrapper de fetch con retry en 401 (refresh + reintento UNA vez) =====
+export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry } = {}) {
   const auth = getAuth();
-  const h = { "Content-Type": "application/json", ...headers };
+  const h = { 'Content-Type': 'application/json', ...headers };
   if (auth?.token) h.Authorization = `Bearer ${auth.token}`;
 
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers: h,
     body: body ? JSON.stringify(body) : undefined,
+    credentials: 'include', // MUY IMPORTANTE para cookies httpOnly
   });
 
-  const data = (await parseJSON(res)) ?? {};
+  // si expira el access token, intentamos refresh y reintentamos una vez
+  if (res.status === 401 && !_retry) {
+    try {
+      await refreshAccessToken(); // renueva y guarda el token
+      // reintento con _retry = true para no entrar en loop
+      return apiFetch(path, { method, headers, body, _retry: true });
+    } catch (e) {
+      // refresh falló => sesión inválida
+      clearAuth();
+      throw e;
+    }
+  }
+
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const msg =
-      data?.error ||
-      data?.message ||
-      (data?.issues ? JSON.stringify(data.issues) : null) ||
-      `HTTP ${res.status}`;
+    const msg = data?.error || data?.message || `HTTP ${res.status}`;
     throw new Error(msg);
   }
   return data;
 }
 
-/* ====== AUTH ====== */
-export async function loginApi({ mail, password }) {
-  const data = await apiFetch("/api/auth/login", {
-    method: "POST",
-    body: { mail, password },
-  });
-// === Autenticacion ===
+// ====== AUTH ======
+
+// Login: backend devolverá { token, user }, y también setea cookie del refresh
 export async function loginApi({ username, mail, password }) {
+  // según tu validación, puedes enviar username o mail; aquí soportamos ambos
+  const payload = mail ? { mail, password } : { username, password };
+
   const data = await apiFetch('/api/auth/login', {
     method: 'POST',
-    body: { username, mail, password },
-  }); 
-  saveAuth(data);
+    body: payload,
+  });
+
+  // guardamos token y user en localStorage
+  saveAuth(data); // data = { token, user }
   return data;
 }
 
-export async function userApi() {
-  return apiFetch("/api/auth/user");
-}
-
-export function logout() {
-  clearAuth();
-}
-
-/* ====== USUARIOS ====== */
+// Registro: crea usuario (rol opcional, servidor default = USUARIO/USUARIO)
 export async function registerApi({ username, mail, password, rol }) {
-  return apiFetch("/api/usuarios", {
-    method: "POST",
-    body: { username, mail, password, rol }, // rol opcional; backend default = USUARIO
+  return apiFetch('/api/usuarios', {
+    method: 'POST',
+    body: { username, mail, password, rol },
   });
 }
 
-// GET /api/usuarios  (lista)
-export async function listUsersApi() {
-  return apiFetch("/api/usuarios");
+// Obtener el usuario actual desde el backend (requiere Authorization y cookies)
+export async function getMeApi() {
+  // usa el token actual y cookies por si el servidor necesita
+  // si el token expiró, apiFetch hará refresh y reintentará.
+  return apiFetch('/api/auth/user', { method: 'GET' });
 }
 
-// GET /api/usuarios/:username  (detalle)
-export async function getUserByUsernameApi(username) {
-  return apiFetch(`/api/usuarios/${encodeURIComponent(username)}`);
-}
-
-// PUT /api/usuarios/:username  (actualiza)
-export async function updateUserApi(username, partial) {
-  return apiFetch(`/api/usuarios/${encodeURIComponent(username)}`, {
-    method: "PUT",
-    body: partial,
-  });
+// Logout: limpia cookie httpOnly del refresh en el backend y limpiamos localStorage
+export async function logoutApi() {
+  try {
+    await fetch(`${API_URL}/api/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+  } finally {
+    clearAuth();
+  }
 }

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import cookieParser from "cookie-parser";
 import { handleError } from "./middlewares/error.middleware";
 import { logRequest } from "./middlewares/logger.middleware";
 import usuariosRoutes from './routes/usuario.routes'
@@ -21,6 +22,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type","Authorization"]
 }));
 app.use(express.json());
+app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(logRequest);
 app.get('/health', (_req, res) => res.json({ ok: true }));

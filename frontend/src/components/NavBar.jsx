@@ -37,7 +37,7 @@ export const NavBar = () => {
     try {
       const auth = raw ? JSON.parse(raw) : null;
       setIsLogin(!!auth?.token);
-      setIsAdmin(auth?.user?.rol === "Administrador");
+      setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
     } catch {
       setIsLogin(false);
       setIsAdmin(false);
