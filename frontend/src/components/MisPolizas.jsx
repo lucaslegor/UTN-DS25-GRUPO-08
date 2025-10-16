@@ -33,6 +33,7 @@ import {
   CalendarToday as CalendarIcon,
   AttachMoney as MoneyIcon
 } from '@mui/icons-material';
+import { listPolizasApi } from '../services/api';
 
 const MisPolizas = () => {
   const [polizas, setPolizas] = useState([]);
@@ -41,84 +42,31 @@ const MisPolizas = () => {
   const [selectedPoliza, setSelectedPoliza] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Mock data - en producción esto vendría de una API
+  // Carga desde API
   useEffect(() => {
-    // Simular carga de datos
-    setTimeout(() => {
-      const mockPolizas = [
-        {
-          id: 1,
-          idPedido: 1001,
-          archivoUrl: "https://ejemplo.com/poliza1.pdf",
-          estado: "CARGADA",
-          createdAt: new Date("2024-01-15"),
-          updatedAt: new Date("2024-01-20"),
-          pedido: {
-            idPedido: 1001,
-            items: [
-              {
-                productId: 1,
-                titulo: "Seguro de Auto Premium",
-                precio: 25000,
-                cantidad: 1
-              }
-            ],
-            subtotal: 25000,
-            total: 25000,
-            estado: "PAGO_APROBADO",
-            createdAt: new Date("2024-01-10")
-          }
-        },
-        {
-          id: 2,
-          idPedido: 1002,
-          archivoUrl: "https://ejemplo.com/poliza2.pdf",
-          estado: "PENDIENTE",
-          createdAt: new Date("2024-02-01"),
-          updatedAt: new Date("2024-02-01"),
-          pedido: {
-            idPedido: 1002,
-            items: [
-              {
-                productId: 2,
-                titulo: "Seguro de Hogar Básico",
-                precio: 15000,
-                cantidad: 1
-              }
-            ],
-            subtotal: 15000,
-            total: 15000,
-            estado: "PENDIENTE_POLIZA",
-            createdAt: new Date("2024-02-01")
-          }
-        },
-        {
-          id: 3,
-          idPedido: 1003,
-          archivoUrl: "https://ejemplo.com/poliza3.pdf",
-          estado: "CARGADA",
-          createdAt: new Date("2023-12-20"),
-          updatedAt: new Date("2023-12-25"),
-          pedido: {
-            idPedido: 1003,
-            items: [
-              {
-                productId: 3,
-                titulo: "Seguro de Vida",
-                precio: 35000,
-                cantidad: 1
-              }
-            ],
-            subtotal: 35000,
-            total: 35000,
-            estado: "PAGO_APROBADO",
-            createdAt: new Date("2023-12-20")
-          }
-        }
-      ];
-      setPolizas(mockPolizas);
-      setLoading(false);
-    }, 1000);
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    listPolizasApi()
+      .then((data) => {
+        const arr = Array.isArray(data?.polizas) ? data.polizas : [];
+        // Normalizamos fechas si vienen como string
+        const normalized = arr.map((p) => ({
+          ...p,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+        }));
+        if (mounted) setPolizas(normalized);
+      })
+      .catch((e) => {
+        if (mounted) setError(e.message || 'Error al cargar');
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const getEstadoColor = (estado) => {
