@@ -6,10 +6,10 @@ import { authenticate, authorize } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.get("/", authenticate, authorize("ADMIN", "USER"), pedidoController.listarPedidos);
-router.get("/:id", authenticate, authorize("ADMIN", "USER"), pedidoController.obtenerPedidoPorId);
-router.post("/", authenticate, authorize("USER", "ADMIN"), validate(crearPedidoSchema), pedidoController.crearPedido);
-router.put("/:id", authenticate, authorize("ADMIN"), validate(crearPedidoSchema), pedidoController.actualizarPedido);
-router.delete("/:id", authenticate, authorize("ADMIN"), pedidoController.eliminarPedido);
+router.get("/", authenticate, authorize("ADMINISTRADOR", "USUARIO"), pedidoController.listarPedidos);
+router.get("/:id", authenticate, authorize("ADMINISTRADOR", "USUARIO"), pedidoController.obtenerPedidoPorId);
+router.post("/", authenticate, authorize("USUARIO", "ADMINISTRADOR"), validate(crearPedidoSchema), pedidoController.crearPedido);
+router.put("/:id", authenticate, authorize("ADMINISTRADOR"), validate(crearPedidoSchema), pedidoController.actualizarPedido);
+router.delete("/:id", authenticate, authorize("ADMINISTRADOR"), pedidoController.eliminarPedido);
 
 export default router;

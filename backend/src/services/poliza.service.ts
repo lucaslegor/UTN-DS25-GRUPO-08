@@ -9,25 +9,46 @@ import {
 // GET all
 export async function getAllPolizas(): Promise<Poliza[]> {
   return await prisma.poliza.findMany({
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
+    include: {
+      pedido: {
+        include: {
+          items: true,
+        },
+      },
+    },
   });
 }
 
 // GET by id
 export async function getPolizaById(id: number): Promise<Poliza | null> {
   return await prisma.poliza.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      pedido: {
+        include: {
+          items: true,
+        },
+      },
+    },
   });
 }
 
 // GET by pedido ID
 export async function getPolizaByPedidoId(idPedido: number): Promise<Poliza | null> {
   return await prisma.poliza.findUnique({
-    where: { idPedido }
+    where: { idPedido },
+    include: {
+      pedido: {
+        include: {
+          items: true,
+        },
+      },
+    },
   });
 }
 
-// CREATE
+// CREATE OR UPDATE
 export async function createPoliza(idPedido: number, data: CrearPolizaRequest): Promise<Poliza> {
   if (!data.archivoUrl) {
     const error: any = new Error("La póliza debe contener una URL de archivo");
@@ -47,26 +68,65 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
       throw error;
     }
 
-    const estadoInicial: EstadoPoliza = "PENDIENTE";
+    const estadoInicial: EstadoPoliza = "CARGADA";
     
-    const poliza = await prisma.poliza.create({
-      data: {
-        idPedido,
-        archivoUrl: data.archivoUrl,
-        estado: estadoInicial
+    // Usar transacción para crear o actualizar la póliza
+    const result = await prisma.$transaction(async (tx) => {
+      // Verificar si ya existe una póliza para este pedido
+      const polizaExistente = await tx.poliza.findUnique({
+        where: { idPedido }
+      });
+
+      let poliza;
+      if (polizaExistente) {
+        // Actualizar póliza existente
+        poliza = await tx.poliza.update({
+          where: { id: polizaExistente.id },
+          data: {
+            archivoUrl: data.archivoUrl,
+            estado: estadoInicial,
+            updatedAt: new Date()
+          },
+          include: {
+            pedido: {
+              include: {
+                items: true,
+              },
+            },
+          },
+        });
+      } else {
+        // Crear nueva póliza
+        poliza = await tx.poliza.create({
+          data: {
+            idPedido,
+            archivoUrl: data.archivoUrl,
+            estado: estadoInicial
+          },
+          include: {
+            pedido: {
+              include: {
+                items: true,
+              },
+            },
+          },
+        });
       }
+
+      // Actualizar el estado del pedido a POLIZA_CARGADA
+      await tx.pedido.update({
+        where: { id: idPedido },
+        data: { estado: "POLIZA_CARGADA" }
+      });
+
+      return poliza;
     });
 
-    return poliza;
+    return result;
   } catch (err: any) {
     if (err.code === "P2003") { 
       const e: any = new Error("El pedido no existe (violación de clave foránea)");
       e.statusCode = 400;
-      throw e;
-    }
-    if (err.code === "P2002") {
-      const e: any = new Error("Ya existe una póliza para este pedido");
-      e.statusCode = 409;
       throw e;
     }
     throw err;
@@ -120,6 +180,13 @@ export async function getPolizasByUsuario(idUsuario: number): Promise<Poliza[]> 
         idUsuario: idUsuario
       }
     },
+    include: {
+      pedido: {
+        include: {
+          items: true,
+        },
+      },
+    },
     orderBy: { createdAt: 'desc' }
   });
 }
@@ -137,7 +204,7 @@ export async function getPolizaByIdConOwnership(id: number, idUsuario: number): 
   return poliza;
 }
 
-// Función para verificar ownership de pedido
+// Función para verificar si un pedido pertenece a un usuario
 export async function verificarOwnershipPedido(idPedido: number, idUsuario: number): Promise<boolean> {
   const pedido = await prisma.pedido.findFirst({
     where: {

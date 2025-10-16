@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: number; email: string; role: "USER" | "ADMIN" };
+      user?: { id: number; email: string; role: "USUARIO" | "ADMINISTRADOR" };
     }
   }
 }
@@ -25,7 +25,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export function authorize(...roles: ("USER" | "ADMIN")[]) {
+export function authorize(...roles: ("USUARIO" | "ADMINISTRADOR")[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ error: "No autenticado" });
     if (!roles.includes(req.user.role)) {

@@ -64,7 +64,18 @@ export async function createPoliza(req: Request<{ idPedido: string }>, res: Resp
       }
     }
 
-    const nuevaPoliza = await polizaService.createPoliza(idPedido, req.body);
+    // Si vino archivo subido, armamos la URL pública
+    let archivoUrl = (req.body as any)?.archivoUrl as string | undefined;
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (file) {
+      const base = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+      archivoUrl = `${base}/uploads/polizas/${file.filename}`;
+    }
+    if (!archivoUrl) {
+      return res.status(400).json({ message: 'Debe adjuntar un archivo de póliza' });
+    }
+
+    const nuevaPoliza = await polizaService.createPoliza(idPedido, { archivoUrl });
     res.status(201).json({ poliza: nuevaPoliza, message: "Póliza creada exitosamente" });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message });

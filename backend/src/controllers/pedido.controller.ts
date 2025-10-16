@@ -8,12 +8,13 @@ import * as pedidoService from "../services/pedidos.service";
 
 // GET /api/pedidos
 export async function listarPedidos(
-  _req: Request,
+  req: Request,
   res: Response<PedidosListResponse>,
   next: NextFunction
 ) {
   try {
-    const pedidos = await pedidoService.listarPedidos();
+    const username = typeof req.query.username === 'string' ? req.query.username : undefined;
+    const pedidos = await pedidoService.listarPedidos(username);
     res.json({ pedidos, total: pedidos.length });
   } catch (error) {
     next(error);

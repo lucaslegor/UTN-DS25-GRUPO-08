@@ -16,6 +16,7 @@ function mapRowToPedido(row: any): Pedido {
   return {
     idPedido: row.id,
     idUsuario: row.idUsuario,
+    username: row.usuario?.username,
     items,
     subtotal: Number(row.subtotal),
     total: Number(row.total),
@@ -34,10 +35,13 @@ function mapRowToPedido(row: any): Pedido {
   };
 }
 
-export async function listarPedidos(): Promise<Pedido[]> {
+export async function listarPedidos(username?: string): Promise<Pedido[]> {
   const rows = await prisma.pedido.findMany({
     orderBy: { createdAt: "desc" },
-    include: { items: true, poliza: true },
+    include: { items: true, poliza: true, usuario: true },
+    where: username
+      ? { usuario: { username: { contains: username, mode: 'insensitive' as any } } }
+      : undefined,
   });
   return rows.map(mapRowToPedido);
 }
@@ -45,7 +49,7 @@ export async function listarPedidos(): Promise<Pedido[]> {
 export async function obtenerPedidoPorId(id: number): Promise<Pedido | null> {
   const row = await prisma.pedido.findUnique({
     where: { id },
-    include: { items: true, poliza: true },
+    include: { items: true, poliza: true, usuario: true },
   });
   return row ? mapRowToPedido(row) : null;
 }
