@@ -98,7 +98,7 @@ const Login = () => {
 
         {/* Panel derecho (branding) */}
         <div className="container-login">
-          <img src="/MaxiColor.png" alt="Maps Asesores" width={350} />
+          <img src="/public/Maxicolor.png" alt="Maps Asesores" width={350} />
           <h2>¡Bienvenido a Maps, tu bienestar es nuestro compromiso!</h2>
         </div>
       </div>

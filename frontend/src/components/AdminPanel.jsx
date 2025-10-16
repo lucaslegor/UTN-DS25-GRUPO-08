@@ -106,28 +106,14 @@ const AdminPanel = () => {
 
 async function loadProducts() {
   setProductsLoading(true);
-  setProductsError("");
-
+  setProductsError('');
   try {
-    // 1) Llamá al backend con apiFetch (ya agrega Authorization si hay token)
-    const data = await apiFetch("/api/productos");
-
-    // 2) Soportá distintos formatos: [{...}] o { products: [...] }
-    const list = Array.isArray(data) ? data : (data.products || []);
-
-    setProducts(list ?? []);
+    const data = await apiFetch('/api/productos');   // <-- usa apiFetch
+    setProducts(data.products || []);
   } catch (err) {
     console.error(err);
-
-    // 3) Mensaje visible y fallback local para que el panel sea usable
-    setProductsError("No se pudieron cargar los productos del servidor. Mostrando datos locales si existen.");
-
-    try {
-      const saved = localStorage.getItem("products");
-      setProducts(saved ? JSON.parse(saved) : []);
-    } catch {
-      setProducts([]);
-    }
+    setProductsError('No se pudieron cargar los productos');
+    setProducts([]);
   } finally {
     setProductsLoading(false);
   }
@@ -190,39 +176,22 @@ async function loadProducts() {
 
 async function loadUsers() {
   setUsersLoading(true);
-  setUsersError("");
-
+  setUsersError('');
   try {
-    const q = userQuery.trim();
-    if (q) {
-      const byUsername = await apiFetch(`/api/usuarios/${encodeURIComponent(q)}`)
-        .then(normalizeUsers)
-        .catch(async (err) => {
-          if (String(err.message).includes("404")) return null;
-          throw err; 
-        });
+    const path = userQuery.trim()
+      ? `/api/usuarios/${encodeURIComponent(userQuery.trim())}`
+      : `/api/usuarios`;
 
-      if (byUsername && byUsername.length) {
-        setUsers(byUsername.filter(Boolean));
-        return;
-      }
-
-      const all = normalizeUsers(await apiFetch("/api/usuarios"));
-      const lower = q.toLowerCase();
-      const filtered = all.filter(
-        (u) =>
-          u?.username?.toLowerCase().includes(lower) ||
-          u?.mail?.toLowerCase().includes(lower)
-      );
-      setUsers(filtered);
-      return;
-    }
-
-    const all = normalizeUsers(await apiFetch("/api/usuarios"));
-    setUsers(all.filter(Boolean));
+    const data = await apiFetch(path);    
+    const arr = Array.isArray(data?.usuarios)
+      ? data.usuarios
+      : data?.usuario
+        ? [data.usuario]
+        : [];
+    setUsers(arr);
   } catch (err) {
     console.error(err);
-    setUsersError("No se pudieron cargar los usuarios");
+    setUsersError('No se pudieron cargar los usuarios');
     setUsers([]);
   } finally {
     setUsersLoading(false);

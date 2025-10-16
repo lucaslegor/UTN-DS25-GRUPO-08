@@ -1,6 +1,9 @@
+// services/api.js
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
-// ===== Helpers de auth en localStorage (sólo access token + user "seguro") =====
+/* =========================
+   Auth helpers (localStorage)
+   ========================= */
 export function getAuth() {
   const raw = localStorage.getItem('auth');
   try { return raw ? JSON.parse(raw) : null; } catch { return null; }
@@ -11,7 +14,6 @@ export function saveAuth(auth) {
 export function clearAuth() {
   localStorage.removeItem('auth');
 }
-
 // Actualiza sólo el token en localStorage, preservando user
 function setAuthToken(token) {
   const auth = getAuth() || {};
@@ -20,51 +22,90 @@ function setAuthToken(token) {
   return next;
 }
 
-// ===== Llamada al backend para refrescar token usando la cookie httpOnly =====
+// (opcional) headers ya con Authorization para usos puntuales
+export function authHeaders(extra = {}) {
+  const auth = getAuth();
+  const h = { 'Content-Type': 'application/json', ...extra };
+  if (auth?.token) h.Authorization = `Bearer ${auth.token}`;
+  return h;
+}
+
+/* =========================================
+   Refresh preventivo y retry anti-401/403
+   ========================================= */
+let refreshInFlight = null;
+
+function getTokenExpMs(token) {
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(b64));
+    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
 async function refreshAccessToken() {
   const res = await fetch(`${API_URL}/api/auth/refresh`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include', // MUY IMPORTANTE para enviar cookies
+    credentials: 'include', // envía cookie httpOnly del refresh
   });
-
-  // si no hay refresh cookie válida, el backend devolverá 401/403
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
+  if (!res.ok || !data?.token) {
     clearAuth();
     const msg = data?.error || data?.message || `HTTP ${res.status}`;
     throw new Error(msg);
   }
-
-  // esperamos { token, user? }
-  if (!data?.token) {
-    clearAuth();
-    throw new Error('No se recibió token nuevo en refresh');
-  }
-  return setAuthToken(data.token);
+  setAuthToken(data.token);
+  return data.token;
 }
 
-// ===== Wrapper de fetch con retry en 401 (refresh + reintento UNA vez) =====
-export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry } = {}) {
+async function ensureFreshToken() {
+  const auth = getAuth();
+  if (!auth?.token) return;
+
+  const expMs = getTokenExpMs(auth.token);
+  const now = Date.now();
+  const SKEW = 30_000; // refrescar si faltan < 30s
+
+  if (!expMs || expMs - SKEW > now) return;
+
+  if (!refreshInFlight) {
+    refreshInFlight = refreshAccessToken().finally(() => { refreshInFlight = null; });
+  }
+  await refreshInFlight;
+}
+
+/* =========================
+   apiFetch con refresh
+   ========================= */
+export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry = false } = {}) {
+  // 1) refresh preventivo antes de pegarle al endpoint
+  await ensureFreshToken();
+
+  // 2) armo headers con token (puede haber cambiado tras refresh)
   const auth = getAuth();
   const h = { 'Content-Type': 'application/json', ...headers };
   if (auth?.token) h.Authorization = `Bearer ${auth.token}`;
 
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: h,
-    body: body ? JSON.stringify(body) : undefined,
-    credentials: 'include', // MUY IMPORTANTE para cookies httpOnly
-  });
+  const doReq = () =>
+    fetch(`${API_URL}${path}`, {
+      method,
+      headers: h,
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: 'include', // importante para cookies httpOnly
+    });
 
-  // si expira el access token, intentamos refresh y reintentamos una vez
-  if (res.status === 401 && !_retry) {
+  let res = await doReq();
+
+  // 3) fallback: si igual devolvió 401/403, intento refrescar y reintentar 1 vez
+  if ((res.status === 401 || res.status === 403) && !_retry) {
     try {
-      await refreshAccessToken(); // renueva y guarda el token
-      // reintento con _retry = true para no entrar en loop
-      return apiFetch(path, { method, headers, body, _retry: true });
+      await refreshAccessToken();
+      const fresh = getAuth();
+      if (fresh?.token) h.Authorization = `Bearer ${fresh.token}`;
+      res = await doReq();
     } catch (e) {
-      // refresh falló => sesión inválida
       clearAuth();
       throw e;
     }
@@ -78,24 +119,24 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
   return data;
 }
 
-// ====== AUTH ======
+/* ==============
+   AUTH endpoints
+   ============== */
 
-// Login: backend devolverá { token, user }, y también setea cookie del refresh
+// Login: el backend devuelve { token, user } y setea cookie httpOnly (refresh)
 export async function loginApi({ username, mail, password }) {
-  // según tu validación, puedes enviar username o mail; aquí soportamos ambos
+  // tu backend acepta username o mail; enviamos el que tengas
   const payload = mail ? { mail, password } : { username, password };
-
   const data = await apiFetch('/api/auth/login', {
     method: 'POST',
     body: payload,
   });
-
-  // guardamos token y user en localStorage
-  saveAuth(data); // data = { token, user }
+  // guardamos token + user (el refresh queda en cookie httpOnly)
+  saveAuth(data);
   return data;
 }
 
-// Registro: crea usuario (rol opcional, servidor default = USUARIO/USUARIO)
+// Registro (rol opcional; server default = USUARIO/USUARIO)
 export async function registerApi({ username, mail, password, rol }) {
   return apiFetch('/api/usuarios', {
     method: 'POST',
@@ -103,19 +144,16 @@ export async function registerApi({ username, mail, password, rol }) {
   });
 }
 
-// Obtener el usuario actual desde el backend (requiere Authorization y cookies)
+// Quién soy (protegido). Si el token expira, apiFetch hará refresh y reintentará.
 export async function getMeApi() {
-  // usa el token actual y cookies por si el servidor necesita
-  // si el token expiró, apiFetch hará refresh y reintentará.
   return apiFetch('/api/auth/user', { method: 'GET' });
 }
 
-// Logout: limpia cookie httpOnly del refresh en el backend y limpiamos localStorage
+// Logout: limpia cookie httpOnly en backend y localStorage en frontend
 export async function logoutApi() {
   try {
     await fetch(`${API_URL}/api/auth/logout`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
     });
   } finally {
