@@ -176,3 +176,55 @@ export async function forgotPasswordApi(mail) {
     body: { mail, origin: window.location.origin }, // <= importante
   });
 }
+
+/* ==============
+   POLIZAS endpoints
+   ============== */
+
+export async function listPolizasApi() {
+  // Devuelve { polizas, total }
+  return apiFetch('/api/polizas', { method: 'GET' });
+}
+
+export async function getPolizaApi(id) {
+  return apiFetch(`/api/polizas/${id}`, { method: 'GET' });
+}
+
+export async function createPolizaForPedidoApi(idPedido, { archivoUrl }) {
+  return apiFetch(`/api/polizas/${idPedido}`, {
+    method: 'POST',
+    body: { archivoUrl },
+  });
+}
+
+/* ==============
+   PEDIDOS endpoints
+   ============== */
+
+export async function listPedidosApi() {
+  // Admin: lista todos; Usuario: el backend actual lista todos también, ajustar si cambia
+  return apiFetch('/api/pedidos', { method: 'GET' });
+}
+
+export async function getPedidoApi(id) {
+  return apiFetch(`/api/pedidos/${id}`, { method: 'GET' });
+}
+
+// Multipart upload for poliza files
+export async function uploadPolizaFileApi(idPedido, file) {
+  const auth = getAuth();
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_URL}/api/polizas/${idPedido}`, {
+    method: 'POST',
+    headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
+    body: form,
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = data?.error || data?.message || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+}

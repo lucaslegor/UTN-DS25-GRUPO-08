@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/AdminPanel.css';
 import { useNavigate } from 'react-router-dom';
+import DescriptionIcon from '@mui/icons-material/Description';
 import {
   Add,
   Edit,
@@ -15,7 +16,8 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { IconButton, Tooltip, Chip } from '@mui/material';
-import { apiFetch } from '../services/api';
+import { apiFetch, listPedidosApi, uploadPolizaFileApi } from '../services/api';
+import * as yup from 'yup';
 
 /** ========= Config API ========= */
 const RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -48,6 +50,63 @@ const formatARS = (n) =>
     typeof n === 'number' ? n : Number(n) || 0
   ) + '/año';
 
+/** Esquema de validación con Yup */
+const productValidationSchema = yup.object({
+  titulo: yup
+    .string()
+    .required('El título es obligatorio')
+    .min(3, 'El título debe tener al menos 3 caracteres')
+    .max(100, 'El título no puede exceder 100 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\d\-.,!?]+$/, 'El título contiene caracteres no válidos'),
+  descripcion: yup
+    .string()
+    .required('La descripción es obligatoria')
+    .min(10, 'La descripción debe tener al menos 10 caracteres')
+    .max(500, 'La descripción no puede exceder 500 caracteres'),
+  cobertura: yup
+    .string()
+    .required('La cobertura es obligatoria')
+    .min(5, 'La cobertura debe tener al menos 5 caracteres')
+    .max(200, 'La cobertura no puede exceder 200 caracteres'),
+  tipo: yup
+    .string()
+    .required('El tipo de seguro es obligatorio')
+    .oneOf(['auto', 'hogar', 'vida', 'salud'], 'Debe seleccionar un tipo válido'),
+  precio: yup
+    .string()
+    .required('El precio es obligatorio')
+    .test('is-number', 'El precio debe ser un número válido', (value) => {
+      if (!value) return false;
+      const numericValue = parseInt(String(value).replace(/\D/g, ''));
+      return !isNaN(numericValue) && numericValue > 0;
+    })
+    .test('min-price', 'El precio debe ser mayor a $1000', (value) => {
+      if (!value) return false;
+      const numericValue = parseInt(String(value).replace(/\D/g, ''));
+      return numericValue >= 1000;
+    })
+    .test('max-price', 'El precio no puede exceder $10,000,000', (value) => {
+      if (!value) return false;
+      const numericValue = parseInt(String(value).replace(/\D/g, ''));
+      return numericValue <= 10000000;
+    }),
+  image: yup
+    .mixed()
+    .test('file-required', 'La imagen es obligatoria para nuevos productos', function(value) {
+      const { editingId } = this.options.context || {};
+      if (!editingId && !value) return false;
+      return true;
+    })
+    .test('file-type', 'Solo se permiten archivos de imagen (JPG, PNG, JPEG)', function(value) {
+      if (!value) return true; // Si no hay archivo, no validar tipo
+      return ['image/jpeg', 'image/jpg', 'image/png'].includes(value.type);
+    })
+    .test('file-size', 'El archivo no puede exceder 5MB', function(value) {
+      if (!value) return true; // Si no hay archivo, no validar tamaño
+      return value.size <= 5 * 1024 * 1024; // 5MB
+    })
+});
+
 const AdminPanel = () => {
   /** ======= Productos (CRUD API) ======= */
   const [products, setProducts] = useState([]);
@@ -60,17 +119,29 @@ const AdminPanel = () => {
     isActive: true,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [message, setMessage] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsError, setProductsError] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
+  const [isValidating, setIsValidating] = useState(false);
 
   /** ======= Usuarios (API) ======= */
-  const [activeTab, setActiveTab] = useState('form'); // 'form' | 'products' | 'users'
+  const [activeTab, setActiveTab] = useState('form'); // 'form' | 'products' | 'users' | 'polizas'
   const [users, setUsers] = useState([]);
   const [userQuery, setUserQuery] = useState('');
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState('');
+
+  /** ======= Polizas (asignación) ======= */
+  const [pedidos, setPedidos] = useState([]);
+  const [pedidosLoading, setPedidosLoading] = useState(false);
+  const [pedidosError, setPedidosError] = useState('');
+  const [assignFile, setAssignFile] = useState(null);
+  const [selectedPedidoId, setSelectedPedidoId] = useState('');
+  const [pedidoSearchTerm, setPedidoSearchTerm] = useState('');
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -91,6 +162,13 @@ const AdminPanel = () => {
   useEffect(() => {
     if (activeTab === 'users') {
       loadUsers();
+    }
+  }, [activeTab]);
+
+  // Cargar pedidos para asignar pólizas
+  useEffect(() => {
+    if (activeTab === 'polizas') {
+      loadPedidos();
     }
   }, [activeTab]);
 
@@ -122,13 +200,10 @@ async function loadProducts() {
 
   async function createProduct(productData) {
     try {
-      const resp = await fetch(`${API_BASE}/productos`, {
+      const data = await apiFetch('/api/productos', {
         method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify(productData)
+        body: productData,
       });
-      if (!resp.ok) throw new Error('Error creando producto');
-      const data = await resp.json();
       return data.product;
     } catch (err) {
       console.error(err);
@@ -138,13 +213,10 @@ async function loadProducts() {
 
   async function updateProduct(id, productData) {
     try {
-      const resp = await fetch(`${API_BASE}/productos/${id}`, {
+      const data = await apiFetch(`/api/productos/${id}`, {
         method: 'PUT',
-        headers: authHeaders(),
-        body: JSON.stringify(productData)
+        body: productData,
       });
-      if (!resp.ok) throw new Error('Error actualizando producto');
-      const data = await resp.json();
       return data.product;
     } catch (err) {
       console.error(err);
@@ -154,15 +226,115 @@ async function loadProducts() {
 
   async function deleteProduct(id) {
     try {
-      const resp = await fetch(`${API_BASE}/productos/${id}`, {
-        method: 'DELETE',
-        headers: authHeaders()
-      });
-      if (!resp.ok) throw new Error('Error eliminando producto');
+      await apiFetch(`/api/productos/${id}`, { method: 'DELETE' });
       return true;
     } catch (err) {
       console.error(err);
       throw err;
+    }
+  }
+
+  /** ======= API Polizas/Pedidos ======= */
+  async function loadPedidos() {
+    setPedidosLoading(true);
+    setPedidosError('');
+    try {
+      const data = await apiFetch(`/api/pedidos`);
+      const arr = Array.isArray(data?.pedidos) ? data.pedidos : [];
+      setPedidos(arr);
+    } catch (err) {
+      console.error(err);
+      setPedidosError('No se pudieron cargar los pedidos');
+      setPedidos([]);
+    } finally {
+      setPedidosLoading(false);
+    }
+  }
+
+  // Función para filtrar pedidos
+  const filteredPedidos = pedidos.filter(p => {
+    if (!pedidoSearchTerm) return true;
+    const searchLower = pedidoSearchTerm.toLowerCase();
+    const username = (p.username || `user ${p.idUsuario}`).toLowerCase();
+    const pedidoId = String(p.idPedido || p.id);
+    return username.includes(searchLower) || pedidoId.includes(searchLower);
+  });
+
+  // Función para obtener el texto del pedido seleccionado
+  const getSelectedPedidoText = () => {
+    if (!selectedPedidoId) return '';
+    const pedido = pedidos.find(p => (p.idPedido || p.id) == selectedPedidoId);
+    if (!pedido) return '';
+    return `#${pedido.idPedido || pedido.id} - ${pedido.username || `user ${pedido.idUsuario}`} - ${formatARS(pedido.total)} ${pedido.poliza ? '(YA TIENE PÓLIZA)' : '(SIN PÓLIZA)'}`;
+  };
+
+  async function handleAssignPoliza(e) {
+    e.preventDefault();
+    if (!selectedPedidoId) return;
+    try {
+      if (!assignFile) throw new Error('Seleccione un archivo');
+      
+      // Verificar si el pedido ya tiene póliza para mostrar mensaje apropiado
+      const pedidoSeleccionado = pedidos.find(p => (p.idPedido || p.id) == selectedPedidoId);
+      const esReemplazo = pedidoSeleccionado && pedidoSeleccionado.poliza;
+      
+      // Mostrar mensaje de carga
+      const loadingMessage = document.createElement('div');
+      loadingMessage.textContent = esReemplazo ? 'Reemplazando póliza...' : 'Asignando póliza...';
+      loadingMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #1976d2; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(loadingMessage);
+      
+      await uploadPolizaFileApi(Number(selectedPedidoId), assignFile);
+      
+      // Remover mensaje de carga
+      document.body.removeChild(loadingMessage);
+      
+      setAssignFile(null);
+      setSelectedPedidoId('');
+      await loadPedidos();
+      
+      // Mostrar mensaje de éxito apropiado
+      const successMessage = document.createElement('div');
+      successMessage.textContent = esReemplazo ? '✅ Póliza reemplazada exitosamente' : '✅ Póliza asignada exitosamente';
+      successMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #4caf50; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(successMessage);
+      
+      // Remover mensaje después de 3 segundos
+      setTimeout(() => {
+        if (document.body.contains(successMessage)) {
+          document.body.removeChild(successMessage);
+        }
+      }, 3000);
+      
+    } catch (err) {
+      // Remover mensaje de carga si existe
+      const loadingMessage = document.querySelector('div[style*="background: #1976d2"]');
+      if (loadingMessage) document.body.removeChild(loadingMessage);
+      
+      // Mostrar mensaje de error
+      const errorMessage = document.createElement('div');
+      errorMessage.textContent = '❌ Error al asignar póliza: ' + (err?.message || 'Error desconocido');
+      errorMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #f44336; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(errorMessage);
+      
+      // Remover mensaje después de 5 segundos
+      setTimeout(() => {
+        if (document.body.contains(errorMessage)) {
+          document.body.removeChild(errorMessage);
+        }
+      }, 5000);
     }
   }
 
@@ -198,20 +370,44 @@ async function loadUsers() {
   }
 }
 
+async function updateUserRole(userId, newRole) {
+  try {
+    const data = await apiFetch(`/api/usuarios/${userId}`, {
+      method: 'PUT',
+      body: { rol: newRole },
+    });
+    return data;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
   /** ======= Handlers Productos ======= */
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const { name, value } = e.target;
     setProduct((prev) => ({ ...prev, [name]: value }));
+    
+    // Validar el campo en tiempo real después de un pequeño delay
+    setTimeout(() => {
+      validateField(name, value);
+    }, 500);
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
     const reader = new FileReader();
     reader.onloadend = () => {
       const dataUrl = String(reader.result);
       setPreviewUrl(dataUrl);
-      setProduct((prev) => ({ ...prev, image: dataUrl }));
+      setImageFile(file);
+      
+      // Validar la imagen después de cargarla
+      setTimeout(() => {
+        validateField('image', file);
+      }, 100);
     };
     reader.readAsDataURL(file);
   };
@@ -227,11 +423,72 @@ async function loadUsers() {
     });
     setPreviewUrl(null);
     setEditingId(null);
+    setValidationErrors({});
+    setImageFile(null);
+  };
+
+  // Función para validar un campo específico
+  const validateField = async (fieldName, value) => {
+    try {
+      await productValidationSchema.validateAt(fieldName, {
+        [fieldName]: value,
+        image: imageFile,
+        editingId: editingId
+      }, { context: { editingId } });
+      
+      // Si la validación es exitosa, eliminar el error del campo
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    } catch (error) {
+      // Si hay error, agregarlo al estado
+      setValidationErrors(prev => ({
+        ...prev,
+        [fieldName]: error.message
+      }));
+    }
+  };
+
+  // Función para validar todo el formulario
+  const validateForm = async () => {
+    setIsValidating(true);
+    try {
+      await productValidationSchema.validate({
+        titulo: product.titulo,
+        descripcion: product.descripcion,
+        cobertura: product.cobertura,
+        tipo: product.tipo,
+        precio: product.precio,
+        image: imageFile
+      }, { context: { editingId } });
+      
+      setValidationErrors({});
+      return true;
+    } catch (error) {
+      const errors = {};
+      error.inner?.forEach(err => {
+        errors[err.path] = err.message;
+      });
+      setValidationErrors(errors);
+      return false;
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    
+    // Validar el formulario completo antes de enviar
+    const isValid = await validateForm();
+    if (!isValid) {
+      setMessage('Por favor, corrige los errores en el formulario');
+      return;
+    }
+    
     setProductsLoading(true);
     
     try {
@@ -254,7 +511,24 @@ async function loadUsers() {
         updatedProduct = await updateProduct(editingId, productData);
         setMessage('Producto actualizado exitosamente');
       } else {
-        updatedProduct = await createProduct(productData);
+        // multipart si hay imagen
+        if (imageFile) {
+          const form = new FormData();
+          Object.entries(productData).forEach(([k, v]) => form.append(k, String(v)));
+          form.append('image', imageFile);
+          const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+          const res = await fetch(`${API_BASE}/productos`, {
+            method: 'POST',
+            headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
+            body: form,
+            credentials: 'include',
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.message || 'Error creando producto');
+          updatedProduct = data.product;
+        } else {
+          updatedProduct = await createProduct(productData);
+        }
         setMessage('Producto agregado exitosamente');
       }
 
@@ -280,6 +554,7 @@ async function loadUsers() {
       isActive: p.isActive ?? true,
     });
     setPreviewUrl(null);
+    setImageFile(null);
     setEditingId(p.id);
     setActiveTab('form');
   };
@@ -352,6 +627,14 @@ async function loadUsers() {
             <People className="tab-icon" />
             Ver Usuarios
           </button>
+
+          <button
+            className={`tab-button ${activeTab === 'polizas' ? 'active' : ''}`}
+            onClick={() => setActiveTab('polizas')}
+          >
+            <DescriptionIcon className="tab-icon" />
+            Asignar Pólizas
+          </button>
         </div>
 
         {/* ======= Form Producto ======= */}
@@ -389,8 +672,22 @@ async function loadUsers() {
                   value={product.titulo}
                   onChange={handleInputChange}
                   placeholder="Ej: Seguro de Auto Premium"
-                  required
+                  className={validationErrors.titulo ? 'error' : ''}
+                  style={{
+                    borderColor: validationErrors.titulo ? '#f44336' : '#ddd',
+                    borderWidth: validationErrors.titulo ? '2px' : '1px'
+                  }}
                 />
+                {validationErrors.titulo && (
+                  <div className="error-message" style={{
+                    color: '#f44336',
+                    fontSize: '12px',
+                    marginTop: '4px',
+                    fontWeight: '500'
+                  }}>
+                    ⚠️ {validationErrors.titulo}
+                  </div>
+                )}
               </div>
 
               <div className="form-grid">
@@ -406,8 +703,22 @@ async function loadUsers() {
                     value={product.precio}
                     onChange={handleInputChange}
                     placeholder="Ej: 15000"
-                    required
+                    className={validationErrors.precio ? 'error' : ''}
+                    style={{
+                      borderColor: validationErrors.precio ? '#f44336' : '#ddd',
+                      borderWidth: validationErrors.precio ? '2px' : '1px'
+                    }}
                   />
+                  {validationErrors.precio && (
+                    <div className="error-message" style={{
+                      color: '#f44336',
+                      fontSize: '12px',
+                      marginTop: '4px',
+                      fontWeight: '500'
+                    }}>
+                      ⚠️ {validationErrors.precio}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -420,7 +731,11 @@ async function loadUsers() {
                     name="tipo"
                     value={product.tipo}
                     onChange={handleInputChange}
-                    required
+                    className={validationErrors.tipo ? 'error' : ''}
+                    style={{
+                      borderColor: validationErrors.tipo ? '#f44336' : '#ddd',
+                      borderWidth: validationErrors.tipo ? '2px' : '1px'
+                    }}
                   >
                     <option value="">Seleccionar</option>
                     <option value="auto">Auto</option>
@@ -428,6 +743,16 @@ async function loadUsers() {
                     <option value="vida">Vida</option>
                     <option value="salud">Salud</option>
                   </select>
+                  {validationErrors.tipo && (
+                    <div className="error-message" style={{
+                      color: '#f44336',
+                      fontSize: '12px',
+                      marginTop: '4px',
+                      fontWeight: '500'
+                    }}>
+                      ⚠️ {validationErrors.tipo}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -442,8 +767,30 @@ async function loadUsers() {
                   value={product.descripcion}
                   onChange={handleInputChange}
                   placeholder="Describe las características y beneficios del seguro..."
-                  required
+                  className={validationErrors.descripcion ? 'error' : ''}
+                  style={{
+                    borderColor: validationErrors.descripcion ? '#f44336' : '#ddd',
+                    borderWidth: validationErrors.descripcion ? '2px' : '1px'
+                  }}
                 />
+                {validationErrors.descripcion && (
+                  <div className="error-message" style={{
+                    color: '#f44336',
+                    fontSize: '12px',
+                    marginTop: '4px',
+                    fontWeight: '500'
+                  }}>
+                    ⚠️ {validationErrors.descripcion}
+                  </div>
+                )}
+                <div style={{
+                  fontSize: '11px',
+                  color: '#666',
+                  marginTop: '4px',
+                  textAlign: 'right'
+                }}>
+                  {product.descripcion.length}/500 caracteres
+                </div>
               </div>
 
               <div className="form-group">
@@ -458,8 +805,22 @@ async function loadUsers() {
                   value={product.cobertura}
                   onChange={handleInputChange}
                   placeholder="Ej: Cobertura total hasta $5.000.000"
-                  required
+                  className={validationErrors.cobertura ? 'error' : ''}
+                  style={{
+                    borderColor: validationErrors.cobertura ? '#f44336' : '#ddd',
+                    borderWidth: validationErrors.cobertura ? '2px' : '1px'
+                  }}
                 />
+                {validationErrors.cobertura && (
+                  <div className="error-message" style={{
+                    color: '#f44336',
+                    fontSize: '12px',
+                    marginTop: '4px',
+                    fontWeight: '500'
+                  }}>
+                    ⚠️ {validationErrors.cobertura}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -475,12 +836,26 @@ async function loadUsers() {
                     onChange={handleImageChange}
                     accept="image/*"
                     required={!editingId && !product.image}
+                    style={{
+                      borderColor: validationErrors.image ? '#f44336' : '#ddd',
+                      borderWidth: validationErrors.image ? '2px' : '1px'
+                    }}
                   />
                   <div className="file-input-overlay">
                     <Image className="file-icon" />
                     <span>Seleccionar imagen</span>
                   </div>
                 </div>
+                {validationErrors.image && (
+                  <div className="error-message" style={{
+                    color: '#f44336',
+                    fontSize: '12px',
+                    marginTop: '4px',
+                    fontWeight: '500'
+                  }}>
+                    ⚠️ {validationErrors.image}
+                  </div>
+                )}
 
                 {(previewUrl || product.image) && (
                   <div className="image-preview">
@@ -494,12 +869,20 @@ async function loadUsers() {
                 <button 
                   type="submit" 
                   className="submit-button"
-                  disabled={productsLoading}
+                  disabled={productsLoading || isValidating}
+                  style={{
+                    backgroundColor: Object.keys(validationErrors).length > 0 ? '#ccc' : '#1976d2',
+                    cursor: Object.keys(validationErrors).length > 0 ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <Save className="button-icon" />
                   {productsLoading 
                     ? 'Procesando...' 
-                    : editingId ? 'Actualizar Producto' : 'Agregar Producto'
+                    : isValidating 
+                      ? 'Validando...'
+                      : Object.keys(validationErrors).length > 0
+                        ? 'Corrige los errores'
+                        : editingId ? 'Actualizar Producto' : 'Agregar Producto'
                   }
                 </button>
 
@@ -591,12 +974,24 @@ async function loadUsers() {
                         </div>
                       </td>
                       <td>
-                        <Chip 
-                          label={p.isActive ? 'Activo' : 'Inactivo'} 
-                          color={p.isActive ? 'success' : 'error'} 
-                          size="small" 
+                        <Chip
+                          label={p.isActive ? 'Activo' : 'Inactivo'}
+                          color={p.isActive ? 'success' : 'error'}
+                          size="small"
+                          variant="filled"
+                          clickable
+                          onClick={async () => {
+                            try {
+                              await updateProduct(p.id, { isActive: !p.isActive });
+                              await loadProducts();
+                            } catch (e) {
+                              alert('No se pudo cambiar el estado');
+                            }
+                          }}
+                          sx={{ fontWeight: 600 }}
                         />
                       </td>
+
                       <td>
                         <div className="action-buttons">
                           <Tooltip title="Editar producto">
@@ -683,7 +1078,54 @@ async function loadUsers() {
                       <td>{u.idUsuario ?? u.id ?? '—'}</td>
                       <td>{u.username ?? '—'}</td>
                       <td>{u.mail ?? '—'}</td>
-                      <td>{u.rol ?? '—'}</td>
+                      <td>
+                        <select
+                          value={u.rol || 'USUARIO'}
+                          onChange={async (e) => {
+                            const newRole = e.target.value;
+                            if (newRole !== u.rol) {
+                              try {
+                                await updateUserRole(u.idUsuario || u.id, newRole);
+                                await loadUsers();
+                                
+                                // Mostrar mensaje de éxito
+                                const successMessage = document.createElement('div');
+                                successMessage.textContent = `✅ Rol de ${u.username} actualizado a ${newRole}`;
+                                successMessage.style.cssText = `
+                                  position: fixed; top: 20px; right: 20px; z-index: 9999;
+                                  background: #4caf50; color: white; padding: 12px 20px;
+                                  border-radius: 4px; font-weight: 500;
+                                `;
+                                document.body.appendChild(successMessage);
+                                
+                                setTimeout(() => {
+                                  if (document.body.contains(successMessage)) {
+                                    document.body.removeChild(successMessage);
+                                  }
+                                }, 3000);
+                              } catch (e) {
+                                alert('No se pudo cambiar el rol: ' + (e?.message || 'Error desconocido'));
+                                // Recargar para restaurar el estado original
+                                await loadUsers();
+                              }
+                            }
+                          }}
+                          style={{
+                            padding: '4px 8px',
+                            fontSize: '12px',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            backgroundColor: u.rol === 'ADMINISTRADOR' ? '#1976d2' : '#f5f5f5',
+                            color: u.rol === 'ADMINISTRADOR' ? 'white' : '#333',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            minWidth: '100px'
+                          }}
+                        >
+                          <option value="USUARIO" style={{ backgroundColor: '#f5f5f5', color: '#333' }}>USUARIO</option>
+                          <option value="ADMINISTRADOR" style={{ backgroundColor: '#1976d2', color: 'white' }}>ADMINISTRADOR</option>
+                        </select>
+                      </td>
                       <td>
                         {u.createdAt
                           ? new Date(u.createdAt).toLocaleString('es-AR')
@@ -695,6 +1137,172 @@ async function loadUsers() {
                     <tr>
                       <td colSpan={5} style={{ textAlign: 'center', opacity: 0.7 }}>
                         {userQuery ? 'Sin coincidencias' : 'No hay usuarios'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ======= Asignar Pólizas ======= */}
+        {activeTab === 'polizas' && (
+          <div className="admin-container form-container">
+            <div className="form-header">
+              <h2>
+                <DescriptionIcon className="form-header-icon" />
+                Asignar póliza a pedido
+              </h2>
+            </div>
+
+            <form onSubmit={handleAssignPoliza} className="admin-form">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="pedido">
+                    <span className="label-icon">🧾</span>
+                    Seleccionar Pedido
+                  </label>
+                  
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={isSelectOpen ? pedidoSearchTerm : getSelectedPedidoText()}
+                      onChange={(e) => {
+                        setPedidoSearchTerm(e.target.value);
+                        setIsSelectOpen(true);
+                      }}
+                      onFocus={() => {
+                        setIsSelectOpen(true);
+                        loadPedidos();
+                      }}
+                      onBlur={() => {
+                        // Delay para permitir hacer clic en las opciones
+                        setTimeout(() => setIsSelectOpen(false), 200);
+                      }}
+                      placeholder="Escribe para buscar pedidos..."
+                      style={{ 
+                        width: '100%',
+                        padding: '12px',
+                        fontSize: '14px',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        backgroundColor: 'white',
+                        cursor: 'text'
+                      }}
+                      required
+                    />
+                    
+                    {isSelectOpen && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        backgroundColor: 'white',
+                        border: '1px solid #ddd',
+                        borderTop: 'none',
+                        borderRadius: '0 0 4px 4px',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        zIndex: 1000,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                      }}>
+                        {filteredPedidos.length === 0 ? (
+                          <div style={{ padding: '12px', color: '#666', textAlign: 'center' }}>
+                            {pedidosLoading ? 'Cargando pedidos...' : 'No se encontraron pedidos'}
+                          </div>
+                        ) : (
+                          filteredPedidos.map((p) => (
+                            <div
+                              key={p.idPedido || p.id}
+                              onClick={() => {
+                                setSelectedPedidoId(p.idPedido || p.id);
+                                setPedidoSearchTerm('');
+                                setIsSelectOpen(false);
+                              }}
+                              style={{
+                                padding: '12px',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid #f0f0f0',
+                                backgroundColor: selectedPedidoId == (p.idPedido || p.id) ? '#f5f5f5' : 'white'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = selectedPedidoId == (p.idPedido || p.id) ? '#f5f5f5' : 'white'}
+                            >
+                              #{p.idPedido || p.id} - {p.username || `user ${p.idUsuario}`} - {formatARS(p.total)} 
+                              {p.poliza ? ' (YA TIENE PÓLIZA)' : ' (SIN PÓLIZA)'}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {pedidosLoading && <div className="message">Cargando pedidos…</div>}
+                  {pedidosError && <div className="message error">{pedidosError}</div>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="polizaFile">
+                    <span className="label-icon">📎</span>
+                    Archivo de póliza (PDF)
+                  </label>
+                  <input
+                    type="file"
+                    id="polizaFile"
+                    name="polizaFile"
+                    accept="application/pdf,image/*"
+                    onChange={(e) => setAssignFile(e.target.files?.[0] || null)}
+                    required
+                  />
+                </div>
+              </div>
+
+
+              <div className="form-actions">
+                <button type="submit" className="submit-button" disabled={!selectedPedidoId || !assignFile}>
+                  {selectedPedidoId && pedidos.find(p => (p.idPedido || p.id) == selectedPedidoId)?.poliza 
+                    ? 'Reemplazar Póliza' 
+                    : 'Asignar Póliza'
+                  }
+                </button>
+              </div>
+            </form>
+
+            <div className="table-responsive" style={{ marginTop: 16 }}>
+              <table className="products-table">
+                <thead>
+                  <tr>
+                    <th>ID Pedido</th>
+                    <th>Usuario</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Póliza</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pedidos.map((p) => (
+                    <tr key={p.idPedido || p.id}>
+                      <td>#{p.idPedido || p.id}</td>
+                      <td>{p.username || p.idUsuario}</td>
+                      <td>{formatARS(p.total)}</td>
+                      <td>
+                        <Chip label={p.estado} color={p.estado?.includes('PAGO') ? 'success' : 'default'} size="small" />
+                      </td>
+                      <td>
+                        {p.poliza ? (
+                          <Chip label={`Póliza #${p.poliza.id}`} color="primary" size="small" />
+                        ) : (
+                          <Chip label="Sin póliza" color="warning" size="small" />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {!pedidosLoading && pedidos.length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', opacity: 0.7 }}>
+                        No hay pedidos
                       </td>
                     </tr>
                   )}
