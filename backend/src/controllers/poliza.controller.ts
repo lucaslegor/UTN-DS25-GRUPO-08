@@ -7,7 +7,7 @@ export async function getAllPolizas(req: Request, res: Response, next: NextFunct
     const { id, role } = req.user!; // Ya está autenticado por el middleware
     
     let polizas;
-    if (role === 'ADMIN') {
+    if (role === 'ADMINISTRADOR') {
       // Admin puede ver todas las pólizas
       polizas = await polizaService.getAllPolizas();
     } else {
@@ -28,7 +28,7 @@ export async function getPolizaById(req: Request<{ id: string }>, res: Response,
     if (isNaN(id)) return res.status(400).json({ message: "ID inválido" });
 
     const { id: userId, role } = req.user!;
-    const esAdmin = role === 'ADMIN';
+    const esAdmin = role === 'ADMINISTRADOR';
 
     let poliza;
     if (esAdmin) {
@@ -54,7 +54,7 @@ export async function createPoliza(req: Request<{ idPedido: string }>, res: Resp
     if (isNaN(idPedido)) return res.status(400).json({ message: "ID de pedido inválido" });
 
     const { id: userId, role } = req.user!;
-    const esAdmin = role === 'ADMIN';
+    const esAdmin = role === 'ADMINISTRADOR';
 
     // Verificar que el pedido pertenece al usuario (si no es admin)
     if (!esAdmin) {
