@@ -1,5 +1,4 @@
 import React from "react";
-import { apiFetch } from "../services/api";
 import { Link } from "react-router-dom";
 import "../styles/styles.css";
 import ProductCard from "../components/ProductCard";
@@ -62,36 +61,17 @@ const Home = () => {
     }));
 
   React.useEffect(() => {
-    let mounted = true;
-    // Preferimos API; si falla, fallback a localStorage/seed
-    apiFetch('/api/productos')
-      .then((data) => {
-        const list = Array.isArray(data?.products) ? data.products : (data?.productos || []);
-        const onlyActive = list.filter((p) => p.isActive !== false);
-        const uiProducts = onlyActive.map((p) => ({
-          id: p.id,
-          title: p.titulo,
-          description: p.descripcion,
-          price: p.precio,
-          image: p.imagenUrl || '/seguro.png',
-        }));
-        if (mounted) {
-          setProducts(uiProducts);
-          try { localStorage.setItem('products', JSON.stringify(uiProducts)); } catch {}
-        }
-      })
-      .catch(() => {
-        const stored = localStorage.getItem("products");
-        if (stored) {
-          const parsed = normalize(JSON.parse(stored));
-          setProducts(parsed);
-          localStorage.setItem("products", JSON.stringify(parsed));
-        } else {
-          setProducts(defaultProducts);
-          localStorage.setItem("products", JSON.stringify(defaultProducts));
-        }
-      });
-    return () => { mounted = false; };
+    const stored = localStorage.getItem("products");
+    if (stored) {
+      const parsed = normalize(JSON.parse(stored));
+      setProducts(parsed);
+      // guardo normalizado de vuelta
+      localStorage.setItem("products", JSON.stringify(parsed));
+    } else {
+      // seed inicial si no hay nada guardado
+      setProducts(defaultProducts);
+      localStorage.setItem("products", JSON.stringify(defaultProducts));
+    }
   }, []);
 
   const visible = (search.trim()
