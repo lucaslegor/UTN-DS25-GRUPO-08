@@ -89,8 +89,19 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
     if (isNaN(id)) return res.status(400).json({ message: "ID inválido" });
 
     // La autorización ya se maneja en las rutas con authorize('ADMIN')
-    // Solo los administradores pueden llegar hasta aquí
-    const updated = await polizaService.updatePoliza(id, req.body);
+    // Construir payload desde multipart/form-data si hay archivo
+    let payload: any = { ...(req.body as any) };
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (file) {
+      const base = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+      payload.archivoUrl = `${base}/uploads/polizas/${file.filename}`;
+    }
+
+    if (!payload || Object.keys(payload).length === 0) {
+      return res.status(400).json({ message: 'Debe adjuntar un archivo o datos para actualizar' });
+    }
+
+    const updated = await polizaService.updatePoliza(id, payload);
     res.json({ poliza: updated, message: "Póliza actualizada exitosamente" });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message });

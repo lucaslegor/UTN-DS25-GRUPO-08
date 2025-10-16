@@ -50,7 +50,27 @@ export const createProduct = async(req: Request, res: Response<ProductResponse>,
 
 export const updateProduct = async(req: Request<{id: string}, ProductResponse, UpdateProductRequest>, res: Response<ProductResponse>, next: NextFunction): Promise<void> => {
     try {
-        const product = await productService.updateProduct(Number(req.params.id), req.body);
+        const body = req.body as any;
+        const file = (req as any).file as Express.Multer.File | undefined;
+        const base = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+        const imagenUrl = file ? `${base}/uploads/productos/${file.filename}` : undefined;
+        
+        const updateData = {
+          titulo: body.titulo,
+          descripcion: body.descripcion,
+          precio: body.precio ? Number(body.precio) : undefined,
+          cobertura: body.cobertura,
+          tipo: body.tipo,
+          isActive: body.isActive !== undefined ? body.isActive === 'true' || body.isActive === true : undefined,
+          imagenUrl,
+        };
+        
+        // Filtrar campos undefined
+        const filteredData = Object.fromEntries(
+          Object.entries(updateData).filter(([_, v]) => v !== undefined)
+        );
+
+        const product = await productService.updateProduct(Number(req.params.id), filteredData as any);
 
         if (!product) {
         res.status(404).json({ message: 'Producto no encontrado' } as ProductResponse);

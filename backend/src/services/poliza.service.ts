@@ -141,7 +141,14 @@ export async function updatePoliza(id: number, data: ActualizarPolizaRequest): P
       data: {
         ...data,
         updatedAt: new Date()
-      }
+      },
+      include: {
+        pedido: {
+          include: {
+            items: true,
+          },
+        },
+      },
     });
 
     return poliza;
