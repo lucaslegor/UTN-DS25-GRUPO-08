@@ -160,3 +160,19 @@ export async function logoutApi() {
     clearAuth();
   }
 }
+
+// === Password reset ===
+
+export async function resetPasswordApi({ token, password }) {
+  return apiFetch('/api/auth/reset', {
+    method: 'POST',
+    body: { token, password },
+  });
+}
+
+export async function forgotPasswordApi(mail) {
+  return apiFetch('/api/auth/forgot', {
+    method: 'POST',
+    body: { mail, origin: window.location.origin }, // <= importante
+  });
+}

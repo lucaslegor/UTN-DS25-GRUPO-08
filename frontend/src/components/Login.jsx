@@ -86,6 +86,15 @@ const Login = () => {
             <button className="submit-button-login" type="submit" disabled={loading}>
               {loading ? "Ingresando..." : "Ingresar"}
             </button>
+            <p style={{ marginTop: 12, textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                style={{ background: 'none', border: 'none', color: '#1e43c0', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </p>
           </form>
 
           <div className="container-register" style={{ marginTop: 16 }}>

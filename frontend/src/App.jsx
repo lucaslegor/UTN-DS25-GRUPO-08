@@ -10,6 +10,8 @@ import RegisterPage from './pages/Register';
 import AdminPanel from './pages/AdminPanelPage';
 import { Contact } from './pages/ContactPage';
 import MisPolizasPage from './pages/MisPolizasPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         {/* Ruta /login y /register sin Layout */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Resto de rutas con Layout */}
         <Route path="/" element={<Layout />}>
