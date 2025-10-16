@@ -121,13 +121,7 @@ router.post("/forgot", async (req, res) => {
       return res.json({ ok: true });
     }
 
-    // En desarrollo, devolvemos la URL para probar sin depender del mail
-    const isDev = process.env.NODE_ENV !== "production";
-    if (isDev) {
-      return res.json({ ok: true, resetUrl });
-    }
-
-    // Producción: enviar email con Nodemailer
+    // Enviar email con Nodemailer (siempre)
     const html = `
       <p>Hola,</p>
       <p>Para restablecer tu contraseña hacé click en el siguiente enlace:</p>
@@ -136,7 +130,7 @@ router.post("/forgot", async (req, res) => {
     `;
 
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || "no-reply@maps.com",
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || "no-reply@maps.com",
       to: mail,
       subject: "Restablecer contraseña",
       html,

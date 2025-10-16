@@ -25,7 +25,6 @@
 .form-inicio-login {
   width: 50%;
   max-width: 600px;
-  height: 750px;
   background-color: #f9f9f9;
   padding: 30px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
@@ -45,7 +44,6 @@
 .container-login {
   width: 50%;
   max-width: 600px;
-  height: 750px;
   background-color: #1751e4;
   padding: 30px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
@@ -92,6 +90,23 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 16px;
+}
+
+/* Estados de validación */
+.input-login.is-error {
+  border-color: #d32f2f; /* rojo */
+  outline: 2px solid rgba(211, 47, 47, 0.2);
+}
+.input-login.is-valid {
+  border-color: #1e43c0; /* azul del tema */
+  outline: 2px solid rgba(30, 67, 192, 0.18);
+}
+
+.error-message {
+  color: #d32f2f;
+  display: block;
+  margin-top: 6px;
+  text-align: left;
 }
 
 .submit-button-login {

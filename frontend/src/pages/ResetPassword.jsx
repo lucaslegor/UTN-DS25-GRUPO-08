@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { resetPasswordApi } from "../services/api";
+import * as yup from "yup";
 
 export default function ResetPassword() {
   const [sp] = useSearchParams();
@@ -15,27 +16,55 @@ export default function ResetPassword() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ token: "", newPassword: "", repeat: "" });
+
+  const resetSchema = yup.object({
+    token: yup.string().required('Falta el token de reseteo'),
+    newPassword: yup.string().required('Ingresá una contraseña').min(8, 'Mínimo 8 caracteres'),
+    repeat: yup
+      .string()
+      .required('Repetí la contraseña')
+      .oneOf([yup.ref('newPassword')], 'Las contraseñas no coinciden'),
+  });
+
+  async function validateField(schema, field, value, context = {}) {
+    try {
+      await schema.validateAt(field, { ...context, [field]: value });
+      return '';
+    } catch (e) {
+      return e.message || 'Valor inválido';
+    }
+  }
 
   useEffect(() => {
     const t = sp.get("token") || "";
     setToken(t);
   }, [sp]);
 
+  async function onFieldChange(name, value) {
+    if (name === 'newPassword') setNewPassword(value);
+    if (name === 'repeat') setRepeat(value);
+    if (name === 'token') setToken(value);
+    const errMsg = await validateField(resetSchema, name, value, { newPassword });
+    setFieldErrors((prev) => ({ ...prev, [name]: errMsg }));
+  }
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr("");
     setMsg("");
 
-    if (!token) {
-      setErr("Falta el token de reseteo (revisá el enlace del email).");
-      return;
-    }
-    if (newPassword.length < 8) {
-      setErr("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
-    if (newPassword !== repeat) {
-      setErr("Las contraseñas no coinciden.");
+    try {
+      await resetSchema.validate({ token, newPassword, repeat }, { abortEarly: false });
+      setFieldErrors({ token: "", newPassword: "", repeat: "" });
+    } catch (e) {
+      const fe = { token: "", newPassword: "", repeat: "" };
+      if (e?.inner?.length) {
+        e.inner.forEach((it) => { if (it.path && !fe[it.path]) fe[it.path] = it.message; });
+      } else if (e?.path) {
+        fe[e.path] = e.message;
+      }
+      setFieldErrors(fe);
       return;
     }
 
@@ -53,7 +82,7 @@ export default function ResetPassword() {
   };
 
   const disabled =
-    loading || !token || newPassword.length < 8 || newPassword !== repeat;
+    loading || !!fieldErrors.token || !!fieldErrors.newPassword || !!fieldErrors.repeat || !token;
 
   return (
     <section
@@ -78,7 +107,7 @@ export default function ResetPassword() {
             type={showPwd1 ? "text" : "password"}
             placeholder="Nueva contraseña"
             value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            onChange={(e) => onFieldChange('newPassword', e.target.value)}
             required
             minLength={8}
             style={{
@@ -88,6 +117,7 @@ export default function ResetPassword() {
               border: "1px solid #ddd",
             }}
           />
+          {fieldErrors.newPassword && <small style={{ color: 'crimson' }}>{fieldErrors.newPassword}</small>}
           <button
             type="button"
             onClick={() => setShowPwd1((v) => !v)}
@@ -113,7 +143,7 @@ export default function ResetPassword() {
             type={showPwd2 ? "text" : "password"}
             placeholder="Repetir contraseña"
             value={repeat}
-            onChange={(e) => setRepeat(e.target.value)}
+            onChange={(e) => onFieldChange('repeat', e.target.value)}
             required
             minLength={8}
             style={{
@@ -123,6 +153,7 @@ export default function ResetPassword() {
               border: "1px solid #ddd",
             }}
           />
+          {fieldErrors.repeat && <small style={{ color: 'crimson' }}>{fieldErrors.repeat}</small>}
           <button
             type="button"
             onClick={() => setShowPwd2((v) => !v)}
