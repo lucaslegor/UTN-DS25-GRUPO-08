@@ -21,7 +21,7 @@ export const transporter = nodemailer.createTransport({
   greetingTimeout: 20_000,
   socketTimeout: 30_000,
   logger: true, // log a consola
-  debug: true,  // log de SMTP
+  debug: true,  
 });
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {

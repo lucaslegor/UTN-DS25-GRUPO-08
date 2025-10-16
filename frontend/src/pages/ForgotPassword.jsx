@@ -1,44 +1,73 @@
+// src/pages/ForgotPassword.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { forgotPasswordApi } from "../services/api";
+
+const APP_URL = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/$/, "");
 
 export default function ForgotPassword() {
   const [mail, setMail] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const onSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setErr(""); setMsg(""); setLoading(true);
+    setMsg("");
+    setErr("");
+    if (!mail) return;
+
     try {
-      await forgotPasswordApi({ mail });
-      setMsg("Si el mail existe, enviamos un enlace para restablecer la contraseña.");
-    } catch (e) {
-      setErr(e.message || "Error");
+      setLoading(true);
+      // sólo le pedimos al backend que envíe el mail
+      await forgotPasswordApi(mail, APP_URL);
+      setMsg("Si el email existe, te enviamos un enlace para restablecer la contraseña.");
+    } catch (error) {
+      setErr(error?.message || "No pudimos procesar la solicitud");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <section style={{ maxWidth: 420, margin: "80px auto", fontFamily: "Poppins, sans-serif" }}>
-      <h2>Olvidaste tu contraseña</h2>
-      <p>Ingresá tu email y te enviaremos un enlace para restablecerla.</p>
-      <form onSubmit={onSubmit}>
-        <input
-          type="email"
-          placeholder="tuemail@dominio.com"
-          value={mail}
-          onChange={(e) => setMail(e.target.value)}
-          required
-          style={{ width: "100%", padding: 12, marginBottom: 12, borderRadius: 8, border: "1px solid #ddd" }}
-        />
-        <button disabled={loading} style={{ width: "100%", padding: 12, borderRadius: 8, background: "#3d6de2", color: "#fff", border: 0 }}>
-          {loading ? "Enviando..." : "Enviar enlace"}
-        </button>
-      </form>
-      {msg && <p style={{ color: "#1e43c0", marginTop: 12 }}>{msg}</p>}
-      {err && <p style={{ color: "crimson", marginTop: 12 }}>{err}</p>}
-    </section>
+    <div className="principal-container-login">
+      <div className="content-wrapper-login">
+        <div className="form-inicio-login">
+          <button
+            onClick={() => navigate("/login")}
+            style={{ background: "none", border: "none", color: "#1e43c0", cursor: "pointer" }}
+            type="button"
+          >
+            Volver al login
+          </button>
+
+          <h3>¿Olvidaste tu contraseña?</h3>
+          <p>Ingresá tu email y te enviaremos un enlace para restablecerla.</p>
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-grupo-login">
+              <label htmlFor="email">Email:</label>
+              <input
+                className="input-login"
+                type="email"
+                id="email"
+                value={mail}
+                onChange={(e) => setMail(e.target.value)}
+                placeholder="tu@email.com"
+                required
+              />
+            </div>
+
+            <button className="submit-button-login" type="submit" disabled={loading}>
+              {loading ? "Enviando..." : "Enviar enlace"}
+            </button>
+          </form>
+
+          {msg && <p style={{ marginTop: 10, color: "#1e43c0" }}>{msg}</p>}
+          {err && <p style={{ marginTop: 10, color: "crimson" }}>{err}</p>}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,11 +1,19 @@
 import { Router } from "express";
 import nodemailer from "nodemailer";
-import { login, refreshAccessToken, forgotPassword, resetPassword } from "../services/auth.service";
-import { loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../validations/auth.validation";
+import {
+  login,
+  refreshAccessToken,
+  forgotPassword,
+  resetPassword,
+} from "../services/auth.service";
+import {
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "../validations/auth.validation";
 import { authenticate } from "../middlewares/auth.middleware";
 import prisma from "../config/prisma";
 import { transporter } from "../utils/mailer";
-
 
 const router = Router();
 
@@ -13,15 +21,17 @@ const router = Router();
 router.post("/login", async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ message: "Validación inválida", issues: parsed.error.flatten() });
+    return res
+      .status(400)
+      .json({ message: "Validación inválida", issues: parsed.error.flatten() });
   }
   try {
     const { user, token, refreshToken } = await login(parsed.data);
 
-    // Seteamos cookie httpOnly con refresh
+    // Cookie httpOnly con refresh
     res.cookie("rt", refreshToken, {
       httpOnly: true,
-      secure: false,       // true en prod con HTTPS
+      secure: false, // true en prod con HTTPS
       sameSite: "lax",
       path: "/api/auth",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
@@ -33,12 +43,14 @@ router.post("/login", async (req, res) => {
         idUsuario: user.id,
         username: user.username,
         mail: user.mail,
-        rol: user.rol,      // "ADMINISTRADOR" | "USUARIO"
+        rol: user.rol, // "ADMINISTRADOR" | "USUARIO"
         createdAt: user.createdAt,
       },
     });
   } catch (err: any) {
-    return res.status(err.statusCode ?? 500).json({ message: err.message || "Error" });
+    return res
+      .status(err.statusCode ?? 500)
+      .json({ message: err.message || "Error" });
   }
 });
 
@@ -48,7 +60,7 @@ router.post("/refresh", (req, res) => {
   if (!rt) return res.status(401).json({ message: "No refresh token" });
   try {
     const { token, refreshToken } = refreshAccessToken(rt);
-    // rotación simple del refresh
+    // Rotación simple del refresh
     res.cookie("rt", refreshToken, {
       httpOnly: true,
       secure: false,
@@ -58,7 +70,9 @@ router.post("/refresh", (req, res) => {
     });
     return res.json({ token });
   } catch (err: any) {
-    return res.status(err.statusCode ?? 401).json({ message: err.message || "Error" });
+    return res
+      .status(err.statusCode ?? 401)
+      .json({ message: err.message || "Error" });
   }
 });
 
@@ -73,7 +87,13 @@ router.get("/user", authenticate, async (req, res) => {
   const u = await prisma.usuario.findUnique({ where: { id: req.user!.id } });
   if (!u) return res.status(404).json({ message: "Usuario no encontrado" });
   return res.json({
-    user: { idUsuario: u.id, username: u.username, mail: u.mail, rol: u.rol, createdAt: u.createdAt },
+    user: {
+      idUsuario: u.id,
+      username: u.username,
+      mail: u.mail,
+      rol: u.rol,
+      createdAt: u.createdAt,
+    },
   });
 });
 
@@ -81,7 +101,7 @@ router.get("/user", authenticate, async (req, res) => {
 router.post("/forgot", async (req, res) => {
   const parsed = forgotPasswordSchema.safeParse({
     mail: req.body?.mail,
-    origin: req.body?.origin || (req.headers.origin as string | undefined),
+    origin: (req.headers.origin as string | undefined) ?? req.body?.origin,
   });
 
   if (!parsed.success) {
@@ -96,11 +116,18 @@ router.post("/forgot", async (req, res) => {
 
     const { resetToken, resetUrl } = await forgotPassword(mail, origin);
 
-    // No reveles si el mail existe o no
+    // No revelamos si el mail existe o no
     if (!resetToken || !resetUrl) {
       return res.json({ ok: true });
     }
 
+    // En desarrollo, devolvemos la URL para probar sin depender del mail
+    const isDev = process.env.NODE_ENV !== "production";
+    if (isDev) {
+      return res.json({ ok: true, resetUrl });
+    }
+
+    // Producción: enviar email con Nodemailer
     const html = `
       <p>Hola,</p>
       <p>Para restablecer tu contraseña hacé click en el siguiente enlace:</p>
@@ -121,23 +148,27 @@ router.post("/forgot", async (req, res) => {
     return res.json({ ok: true });
   } catch (err: any) {
     console.error("forgot handler error:", err);
-    return res.status(500).json({ message: err.message || "Error enviando mail" });
+    return res
+      .status(500)
+      .json({ message: err.message || "Error enviando mail" });
   }
 });
-
-
 
 // POST /api/auth/reset (actualizar contraseña con token)
 router.post("/reset", async (req, res) => {
   const parsed = resetPasswordSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ message: "Validación inválida", issues: parsed.error.flatten() });
+    return res
+      .status(400)
+      .json({ message: "Validación inválida", issues: parsed.error.flatten() });
   }
   try {
     await resetPassword(parsed.data.token, parsed.data.newPassword);
     return res.json({ ok: true });
   } catch (err: any) {
-    return res.status(err.statusCode ?? 400).json({ message: err.message || "Error" });
+    return res
+      .status(err.statusCode ?? 400)
+      .json({ message: err.message || "Error" });
   }
 });
 

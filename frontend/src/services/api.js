@@ -163,10 +163,10 @@ export async function logoutApi() {
 
 // === Password reset ===
 
-export async function resetPasswordApi({ token, password }) {
+export async function resetPasswordApi({ token, newPassword }) {
   return apiFetch('/api/auth/reset', {
     method: 'POST',
-    body: { token, password },
+    body: { token, newPassword }, 
   });
 }
 
