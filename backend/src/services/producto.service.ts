@@ -63,11 +63,12 @@ function mapProducto(row: DbProducto): Product {
     id: row.id,
     titulo: row.titulo,
     descripcion: row.descripcion,
-    precio: (row.precio as Prisma.Decimal).toNumber(),
+    precio: typeof row.precio === 'number' ? row.precio : Number(row.precio),
     cobertura: row.cobertura,
     tipo: row.tipo as Product["tipo"],
     isActive: row.isActive,
     createdAt: row.createdAt,
+    imagenUrl: (row as any).imagenUrl,
   };
 }
 
@@ -106,15 +107,17 @@ export const getProductById = async(id: number): Promise<Product | null> => {
   return mapProducto(product);
 }
 
-export const createProduct = async(productData: CreateProductRequest): Promise<Product> => {
+export const createProduct = async(productData: CreateProductRequest & { imagenUrl?: string }): Promise<Product> => {
   const product = await prisma.producto.create({
     data: {
       titulo: productData.titulo,
       descripcion: productData.descripcion,
-      precio: productData.precio,
+      precio: new Prisma.Decimal(productData.precio),
       cobertura: productData.cobertura,
       tipo: tipoSeguroToPrisma(productData.tipo),
-      isActive: productData.isActive
+      isActive: productData.isActive,
+      // @ts-ignore - field may not exist yet until migration
+      imagenUrl: productData.imagenUrl,
     }
   })
   return mapProducto(product);

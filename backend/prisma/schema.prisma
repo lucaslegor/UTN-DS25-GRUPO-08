@@ -39,6 +39,7 @@ model Producto {
   isActive     Boolean
   createdAt    DateTime      @default(now())
   precio       Float?        @db.Real
+  imagenUrl    String?
   itemsCarrito CarritoItem[]
   itemsPedido  PedidoItem[]
 }

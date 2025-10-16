@@ -5,12 +5,13 @@ import {
   crearProductoSchema,
   actualizarProductoSchema,
 } from "../validations/producto.validation";
+import { uploadProducto } from "../middlewares/upload.middleware";
 
 const router = Router();
 
 router.get("/", productoController.getAllProducts);
 router.get("/:id", productoController.getProductById);
-router.post("/", validate(crearProductoSchema), productoController.createProduct);
+router.post("/", uploadProducto.single('image'), productoController.createProduct);
 router.put("/:id", validate(actualizarProductoSchema), productoController.updateProduct);
 router.delete("/:id", productoController.deleteProduct);
 

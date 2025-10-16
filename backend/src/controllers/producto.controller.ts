@@ -27,9 +27,21 @@ export const getAllProducts = async(req: Request, res: Response<ProductsListResp
     }
 }
 
-export const createProduct = async(req: Request<{}, ProductResponse, CreateProductRequest>, res: Response<ProductResponse>, next: NextFunction): Promise<void> => {
+export const createProduct = async(req: Request, res: Response<ProductResponse>, next: NextFunction): Promise<void> => {
     try {
-        const product = await productService.createProduct(req.body);
+        const body = req.body as any;
+        const file = (req as any).file as Express.Multer.File | undefined;
+        const base = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+        const imagenUrl = file ? `${base}/uploads/productos/${file.filename}` : undefined;
+        const product = await productService.createProduct({
+          titulo: body.titulo,
+          descripcion: body.descripcion,
+          precio: Number(body.precio),
+          cobertura: body.cobertura,
+          tipo: body.tipo,
+          isActive: body.isActive !== undefined ? body.isActive === 'true' || body.isActive === true : true,
+          imagenUrl,
+        } as any);
         res.status(201).json({product, message: 'Producto creado exitosamente'});
     } catch (error) {
         next(error);

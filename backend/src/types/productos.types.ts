@@ -9,6 +9,7 @@ export interface Product {
   tipo: TipoSeguro;
   isActive: boolean;
   createdAt: Date;
+  imagenUrl?: string;
 }
 
 export interface CreateProductRequest {
@@ -18,6 +19,7 @@ export interface CreateProductRequest {
   cobertura: string;
   tipo: TipoSeguro;
   isActive: boolean;
+  imagenUrl?: string;
 }
 
 export interface UpdateProductRequest {
@@ -27,6 +29,7 @@ export interface UpdateProductRequest {
   cobertura?: string;
   tipo?: TipoSeguro;
   isActive?: boolean;
+  imagenUrl?: string;
 }
 
 export interface ProductResponse {

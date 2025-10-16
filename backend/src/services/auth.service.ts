@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs";
 import { sign, verify, type SignOptions } from "jsonwebtoken";
 
 type DbRol = "ADMINISTRADOR" | "USUARIO";
-type TokenRol = "ADMIN" | "USER";
-const toTokenRole = (db: DbRol): TokenRol => (db === "ADMINISTRADOR" ? "ADMIN" : "USER");
+type TokenRol = "ADMINISTRADOR" | "USUARIO";
+const toTokenRole = (db: DbRol): TokenRol => (db === "ADMINISTRADOR" ? "ADMINISTRADOR" : "USUARIO");
 
 // ===========================
 // Helpers de entorno / tipos

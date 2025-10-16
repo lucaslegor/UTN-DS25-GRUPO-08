@@ -20,6 +20,7 @@ export interface PedidoItem {
 export interface Pedido {
   idPedido: number;
   idUsuario: number;         
+  username?: string;
   items: PedidoItem[];
   subtotal: number;
   total: number;
