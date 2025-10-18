@@ -497,6 +497,11 @@ async function updateUserRole(userId, newRole) {
         10
       );
 
+      if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+        setMessage('El precio debe ser un número válido mayor a 0');
+        return;
+      }
+
       const productData = {
         titulo: product.titulo.trim(),
         descripcion: product.descripcion.trim(),
@@ -553,7 +558,7 @@ async function updateUserRole(userId, newRole) {
       precio: p.precio ?? '',
       isActive: p.isActive ?? true,
     });
-    setPreviewUrl(null);
+    setPreviewUrl(p.image || null);
     setImageFile(null);
     setEditingId(p.id);
     setActiveTab('form');
@@ -846,20 +851,9 @@ async function updateUserRole(userId, newRole) {
                     <span>Seleccionar imagen</span>
                   </div>
                 </div>
-                {validationErrors.image && (
-                  <div className="error-message" style={{
-                    color: '#f44336',
-                    fontSize: '12px',
-                    marginTop: '4px',
-                    fontWeight: '500'
-                  }}>
-                    ⚠️ {validationErrors.image}
-                  </div>
-                )}
-
-                {(previewUrl || product.image) && (
+                {previewUrl && (
                   <div className="image-preview">
-                    <img src={previewUrl || product.image} alt="Preview" />
+                    <img src={previewUrl || null} alt="Preview" />
                     <Chip label="Vista previa" color="info" size="small" />
                   </div>
                 )}
