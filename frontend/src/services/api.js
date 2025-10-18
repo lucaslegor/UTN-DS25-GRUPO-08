@@ -85,6 +85,7 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
 
   // 2) armo headers con token (puede haber cambiado tras refresh)
   const auth = getAuth();
+  const hadToken = Boolean(auth?.token);
   const h = { 'Content-Type': 'application/json', ...headers };
   if (auth?.token) h.Authorization = `Bearer ${auth.token}`;
 
@@ -98,8 +99,8 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
 
   let res = await doReq();
 
-  // 3) fallback: si igual devolvió 401/403, intento refrescar y reintentar 1 vez
-  if ((res.status === 401 || res.status === 403) && !_retry) {
+  // 3) fallback: sólo si YA había token intentamos refresh y reintento 1 vez
+  if (hadToken && (res.status === 401 || res.status === 403) && !_retry) {
     try {
       await refreshAccessToken();
       const fresh = getAuth();

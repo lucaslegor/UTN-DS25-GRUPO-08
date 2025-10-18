@@ -28,7 +28,19 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 export function authorize(...roles: ("USUARIO" | "ADMINISTRADOR")[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ error: "No autenticado" });
-    if (!roles.includes(req.user.role)) {
+
+    const normalize = (r?: string) => {
+      if (!r) return r;
+      const s = String(r).toUpperCase();
+      if (s === 'ADMIN' || s === 'ADMINISTRADOR') return 'ADMINISTRADOR';
+      if (s === 'USER' || s === 'USUARIO') return 'USUARIO';
+      return s;
+    };
+
+    const allowed = roles.map(normalize);
+    const userRole = normalize(req.user.role);
+
+    if (!allowed.includes(userRole)) {
       return res.status(403).json({ error: "No tienes permisos" });
     }
     next();

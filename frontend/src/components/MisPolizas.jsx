@@ -132,8 +132,11 @@ const MisPolizas = () => {
   };
 
   const handleDownloadPoliza = (poliza) => {
-    // En producción, esto descargaría el archivo real
-    window.open(poliza.archivoUrl, '_blank');
+    // Evitar caché del navegador cuando se reemplaza la póliza
+    const baseUrl = poliza.archivoUrl;
+    const version = poliza.updatedAt ? new Date(poliza.updatedAt).getTime() : Date.now();
+    const url = baseUrl.includes('?') ? `${baseUrl}&v=${version}` : `${baseUrl}?v=${version}`;
+    window.open(url, '_blank');
   };
 
   const handleCloseDialog = () => {

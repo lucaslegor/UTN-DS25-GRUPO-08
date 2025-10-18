@@ -19,7 +19,15 @@ router.get('/:id', polizaController.getPolizaById);
 router.post('/:idPedido', uploadPoliza.single('file'), polizaController.createPoliza);
 
 // Rutas que requieren rol ADMIN
-router.put('/:id', authorize('ADMIN'), validate(actualizarPolizaSchema), polizaController.updatePoliza);
-router.delete('/:id', authorize('ADMIN'), polizaController.deletePoliza);
+// Permitir reemplazo de archivo de póliza vía multipart/form-data en PUT
+router.put(
+  '/:id',
+  authorize('ADMINISTRADOR'),
+  uploadPoliza.single('file'),
+  // Si tu actualización también soporta campos JSON, puedes volver a agregar validate aquí
+  // validate(actualizarPolizaSchema),
+  polizaController.updatePoliza
+);
+router.delete('/:id', authorize('ADMINISTRADOR'), polizaController.deletePoliza);
 
 export const polizaRoutes = router;

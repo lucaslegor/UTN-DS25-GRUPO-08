@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { Person, Policy, Logout } from "@mui/icons-material";
 import CartIcon from "./CartIcon";
+import { getMeApi, logoutApi } from "../services/api";
 import { defaultProducts } from "../pages/Home";
 import "../styles/navbar.css";
 
@@ -36,15 +37,29 @@ export const NavBar = () => {
     const raw = localStorage.getItem("auth");
     try {
       const auth = raw ? JSON.parse(raw) : null;
-      setIsLogin(!!auth?.token);
+      const logged = !!auth?.token;
+      setIsLogin(logged);
       setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
+      // Validar sesión contra el backend; si falla, limpiar
+      if (logged) {
+        getMeApi()
+          .then((data) => {
+            if (!data?.user) throw new Error("Invalid session");
+          })
+          .catch(() => {
+            localStorage.removeItem("auth");
+            setIsLogin(false);
+            setIsAdmin(false);
+          });
+      }
     } catch {
       setIsLogin(false);
       setIsAdmin(false);
     }
-  }, [location.pathname]); 
+  }, [location.pathname]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await logoutApi(); } catch {}
     localStorage.removeItem("auth");
     setIsLogin(false);
     setIsAdmin(false);

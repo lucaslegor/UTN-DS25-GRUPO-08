@@ -116,14 +116,13 @@ export const createProduct = async(productData: CreateProductRequest & { imagenU
       cobertura: productData.cobertura,
       tipo: tipoSeguroToPrisma(productData.tipo),
       isActive: productData.isActive,
-      // @ts-ignore - field may not exist yet until migration
       imagenUrl: productData.imagenUrl,
     }
   })
   return mapProducto(product);
 }
 
-export const updateProduct = async (id: number, productData: UpdateProductRequest): Promise<Product | null> => {
+export const updateProduct = async (id: number, productData: UpdateProductRequest & { imagenUrl?: string }): Promise<Product | null> => {
   const dataSinFiltro = {
     titulo:      productData.titulo !== undefined ? productData.titulo : undefined,
     descripcion: productData.descripcion !== undefined ? productData.descripcion : undefined,
@@ -131,6 +130,7 @@ export const updateProduct = async (id: number, productData: UpdateProductReques
     isActive:    productData.isActive !== undefined ? productData.isActive : undefined,
     precio:      productData.precio !== undefined ? new Prisma.Decimal(productData.precio) : undefined,
     tipo:        productData.tipo !== undefined ? { set: tipoSeguroToPrisma(productData.tipo)! } : undefined,
+    imagenUrl:   productData.imagenUrl !== undefined ? productData.imagenUrl : undefined,
   };
 
   const data = Object.fromEntries(
@@ -146,12 +146,21 @@ export const updateProduct = async (id: number, productData: UpdateProductReques
   }
 };
 
-export const deleteProduct = async(id: number): Promise<Product | null> => {
+export const deleteProduct = async(id: number): Promise<Product> => {
   try {
     const productDeleted = await prisma.producto.delete({ where: { id } });
     return mapProducto(productDeleted)
   } catch (error: any) {
-    if(error?.code === "P2025" ) return null;
+    if (error?.code === "P2025") {
+      const e: any = new Error('Producto no encontrado');
+      e.statusCode = 404;
+      throw e;
+    }
+    if (error?.code === "P2003") {
+      const e: any = new Error('No se puede eliminar: el producto está referenciado por pedidos');
+      e.statusCode = 409;
+      throw e;
+    }
     throw error;
   };
 }
