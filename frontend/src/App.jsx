@@ -12,6 +12,7 @@ import { Contact } from './pages/ContactPage';
 import MisPolizasPage from './pages/MisPolizasPage';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import WhatsAppFloat from './components/WhatsAppFloat';
 
 function App() {
   return (
@@ -35,6 +36,9 @@ function App() {
           <Route path="misPolizas" element={<MisPolizasPage/>} />
         </Route>
       </Routes>
+      
+      {/* Botón flotante de WhatsApp */}
+      <WhatsAppFloat />
     </Router>
   );
 }

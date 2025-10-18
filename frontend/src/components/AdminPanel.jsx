@@ -142,24 +142,27 @@ const AdminPanel = () => {
   const [selectedPedidoId, setSelectedPedidoId] = useState('');
   const [pedidoSearchTerm, setPedidoSearchTerm] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
-  const [isUploadingPoliza, setIsUploadingPoliza] = useState(false);
 
   const navigate = useNavigate();
 
-  // Protege la ruta: requiere token válido y rol ADMINISTRADOR
+  // Protege la ruta
   useEffect(() => {
+    const raw = localStorage.getItem('auth');
     try {
-      const authRaw = localStorage.getItem('auth');
-      const auth = authRaw ? JSON.parse(authRaw) : null;
-      const hasToken = Boolean(auth?.token);
-      const isAdmin = String(auth?.user?.rol || '').toUpperCase() === 'ADMINISTRADOR';
-      if (!hasToken || !isAdmin) navigate('/login');
+      const auth = raw ? JSON.parse(raw) : null;
+      if (!auth?.token) {
+        navigate('/login');
+        return;
+      }
+      // Verificar que sea administrador
+      if (auth?.user?.rol !== 'ADMINISTRADOR') {
+        navigate('/');
+        return;
+      }
     } catch {
       navigate('/login');
     }
   }, [navigate]);
-
-
 
   // Carga productos desde API
   useEffect(() => {
@@ -185,8 +188,13 @@ const AdminPanel = () => {
   /** ======= Helpers API ======= */
   const authHeaders = () => {
     const headers = { 'Content-Type': 'application/json' };
-    const token = localStorage.getItem('token'); // si guardás el JWT con la key 'token'
-    if (token) headers.Authorization = `Bearer ${token}`;
+    const raw = localStorage.getItem('auth');
+    try {
+      const auth = raw ? JSON.parse(raw) : null;
+      if (auth?.token) headers.Authorization = `Bearer ${auth.token}`;
+    } catch {
+      // Si hay error parseando, no agregar token
+    }
     return headers;
   };
 
@@ -278,84 +286,75 @@ async function loadProducts() {
     return `#${pedido.idPedido || pedido.id} - ${pedido.username || `user ${pedido.idUsuario}`} - ${formatARS(pedido.total)} ${pedido.poliza ? '(YA TIENE PÓLIZA)' : '(SIN PÓLIZA)'}`;
   };
 
-// Reemplazar COMPLETO el handleAssignPoliza por este:
-// Estado/flag global del componente (arriba):
-// const [isUploadingPoliza, setIsUploadingPoliza] = useState(false);
-
-async function handleAssignPoliza(e) {
-  e.preventDefault();
-
-  if (!selectedPedidoId) return;
-  if (isUploadingPoliza) return;                 // evita doble envío
-  if (!assignFile) {
-    alert('Seleccioná un archivo de póliza');
-    return;
-  }
-
-  setIsUploadingPoliza(true);
-  try {
-    const id = Number(selectedPedidoId);
-    console.log('Upload póliza →', id);
-
-    const auth = JSON.parse(localStorage.getItem('auth') || '{}');
-    console.log('token found?', Boolean(auth?.token));
-
-    const fd = new FormData();
-
-    // ⚠️ NOMBRE DEL CAMPO: debe coincidir con upload.single('file') en el backend
-    fd.append('file', assignFile);
-    // Opcional: metadata adicional si la necesitás en el backend
-    // fd.append('meta', JSON.stringify({}));
-
-    // DEBUG: inspeccionar lo que realmente se manda
-    for (const entry of fd.entries()) {
-      console.log('FormData entry:', entry[0], entry[1]);
+  async function handleAssignPoliza(e) {
+    e.preventDefault();
+    if (!selectedPedidoId) return;
+    try {
+      if (!assignFile) throw new Error('Seleccione un archivo');
+      
+      // Verificar si el pedido ya tiene póliza para mostrar mensaje apropiado
+      const pedidoSeleccionado = pedidos.find(p => (p.idPedido || p.id) == selectedPedidoId);
+      const esReemplazo = pedidoSeleccionado && pedidoSeleccionado.poliza;
+      
+      // Mostrar mensaje de carga
+      const loadingMessage = document.createElement('div');
+      loadingMessage.textContent = esReemplazo ? 'Reemplazando póliza...' : 'Asignando póliza...';
+      loadingMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #1976d2; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(loadingMessage);
+      
+      await uploadPolizaFileApi(Number(selectedPedidoId), assignFile);
+      
+      // Remover mensaje de carga
+      document.body.removeChild(loadingMessage);
+      
+      setAssignFile(null);
+      setSelectedPedidoId('');
+      await loadPedidos();
+      
+      // Mostrar mensaje de éxito apropiado
+      const successMessage = document.createElement('div');
+      successMessage.textContent = esReemplazo ? '✅ Póliza reemplazada exitosamente' : '✅ Póliza asignada exitosamente';
+      successMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #4caf50; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(successMessage);
+      
+      // Remover mensaje después de 3 segundos
+      setTimeout(() => {
+        if (document.body.contains(successMessage)) {
+          document.body.removeChild(successMessage);
+        }
+      }, 3000);
+      
+    } catch (err) {
+      // Remover mensaje de carga si existe
+      const loadingMessage = document.querySelector('div[style*="background: #1976d2"]');
+      if (loadingMessage) document.body.removeChild(loadingMessage);
+      
+      // Mostrar mensaje de error
+      const errorMessage = document.createElement('div');
+      errorMessage.textContent = '❌ Error al asignar póliza: ' + (err?.message || 'Error desconocido');
+      errorMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #f44336; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(errorMessage);
+      
+      // Remover mensaje después de 5 segundos
+      setTimeout(() => {
+        if (document.body.contains(errorMessage)) {
+          document.body.removeChild(errorMessage);
+        }
+      }, 5000);
     }
-
-    // Elegir endpoint según si el pedido ya tiene póliza o no
-    const pedido = pedidos.find(p => (p.idPedido || p.id) == id);
-    const hasPoliza = Boolean(pedido?.poliza?.id);
-    const url = hasPoliza
-      ? `${API_BASE}/polizas/${pedido.poliza.id}` // Reemplazar archivo de una póliza existente (PUT)
-      : `${API_BASE}/polizas/${id}`;              // Crear póliza para el pedido (POST)
-    const headers = {};
-    if (auth?.token) headers.Authorization = `Bearer ${auth.token}`;
-
-    // NOTA: no poner 'Content-Type' manual cuando envías FormData
-    const res = await fetch(url, {
-      method: hasPoliza ? 'PUT' : 'POST',
-      body: fd,
-      // credentials: 'include', // comentalo si no usás cookies de sesión
-      headers,
-    });
-
-    // parsear body (puede venir JSON o texto)
-    const text = await res.text();
-    let data;
-    try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
-
-    if (!res.ok) {
-      console.error('Polizas PUT error', res.status, res.statusText, data);
-      throw new Error(`PUT ${res.status} ${res.statusText} ${JSON.stringify(data)}`);
-    }
-
-    console.log('Polizas PUT ok', data);
-
-    // limpieza UI
-    setAssignFile(null);
-    setSelectedPedidoId('');
-    await loadPedidos();
-    alert('✅ Póliza reemplazada correctamente');
-
-  } catch (err) {
-    console.error(err);
-    alert(`❌ ${err?.message || 'Error al subir la póliza'}`);
-  } finally {
-    setIsUploadingPoliza(false);
   }
-}
-
-
 
   const normalizeUsers = (data) => {
   if (!data) return [];
@@ -447,21 +446,13 @@ async function updateUserRole(userId, newRole) {
   };
 
   // Función para validar un campo específico
-  // ...existing code...
-  // Función para validar un campo específico
   const validateField = async (fieldName, value) => {
     try {
-
-      // Construir el objeto de valores de forma que si se valida "image"
-     // use el `value` pasado (el File) en vez de depender del state que puede ser aún antiguo.
-      const vals = { editingId };
-      if (fieldName === 'image') {
-        vals.image = value;
-      } else {
-        vals[fieldName] = value;
-        vals.image = imageFile;
-      }
-      await productValidationSchema.validateAt(fieldName, vals, { context: { editingId } });
+      await productValidationSchema.validateAt(fieldName, {
+        [fieldName]: value,
+        image: imageFile,
+        editingId: editingId
+      }, { context: { editingId } });
       
       // Si la validación es exitosa, eliminar el error del campo
       setValidationErrors(prev => {
@@ -477,7 +468,6 @@ async function updateUserRole(userId, newRole) {
       }));
     }
   };
-// ...existing code...
 
   // Función para validar todo el formulario
   const validateForm = async () => {
@@ -541,24 +531,7 @@ async function updateUserRole(userId, newRole) {
 
       let updatedProduct;
       if (editingId) {
-        // Al editar, si hay imagen nueva, usar multipart
-        if (imageFile) {
-          const form = new FormData();
-          Object.entries(productData).forEach(([k, v]) => form.append(k, String(v)));
-          form.append('image', imageFile);
-          const auth = JSON.parse(localStorage.getItem('auth') || '{}');
-          const res = await fetch(`${API_BASE}/productos/${editingId}`, {
-            method: 'PUT',
-            headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
-            body: form,
-            credentials: 'include',
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data?.message || 'Error actualizando producto');
-          updatedProduct = data.product;
-        } else {
-          updatedProduct = await updateProduct(editingId, productData);
-        }
+        updatedProduct = await updateProduct(editingId, productData);
         setMessage('Producto actualizado exitosamente');
       } else {
         // multipart si hay imagen
@@ -619,12 +592,7 @@ async function updateUserRole(userId, newRole) {
       await loadProducts();
     } catch (err) {
       console.error(err);
-      const msg = String(err?.message || 'Error al eliminar');
-      if (msg.includes('No se puede eliminar')) {
-        alert('No se puede eliminar este producto porque está referenciado por pedidos. Podés desactivarlo o editarlo.');
-      } else {
-        setMessage('Error al eliminar el producto: ' + msg);
-      }
+      setMessage('Error al eliminar el producto: ' + err.message);
     }
   };
 
@@ -901,9 +869,20 @@ async function updateUserRole(userId, newRole) {
                     <span>Seleccionar imagen</span>
                   </div>
                 </div>
-                {previewUrl && (
+                {validationErrors.image && (
+                  <div className="error-message" style={{
+                    color: '#f44336',
+                    fontSize: '12px',
+                    marginTop: '4px',
+                    fontWeight: '500'
+                  }}>
+                    ⚠️ {validationErrors.image}
+                  </div>
+                )}
+
+                {previewUrl && previewUrl.trim() !== "" && (
                   <div className="image-preview">
-                    <img src={previewUrl || null} alt="Preview" />
+                    <img src={previewUrl} alt="Preview" />
                     <Chip label="Vista previa" color="info" size="small" />
                   </div>
                 )}

@@ -38,7 +38,7 @@ function signRefreshToken(payload: object) {
 
 /** Token para reset de contraseña (corto) */
 function signResetToken(userId: number) {
-  const secret = mustEnv("JWT_RESET_SECRET");
+  const secret = process.env.JWT_RESET_SECRET || "reset_secret_default";
   const exp = coerceExp(process.env.JWT_RESET_EXPIRES_IN || "15m");
   const opts: SignOptions = { expiresIn: exp };
   return sign({ id: userId, purpose: "reset" }, secret, opts);
@@ -132,7 +132,7 @@ export async function forgotPassword(mail: string, origin?: string) {
 
 /** Resetea la contraseña usando el token recibido por email */
 export async function resetPassword(token: string, newPassword: string) {
-  const secret = mustEnv("JWT_RESET_SECRET");
+  const secret = process.env.JWT_RESET_SECRET || "reset_secret_default";
   let decoded: any;
   try {
     decoded = verify(token, secret) as any;

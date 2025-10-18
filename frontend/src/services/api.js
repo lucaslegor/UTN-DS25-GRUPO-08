@@ -80,14 +80,17 @@ async function ensureFreshToken() {
    apiFetch con refresh
    ========================= */
 export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry = false } = {}) {
-  // 1) refresh preventivo antes de pegarle al endpoint
-  await ensureFreshToken();
+  // 1) refresh preventivo antes de pegarle al endpoint (solo si hay token)
+  const auth = getAuth();
+  if (auth?.token) {
+    await ensureFreshToken();
+  }
 
   // 2) armo headers con token (puede haber cambiado tras refresh)
-  const auth = getAuth();
-  const hadToken = Boolean(auth?.token);
+  const freshAuth = getAuth();
+  const hadToken = Boolean(freshAuth?.token);
   const h = { 'Content-Type': 'application/json', ...headers };
-  if (auth?.token) h.Authorization = `Bearer ${auth.token}`;
+  if (freshAuth?.token) h.Authorization = `Bearer ${freshAuth.token}`;
 
   const doReq = () =>
     fetch(`${API_URL}${path}`, {
