@@ -2,6 +2,6 @@
 
 export const formatPrice = (price) => {
   const numericPrice = Number(price);
-  if (isNaN(numericPrice)) return 'Consultar';
-  return `$${numericPrice.toLocaleString('es-AR')}/año`;
+  if (isNaN(numericPrice) || price === null || price === undefined) return 'Consultar';
+  return `$${Math.abs(numericPrice).toLocaleString('es-AR')}/año`;
 };

@@ -72,3 +72,47 @@ El proyecto busca potenciar el alcance comercial de la Empresa MAPS, facilitando
 4. Mejorar la experiencia de compra para los usuarios, ampliando el alcance a nivel nacional.
 5. Automatizar el proceso de ventas para reducir la carga operativa.
 6. Aumentar el número de ventas y la exposición de la empresa.
+
+---
+
+## 🧪 Testing
+
+### Ejecutar Tests (Frontend)
+
+Para ejecutar los tests del frontend, navega al directorio `frontend` y usa el siguiente comando:
+
+```bash
+cd frontend
+npm test
+```
+
+### Qué se está testeando (Frontend)
+
+Actualmente, los tests del frontend cubren las siguientes funcionalidades:
+
+*   **`formatPrice` (src/utils/formatPrice.js)**:
+    *   Verifica que la función formatea correctamente valores numéricos (enteros, decimales, cero, negativos) a un formato de moneda específico (`$X.XXX/año`).
+    *   Asegura que retorna "Consultar" para entradas no numéricas o nulas/indefinidas.
+
+*   **`CartContext` (src/context/CartContext.jsx)**:
+    *   **`addToCart`**: Asegura que los productos se añaden correctamente al carrito y que la cantidad se incrementa si el producto ya existe.
+    *   **`removeFromCart`**: Verifica que los productos se eliminan correctamente del carrito.
+    *   **`clearCart`**: Confirma que el carrito se vacía por completo.
+    *   **`getCartTotal`**: Comprueba que el total de ítems en el carrito se calcula correctamente.
+    *   **`getCartPriceTotal`**: Verifica que el precio total del carrito (suma de precios * cantidades) se calcula correctamente.
+
+*   **`ProductCard` (src/components/ProductCard.jsx)**:
+    *   Verifica que el componente renderiza la información del producto (título, descripción, precio, imagen) de manera correcta.
+    *   Confirma que el componente no renderiza un enlace internamente, esperando que la navegación sea manejada por un componente padre.
+
+*   **`NavBar` (src/components/NavBar.jsx)**:
+    *   Asegura que la barra de navegación muestra el botón "Iniciar sesión" cuando no hay un usuario autenticado.
+    *   Verifica que muestra el icono del menú de usuario cuando hay un usuario autenticado.
+    *   Comprueba que el enlace "Panel Admin" se muestra solo cuando el usuario autenticado tiene el rol de "ADMINISTRADOR".
+    *   Confirma que el enlace "Panel Admin" no se muestra si el usuario es un "USUARIO" normal.
+
+*   **`Componente de Login` (src/components/Login.jsx)**:
+    *   Verifica que el componente renderiza correctamente los campos de "Usuario o Email" y "Contraseña", así como los botones de "Ingresar" y "Registrarse".
+    *   Asegura que, al enviar el formulario con credenciales válidas (mockeadas), se llama a la función `loginApi` con los datos correctos y se navega a la página principal.
+    *   Comprueba que al hacer clic en el botón "Registrarse" se navega a la ruta `/register`.
+    *   Verifica que al hacer clic en el botón "¿Olvidaste tu contraseña?" se navega a la ruta `/forgot-password`.

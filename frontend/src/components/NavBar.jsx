@@ -263,6 +263,7 @@ export const NavBar = () => {
                   "&:hover": { backgroundColor: "rgba(255,255,255,0.12)" },
                   padding: "4px",
                 }}
+                aria-label="Cuenta de usuario"
               >
                 {profileImage ? (
                   <img 
