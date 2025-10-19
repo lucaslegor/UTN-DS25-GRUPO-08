@@ -12,7 +12,7 @@ export const loginSchema = z.object({
 
 export const forgotPasswordSchema = z.object({
   mail: z.string().email(),
-  origin: z.string().url().optional(),
+  origin: z.string().optional(),
 });
 
 export const resetPasswordSchema = z.object({

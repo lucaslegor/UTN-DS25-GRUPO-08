@@ -54,7 +54,7 @@ export default function ForgotPassword() {
     try {
       setLoading(true);
       // sólo le pedimos al backend que envíe el mail
-      await forgotPasswordApi(mail, APP_URL);
+      await forgotPasswordApi(mail);
       setMsg("Si el email existe, te enviamos un enlace para restablecer la contraseña.");
     } catch (error) {
       setErr(error?.message || "No pudimos procesar la solicitud");
@@ -67,13 +67,6 @@ export default function ForgotPassword() {
     <div className="principal-container-login">
       <div className="content-wrapper-login">
         <div className="form-inicio-login">
-          <button
-            onClick={() => navigate("/login")}
-            style={{ background: "none", border: "none", color: "#1e43c0", cursor: "pointer" }}
-            type="button"
-          >
-            Volver al login
-          </button>
 
           <h3>¿Olvidaste tu contraseña?</h3>
           <p>Ingresá tu email y te enviaremos un enlace para restablecerla.</p>

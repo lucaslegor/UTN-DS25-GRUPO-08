@@ -22,6 +22,7 @@ export const NavBar = () => {
   const [isLogin, setIsLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+  const [profileImage, setProfileImage] = useState("");
 
   // Search state
   const [search, setSearch] = useState("");
@@ -40,21 +41,11 @@ export const NavBar = () => {
       const logged = !!auth?.token;
       setIsLogin(logged);
       setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
-      // Validar sesión contra el backend; si falla, limpiar
-      if (logged) {
-        getMeApi()
-          .then((data) => {
-            if (!data?.user) throw new Error("Invalid session");
-          })
-          .catch(() => {
-            localStorage.removeItem("auth");
-            setIsLogin(false);
-            setIsAdmin(false);
-          });
-      }
+      setProfileImage(auth?.user?.profileImage || "");
     } catch {
       setIsLogin(false);
       setIsAdmin(false);
+      setProfileImage("");
     }
   }, [location.pathname]);
 
@@ -63,6 +54,7 @@ export const NavBar = () => {
     localStorage.removeItem("auth");
     setIsLogin(false);
     setIsAdmin(false);
+    setProfileImage("");
     setUserMenuAnchor(null);
     navigate("/");
   };
@@ -269,9 +261,23 @@ export const NavBar = () => {
                 sx={{
                   color: "#fff",
                   "&:hover": { backgroundColor: "rgba(255,255,255,0.12)" },
+                  padding: "4px",
                 }}
               >
-                <AccountCircle sx={{ fontSize: 30 }} />
+                {profileImage ? (
+                  <img 
+                    src={profileImage} 
+                    alt="Foto de perfil" 
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <AccountCircle sx={{ fontSize: 30 }} />
+                )}
               </IconButton>
               <MuiMenu
                 anchorEl={userMenuAnchor}

@@ -45,13 +45,12 @@ async function apiUpdateUser(currentUsername, payload) {
 
 /* ===== Secciones ===== */
 const SECTIONS = [
-  { id: "datos", label: "Datos personales", icon: "bi-person-circle" },
   { id: "cuenta", label: "Cuenta de usuario", icon: "bi-shield-lock" },
 ];
 
 export default function UserProfile() {
-  const [active, setActive] = useState("datos");
-  const [editing, setEditing] = useState(null); // 'datos' | 'cuenta' | null
+  const [active, setActive] = useState("cuenta");
+  const [editing, setEditing] = useState(null); // 'cuenta' | null
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -63,46 +62,30 @@ export default function UserProfile() {
     // Cuenta
     username: "",
     email: "",
-    seguridad: {
-      ultimoCambioPass: "",
-      nuevoPassword: "",
-      repeatNuevoPassword: "",
-    },
-    // Datos personales (solo local)
-    datos: {
-      nombre: "",
-      apellido: "",
-      dni: "",
-      nacimiento: "",
-      direccion: "",
-      ciudad: "",
-      provincia: "",
-      cp: "",
-    },
+    profileImage: "",
   });
 
   // Borrador de edición
   const [draft, setDraft] = useState(user);
 
-  // Helpers para datos personales local
-  const extraKey = (u) => `profileExtra:${u || ""}`;
-  const loadExtras = (u) => {
+  // Helpers para foto de perfil
+  const profileImageKey = (u) => `profileImage:${u || ""}`;
+  const loadProfileImage = (u) => {
     try {
-      const raw = localStorage.getItem(extraKey(u));
-      return raw ? JSON.parse(raw) : null;
+      return localStorage.getItem(profileImageKey(u)) || "";
     } catch {
-      return null;
+      return "";
     }
   };
-  const saveExtras = (u, datos) => {
-    localStorage.setItem(extraKey(u), JSON.stringify(datos));
+  const saveProfileImage = (u, imageData) => {
+    localStorage.setItem(profileImageKey(u), imageData);
   };
-  const migrateExtrasKey = (oldU, newU) => {
+  const migrateProfileImageKey = (oldU, newU) => {
     if (!oldU || !newU || oldU === newU) return;
-    const oldRaw = localStorage.getItem(extraKey(oldU));
-    if (oldRaw) {
-      localStorage.setItem(extraKey(newU), oldRaw);
-      localStorage.removeItem(extraKey(oldU));
+    const oldImage = localStorage.getItem(profileImageKey(oldU));
+    if (oldImage) {
+      localStorage.setItem(profileImageKey(newU), oldImage);
+      localStorage.removeItem(profileImageKey(oldU));
     }
   };
 
@@ -130,10 +113,10 @@ export default function UserProfile() {
             next.username = remote.username || next.username;
             next.email = remote.mail || next.email;
           }
-          // cargar datos personales locales para ese username
-          const extras = loadExtras(next.username);
-          if (extras) {
-            next.datos = { ...next.datos, ...extras };
+          // cargar foto de perfil local para ese username
+          const profileImage = loadProfileImage(next.username);
+          if (profileImage) {
+            next.profileImage = profileImage;
           }
           setCurrentUsername(next.username);
         }
@@ -143,7 +126,7 @@ export default function UserProfile() {
 
         // sincroniza localStorage.auth.user si faltaba el mail
         if (auth?.user) {
-          const merged = { ...auth.user, username: next.username, mail: next.email };
+          const merged = { ...auth.user, username: next.username, mail: next.email, profileImage: next.profileImage };
           localStorage.setItem("auth", JSON.stringify({ ...auth, user: merged }));
         }
       } catch {
@@ -168,40 +151,39 @@ export default function UserProfile() {
 
   const onInput = (e) => {
     const { name, value } = e.target;
-    if (active === "cuenta") {
-      if (name === "username" || name === "email") {
-        setDraft((d) => ({ ...d, [name]: value }));
-      } else {
-        setDraft((d) => ({
-          ...d,
-          seguridad: { ...d.seguridad, [name]: value },
-        }));
-      }
-    } else {
-      setDraft((d) => ({
-        ...d,
-        datos: { ...d.datos, [name]: value },
-      }));
+    if (name === "username" || name === "email") {
+      setDraft((d) => ({ ...d, [name]: value }));
     }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      setMsg('Por favor selecciona un archivo de imagen válido');
+      return;
+    }
+    
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMsg('La imagen no puede ser mayor a 5MB');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const imageData = reader.result;
+      setDraft((d) => ({ ...d, profileImage: imageData }));
+    };
+    reader.readAsDataURL(file);
   };
 
   async function saveSection(section) {
     setLoading(true);
     setMsg("");
     try {
-      if (section === "datos") {
-        // Solo local
-        const newDatos = { ...draft.datos };
-        saveExtras(currentUsername || draft.username, newDatos);
-        const next = { ...user, datos: newDatos };
-        setUser(next);
-        setDraft(next);
-        setMsg("Datos personales guardados (localmente - Por ahora)");
-        setEditing(null);
-        setLoading(false);
-        return;
-      }
-
       // === CUENTA (backend) ===
       const payload = {};
       // cambios de username/mail
@@ -213,43 +195,38 @@ export default function UserProfile() {
         if (!draft.email?.trim()) throw new Error("El email no puede estar vacío");
         payload.mail = draft.email.trim().toLowerCase();
       }
-      // cambio de contraseña (opcional)
-      const p1 = draft.seguridad.nuevoPassword || "";
-      const p2 = draft.seguridad.repeatNuevoPassword || "";
-      if (p1 || p2) {
-        if (p1.length < 8) throw new Error("La contraseña debe tener al menos 8 caracteres");
-        if (p1 !== p2) throw new Error("Las contraseñas no coinciden");
-        payload.password = p1;
+
+      // Guardar foto de perfil localmente
+      if (draft.profileImage !== user.profileImage) {
+        saveProfileImage(currentUsername || draft.username, draft.profileImage);
       }
 
-      if (Object.keys(payload).length === 0) {
+      if (Object.keys(payload).length === 0 && draft.profileImage === user.profileImage) {
         setMsg("Nada para guardar");
         setEditing(null);
         setLoading(false);
         return;
       }
 
-      const resp = await apiUpdateUser(currentUsername || user.username, payload);
-      const updated = resp?.usuario || resp || {};
+      let resp = {};
+      if (Object.keys(payload).length > 0) {
+        resp = await apiUpdateUser(currentUsername || user.username, payload);
+      }
 
+      const updated = resp?.usuario || resp || {};
       const newUsername = updated.username ?? payload.username ?? user.username;
       const newEmail = updated.mail ?? payload.mail ?? user.email;
 
-      // Migrar extras locales si cambió el username
+      // Migrar foto de perfil local si cambió el username
       if (newUsername && (currentUsername || user.username) && newUsername !== (currentUsername || user.username)) {
-        migrateExtrasKey(currentUsername || user.username, newUsername);
+        migrateProfileImageKey(currentUsername || user.username, newUsername);
       }
 
       const next = {
         ...user,
         username: newUsername,
         email: newEmail,
-        seguridad: {
-          ...user.seguridad,
-          ultimoCambioPass: payload.password ? "recién" : user.seguridad.ultimoCambioPass,
-          nuevoPassword: "",
-          repeatNuevoPassword: "",
-        },
+        profileImage: draft.profileImage,
       };
       setUser(next);
       setDraft(next);
@@ -258,7 +235,7 @@ export default function UserProfile() {
       // actualiza localStorage.auth.user
       const auth = getAuth();
       if (auth?.user) {
-        const merged = { ...auth.user, username: newUsername, mail: newEmail };
+        const merged = { ...auth.user, username: newUsername, mail: newEmail, profileImage: draft.profileImage };
         localStorage.setItem("auth", JSON.stringify({ ...auth, user: merged }));
       }
 
@@ -298,127 +275,6 @@ export default function UserProfile() {
       <div className="profile-content">
         {msg && <div className="profile-msg">{msg}</div>}
 
-        {/* ===== DATOS PERSONALES (LOCAL) ===== */}
-        {active === "datos" && (
-          <div className="panel">
-            <div className="panel-header">
-              <h2>Datos personales</h2>
-              {editing === "datos" ? (
-                <div className="actions">
-                  <button className="btn" onClick={cancelEdit} disabled={loading}>
-                    Cancelar
-                  </button>
-                  <button className="btn primary" onClick={() => saveSection("datos")} disabled={loading}>
-                    Guardar
-                  </button>
-                </div>
-              ) : (
-                <button className="btn" onClick={() => startEdit("datos")} disabled={loading}>
-                  Editar
-                </button>
-              )}
-            </div>
-
-            <form
-              className="form grid2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                saveSection("datos");
-              }}
-            >
-              <label>
-                <span>Nombre</span>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={(editing ? draft : user).datos.nombre}
-                  onChange={onInput}
-                  disabled={editing !== "datos" || loading}
-                />
-              </label>
-
-              <label>
-                <span>Apellido</span>
-                <input
-                  type="text"
-                  name="apellido"
-                  value={(editing ? draft : user).datos.apellido}
-                  onChange={onInput}
-                  disabled={editing !== "datos" || loading}
-                />
-              </label>
-
-              <label>
-                <span>DNI</span>
-                <input
-                  type="text"
-                  name="dni"
-                  pattern="[0-9]{7,8}"
-                  title="Sólo números, 7 u 8 dígitos"
-                  value={(editing ? draft : user).datos.dni}
-                  onChange={onInput}
-                  disabled={editing !== "datos" || loading}
-                />
-              </label>
-
-              <label>
-                <span>Fecha de nacimiento</span>
-                <input
-                  type="date"
-                  name="nacimiento"
-                  value={(editing ? draft : user).datos.nacimiento}
-                  onChange={onInput}
-                  disabled={editing !== "datos" || loading}
-                />
-              </label>
-
-              <label>
-                <span>Calle</span>
-                <input
-                  type="text"
-                  name="direccion"
-                  value={(editing ? draft : user).datos.direccion}
-                  onChange={onInput}
-                  disabled={editing !== "datos" || loading}
-                />
-              </label>
-
-              <label>
-                <span>Ciudad</span>
-                <input
-                  type="text"
-                  name="ciudad"
-                  value={(editing ? draft : user).datos.ciudad}
-                  onChange={onInput}
-                  disabled={editing !== "datos" || loading}
-                />
-              </label>
-
-              <label>
-                <span>Provincia</span>
-                <input
-                  type="text"
-                  name="provincia"
-                  value={(editing ? draft : user).datos.provincia}
-                  onChange={onInput}
-                  disabled={editing !== "datos" || loading}
-                />
-              </label>
-
-              <label>
-                <span>Código Postal</span>
-                <input
-                  type="text"
-                  name="cp"
-                  value={(editing ? draft : user).datos.cp}
-                  onChange={onInput}
-                  disabled={editing !== "datos" || loading}
-                />
-              </label>
-            </form>
-          </div>
-        )}
-
         {/* ===== CUENTA (BACKEND) ===== */}
         {active === "cuenta" && (
           <div className="panel">
@@ -447,6 +303,54 @@ export default function UserProfile() {
                 saveSection("cuenta");
               }}
             >
+              {/* Foto de perfil */}
+              <div className="profile-image-section">
+                <label>
+                  <span>Foto de perfil</span>
+                  <div className="profile-image-container">
+                    <div className="profile-image-preview">
+                      {(editing ? draft : user).profileImage ? (
+                        <img 
+                          src={(editing ? draft : user).profileImage} 
+                          alt="Foto de perfil" 
+                          className="profile-image"
+                        />
+                      ) : (
+                        <div className="profile-image-placeholder">
+                          <i className="bi bi-person-circle"></i>
+                        </div>
+                      )}
+                    </div>
+                    {editing === "cuenta" && (
+                      <div className="profile-image-actions">
+                        <input
+                          type="file"
+                          id="profileImage"
+                          name="profileImage"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          style={{ display: 'none' }}
+                        />
+                        <label htmlFor="profileImage" className="btn">
+                          <i className="bi bi-camera"></i>
+                          {(editing ? draft : user).profileImage ? 'Cambiar foto' : 'Agregar foto'}
+                        </label>
+                        {(editing ? draft : user).profileImage && (
+                          <button
+                            type="button"
+                            className="btn"
+                            onClick={() => setDraft((d) => ({ ...d, profileImage: "" }))}
+                          >
+                            <i className="bi bi-trash"></i>
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </label>
+              </div>
+
               <div className="grid2">
                 <label>
                   <span>Usuario</span>
@@ -473,28 +377,21 @@ export default function UserProfile() {
                 </label>
               </div>
 
-              <div className="grid2">
+              {/* Enlace para cambiar contraseña */}
+              <div className="password-section">
                 <label>
-                  <span>Nueva contraseña</span>
-                  <input
-                    type="password"
-                    name="nuevoPassword"
-                    value={(editing ? draft : user).seguridad.nuevoPassword || ""}
-                    onChange={onInput}
-                    disabled={editing !== "cuenta" || loading}
-                    minLength={8}
-                  />
-                </label>
-                <label>
-                  <span>Repetir contraseña</span>
-                  <input
-                    type="password"
-                    name="repeatNuevoPassword"
-                    value={(editing ? draft : user).seguridad.repeatNuevoPassword || ""}
-                    onChange={onInput}
-                    disabled={editing !== "cuenta" || loading}
-                    minLength={8}
-                  />
+                  <span>Contraseña</span>
+                  <div className="password-info">
+                    <p>Para cambiar tu contraseña, haz clic en el siguiente enlace:</p>
+                    <a 
+                      href="/forgot-password" 
+                      className="btn primary"
+                      style={{ display: 'inline-block', marginTop: '8px' }}
+                    >
+                      <i className="bi bi-key"></i>
+                      Cambiar contraseña
+                    </a>
+                  </div>
                 </label>
               </div>
             </form>

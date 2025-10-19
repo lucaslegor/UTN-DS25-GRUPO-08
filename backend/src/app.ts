@@ -10,7 +10,6 @@ import carritoRoutes from './routes/carrito.routes';
 import { pagoRoutes } from "./routes/pago.routes";
 import authRoutes from './routes/auth.routes'
 import express from "express";
-import path from 'path';
 import cors from "cors";
 import morgan from "morgan";
 
@@ -35,14 +34,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(logRequest);
-// Static files for uploaded polizas
-app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 //AUTH
-
 app.use("/api/auth", authRoutes);
-app.use("/api/usuarios", usuariosRoutes);
 
 //RUTAS
 app.use("/api/usuarios", usuariosRoutes);
