@@ -12,6 +12,7 @@ import { Contact } from './pages/ContactPage';
 import MisPolizasPage from './pages/MisPolizasPage';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import CheckoutPage from './pages/CheckoutPage';
 import WhatsAppFloat from './components/WhatsAppFloat';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="adminPanel" element={<AdminPanel/>} />
           <Route path="contacto" element={<Contact/>} />
           <Route path="misPolizas" element={<MisPolizasPage/>} />
+          <Route path="checkout" element={<CheckoutPage />} />
         </Route>
       </Routes>
       
