@@ -21,7 +21,7 @@ export async function createCart(req: Request, res: Response) {
 
   // Pasar items si existen (para crear carrito con items)
   const items = req.body.items || [];
-  const cart = await cartService.createCart(Number(idUsuario), items);
+  const cart = await cartService.createCart();
   const body: CartResponse = { cart };
   res.status(201).json(body);
 }

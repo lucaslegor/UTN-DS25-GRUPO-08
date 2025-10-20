@@ -15,9 +15,12 @@
     # Generamos el cliente de Prisma dentro del contenedor
     RUN npx prisma generate
     
+    # Compilamos la aplicación
+    RUN npm run build
+    
     # Exponemos el puerto (ajustalo si usás otro)
     EXPOSE 3000
     
-    # Comando de arranque
-    CMD ["npm", "run", "dev"]
+    # Comando de arranque para producción
+    CMD ["npm", "start"]
     

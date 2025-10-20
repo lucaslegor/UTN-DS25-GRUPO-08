@@ -5,6 +5,7 @@ import {
   CrearPagoResponse,
   UpdatePagoRequest,
   UpdatePagoEstadoRequest,
+  PagoResponse,
 } from "../types/pago.types";
 import prisma from "../config/prisma";
 
@@ -204,6 +205,14 @@ const updated = await prisma.pago.update({
 });
 
 return { ...toPagoDTO(updated), updatedAt: new Date() };
+};
+
+export const deletePago = async (id: number): Promise<Pago> => {
+  const deleted = await prisma.pago.delete({
+    where: { id },
+  });
+
+  return toPagoDTO(deleted);
 };
 
 export const procesarWebhookMercadoPago = async (

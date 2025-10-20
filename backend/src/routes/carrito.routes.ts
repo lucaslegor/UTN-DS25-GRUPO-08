@@ -8,19 +8,19 @@ import { crearCarritoSchema, addItemSchema, setItemCantidadSchema } from '../val
 const router = Router();
 
 // Admin/debug
-router.get('/', authenticate, authorize('ADMIN'), ctrl.listAll);
+router.get('/', authenticate, authorize('ADMINISTRADOR'), ctrl.listAll);
 
 // Crear carrito (devuelve idCarrito)
-router.post('/', authenticate, authorize('USER', 'ADMIN'), validate(crearCarritoSchema), ctrl.createCart);
+router.post('/', authenticate, authorize('USUARIO', 'ADMINISTRADOR'), validate(crearCarritoSchema), ctrl.createCart);
 
 // Operaciones sobre un carrito
-router.get('/:idCarrito', authenticate, authorize('USER', 'ADMIN'), ctrl.getCart);
-router.delete('/:idCarrito', authenticate, authorize('USER', 'ADMIN'), ctrl.deleteCart);
+router.get('/:idCarrito', authenticate, authorize('USUARIO', 'ADMINISTRADOR'), ctrl.getCart);
+router.delete('/:idCarrito', authenticate, authorize('USUARIO', 'ADMINISTRADOR'), ctrl.deleteCart);
 
 // Ítems
-router.post('/:idCarrito/items', authenticate, authorize('USER', 'ADMIN'), validate(addItemSchema), ctrl.addItem);
-router.patch('/:idCarrito/items/:productId', authenticate, authorize('USER', 'ADMIN'), validate(setItemCantidadSchema), ctrl.setItemCantidad);
-router.delete('/:idCarrito/items/:productId', authenticate, authorize('USER', 'ADMIN'), ctrl.removeItem);
-router.delete('/:idCarrito/items', authenticate, authorize('USER', 'ADMIN'), ctrl.clearItems);
+router.post('/:idCarrito/items', authenticate, authorize('USUARIO', 'ADMINISTRADOR'), validate(addItemSchema), ctrl.addItem);
+router.patch('/:idCarrito/items/:productId', authenticate, authorize('USUARIO', 'ADMINISTRADOR'), validate(setItemCantidadSchema), ctrl.setItemCantidad);
+router.delete('/:idCarrito/items/:productId', authenticate, authorize('USUARIO', 'ADMINISTRADOR'), ctrl.removeItem);
+router.delete('/:idCarrito/items', authenticate, authorize('USUARIO', 'ADMINISTRADOR'), ctrl.clearItems);
 
 export default router;

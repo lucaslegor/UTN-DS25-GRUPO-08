@@ -63,11 +63,11 @@ export async function crearPedido(
     where: { id: { in: ids } },
   });
   if (productos.length !== ids.length) {
-    const notFound = ids.filter(id => !productos.find(p => p.id === id));
+    const notFound = ids.filter(id => !productos.find((p: any) => p.id === id));
     throw new Error(`Productos inexistentes: ${notFound.join(", ")}`);
   }
 
-  const itemsToCreate = productos.map(p => {
+  const itemsToCreate = productos.map((p: any) => {
     const cant = data.items.find(i => i.productId === p.id)?.cantidad ?? 1;
     return {
       idProducto: p.id,
@@ -77,7 +77,7 @@ export async function crearPedido(
     };
   });
 
-  const subtotal = itemsToCreate.reduce((acc, it) => acc + Number(it.precio) * it.cantidad, 0);
+  const subtotal = itemsToCreate.reduce((acc: number, it: any) => acc + Number(it.precio) * it.cantidad, 0);
   const total = subtotal; 
 
   const created = await prisma.pedido.create({
@@ -87,10 +87,10 @@ export async function crearPedido(
       total,
       moneda: "ARS",
       items: {
-        create: itemsToCreate.map(it => ({
+        create: itemsToCreate.map((it: any) => ({
           idProducto: it.idProducto,
           titulo: it.titulo,
-          precio: it.precio,
+          precio: it.precio || 0,
           cantidad: it.cantidad,
         })),
       },
@@ -117,11 +117,11 @@ export async function actualizarPedido(
     if (productos.length !== body.items.length) {
       const notFound = body.items
         .map(i => i.productId)
-        .filter(pid => !productos.find(p => p.id === pid));
+        .filter(pid => !productos.find((p: any) => p.id === pid));
       throw new Error(`Productos inexistentes: ${notFound.join(", ")}`);
     }
 
-    const itemsToCreate = productos.map(p => {
+    const itemsToCreate = productos.map((p: any) => {
       const cant = body.items?.find(i => i.productId === p.id)?.cantidad ?? 1;
       return {
         idProducto: p.id,
@@ -131,20 +131,20 @@ export async function actualizarPedido(
       };
     });
 
-    const subtotal = itemsToCreate.reduce((acc, it) => acc + Number(it.precio) * it.cantidad, 0);
+    const subtotal = itemsToCreate.reduce((acc: number, it: any) => acc + Number(it.precio) * it.cantidad, 0);
     const total = subtotal;
 
     try {
-      const updated = await prisma.$transaction(async (tx) => {
+      const updated = await prisma.$transaction(async (tx: any) => {
         await tx.pedido.update({ where: { id }, data: {} });
 
         await tx.pedidoItem.deleteMany({ where: { idPedido: id } });
         await tx.pedidoItem.createMany({
-          data: itemsToCreate.map(it => ({
+          data: itemsToCreate.map((it: any) => ({
             idPedido: id,
             idProducto: it.idProducto,
             titulo: it.titulo,
-            precio: it.precio,
+            precio: it.precio || 0,
             cantidad: it.cantidad,
           })),
         });

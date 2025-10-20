@@ -1,7 +1,7 @@
 import { Product, CreateProductRequest, UpdateProductRequest} from "../types/productos.types"; 
 import { TipoSeguro } from '../types/productos.types'
 import prisma from "../config/prisma";
-import { Prisma } from "../generated/prisma";
+import { Prisma } from "@prisma/client";
 
 const mockProducts: Product[] = [
   {
@@ -112,7 +112,7 @@ export const createProduct = async(productData: CreateProductRequest & { imagenU
     data: {
       titulo: productData.titulo,
       descripcion: productData.descripcion,
-      precio: new Prisma.Decimal(productData.precio),
+      precio: productData.precio,
       cobertura: productData.cobertura,
       tipo: tipoSeguroToPrisma(productData.tipo),
       isActive: productData.isActive,
