@@ -16,7 +16,6 @@ Desarrollo de una plataforma **E-commerce** para la Empresa **Maps Seguros**, ut
 La plataforma permitirá:
 - La venta online de enlatados.
 - Una experiencia de usuario ágil, moderna y segura.
-- Integración con pasarelas de pago confiables como **Mercado Pago** o **Stripe**.
 
 El proyecto busca potenciar el alcance comercial de la Empresa MAPS, facilitando a los usuarios la compra desde cualquier dispositivo y lugar.
 
@@ -116,3 +115,23 @@ Actualmente, los tests del frontend cubren las siguientes funcionalidades:
     *   Asegura que, al enviar el formulario con credenciales válidas (mockeadas), se llama a la función `loginApi` con los datos correctos y se navega a la página principal.
     *   Comprueba que al hacer clic en el botón "Registrarse" se navega a la ruta `/register`.
     *   Verifica que al hacer clic en el botón "¿Olvidaste tu contraseña?" se navega a la ruta `/forgot-password`.
+ 
+### Ejecutar Tests (Backend)
+
+Para ejecutar los tests del backend, navega al directorio `backend` y usa los siguientes comandos:
+
+```bash
+cd backend
+npm install
+npm test
+``` 
+*   **PedidosService (src/services/pedidos.service.ts)**:
+    *   **crearPedido()**:
+        *   Verifica que se cree correctamente un pedido cuando los productos existen en la base de datos simulada.
+        *   Asegura que la función calcula correctamente el total del pedido en base a los ítems seleccionados.
+        *   Comprueba que el pedido se guarda llamando al método `prisma.pedido.create`.
+        *   Verifica que se lance un error si se intenta crear un pedido con productos inexistentes.
+    *   Tests implementados siguiendo la estructura AAA (Arrange, Act, Assert) de la clase de *Introducción al Testing*:
+        *   **ARRANGE:** Se preparan los mocks de productos y datos de entrada.
+        *   **ACT:** Se ejecuta la función `crearPedido`.
+        *   **ASSERT:** Se verifican los resultados esperados y las llamadas a Prisma.
