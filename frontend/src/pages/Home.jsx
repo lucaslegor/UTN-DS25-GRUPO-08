@@ -2,7 +2,8 @@ import React from "react";
 import { apiFetch } from "../services/api";
 import { Link } from "react-router-dom";
 import "../styles/styles.css";
-import ProductCard from "../components/ProductCard";
+import { Box, Typography } from '@mui/material';
+import { Card, CardContent, AspectRatio } from '@mui/joy';
 
 // 👉 Seed solo para la primera carga si no hay nada en localStorage
 export const defaultProducts = [
@@ -11,7 +12,8 @@ export const defaultProducts = [
     title: "Seguro de Auto",
     description:
       "Protección completa para tu vehículo ante accidentes, robos y daños a terceros.",
-    price: 10000,
+    tipo: "auto",
+    cobertura: "Cobertura total hasta $5.000.000",
     image:
       "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80",
   },
@@ -20,7 +22,8 @@ export const defaultProducts = [
     title: "Seguro de Hogar",
     description:
       "Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.",
-    price: 8000,
+    tipo: "hogar",
+    cobertura: "Cobertura hasta $2.000.000",
     image:
       "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80",
   },
@@ -29,7 +32,8 @@ export const defaultProducts = [
     title: "Seguro de Vida",
     description:
       "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
-    price: 12000,
+    tipo: "vida",
+    cobertura: "Beneficio de $3.000.000",
     image:
       "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
   },
@@ -38,7 +42,8 @@ export const defaultProducts = [
     title: "Seguro de Salud",
     description:
       "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    price: 15000,
+    tipo: "salud",
+    cobertura: "Cobertura 100% en internaciones y cirugías",
     image:
       "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
   },
@@ -47,18 +52,18 @@ export const defaultProducts = [
 const Home = () => {
   const [search, setSearch] = React.useState("");
   const [products, setProducts] = React.useState([]);
+  const [tipoFilter, setTipoFilter] = React.useState("todos");
+  const [sortOrder, setSortOrder] = React.useState("alfabetico");
 
-  // Normaliza lo que haya en localStorage (por si algunos precios quedaron como string)
+  // Normaliza lo que haya en localStorage
   const normalize = (list) =>
     (list || []).map((p) => ({
       ...p,
-      // aseguro number
-      price:
-        typeof p.price === "number"
-          ? p.price
-          : parseInt(String(p.price).replace(/\D/g, "") || "0", 10),
       // aseguro title (AdminPanel guarda name y title iguales)
       title: p.title || p.name || "",
+      // aseguro tipo y cobertura
+      tipo: p.tipo || "auto",
+      cobertura: p.cobertura || "Cobertura básica",
     }));
 
   React.useEffect(() => {
@@ -72,7 +77,8 @@ const Home = () => {
           id: p.id,
           title: p.titulo,
           description: p.descripcion,
-          price: p.precio,
+          tipo: p.tipo,
+          cobertura: p.cobertura,
           image: p.imagenUrl || '/seguro.png',
         }));
         if (mounted) {
@@ -94,23 +100,117 @@ const Home = () => {
     return () => { mounted = false; };
   }, []);
 
-  const visible = (search.trim()
-    ? products.filter(
+  // Función para obtener tipos únicos de productos
+  const getUniqueTypes = () => {
+    const types = [...new Set(products.map(p => p.tipo).filter(Boolean))];
+    return types.sort();
+  };
+
+  // Función de filtrado y ordenamiento
+  const getFilteredAndSortedProducts = () => {
+    let filtered = products;
+
+    // Filtro por búsqueda
+    if (search.trim()) {
+      filtered = filtered.filter(
         (p) =>
           p.title?.toLowerCase().includes(search.toLowerCase()) ||
           p.description?.toLowerCase().includes(search.toLowerCase())
-      )
-    : products) ;
+      );
+    }
+
+    // Filtro por tipo
+    if (tipoFilter !== "todos") {
+      filtered = filtered.filter(p => p.tipo === tipoFilter);
+    }
+
+    // Ordenamiento
+    if (sortOrder === "alfabetico") {
+      filtered = [...filtered].sort((a, b) => 
+        (a.title || "").localeCompare(b.title || "")
+      );
+    } else if (sortOrder === "tipo") {
+      filtered = [...filtered].sort((a, b) => 
+        (a.tipo || "").localeCompare(b.tipo || "")
+      );
+    }
+
+    return filtered;
+  };
+
+  const visible = getFilteredAndSortedProducts();
 
   return (
     <>
       <section className="filters" style={{ textAlign: "center" }}>
         <h1 className="home-header-title">Nuestros Seguros</h1>
-        {/* Si querés buscar desde Home directamente, agrega un input aquí */}
-        {/* <input value={search} onChange={(e) => setSearch(e.target.value)} /> */}
       </section>
 
       <main>
+        {/* Filtros compactos en la parte superior derecha */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'flex-end', 
+          alignItems: 'center',
+          gap: 2,
+          marginBottom: 2,
+          paddingRight: 2
+        }}>
+          {/* Mini título */}
+          <Typography variant="caption" sx={{ 
+            fontSize: '0.7rem', 
+            fontWeight: 'bold', 
+            color: '#666',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
+            Filtros
+          </Typography>
+          
+          {/* Contador de resultados */}
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+            {visible.length} de {products.length}
+          </Typography>
+          
+          {/* Filtro por tipo - diseño compacto */}
+          <select
+            value={tipoFilter}
+            onChange={(e) => setTipoFilter(e.target.value)}
+            style={{
+              padding: '4px 8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '0.8rem',
+              backgroundColor: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="todos">Todos</option>
+            {getUniqueTypes().map((tipo) => (
+              <option key={tipo} value={tipo}>
+                {tipo.toUpperCase()}
+              </option>
+            ))}
+          </select>
+
+          {/* Filtro por orden - diseño compacto */}
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            style={{
+              padding: '4px 8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '0.8rem',
+              backgroundColor: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="alfabetico">A-Z</option>
+            <option value="tipo">Tipo</option>
+          </select>
+        </Box>
+
         <div className="catalog">
           {visible.length > 0 ? (
             visible.map((product) => (
@@ -119,7 +219,31 @@ const Home = () => {
                 to={`/productcard/${product.id}`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
-                <ProductCard {...product} />
+                <Card sx={{ width: 320, backgroundColor: 'transparent', borderColor:'#dbe1f0' }}>
+                  <div>
+                    <Typography level="title-lg" sx={{color: '#3877ffff'}}>{product.title}</Typography>
+                    <Typography level="body-sm">{product.description}</Typography>
+                  </div>
+                  <AspectRatio minHeight="120px" maxHeight="200px">
+                    <img
+                      src={product.image}
+                      loading="lazy"
+                      alt={product.title || 'Imagen'}
+                    />
+                  </AspectRatio>
+                  <CardContent orientation="vertical">
+                    <div>
+                      <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666' }}>Tipo:</Typography>
+                      <Typography sx={{ fontSize: 'md', fontWeight: 'lg', color:'#1976d2', mb: 1 }}>
+                        {product.tipo?.toUpperCase()}
+                      </Typography>
+                      <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666' }}>Cobertura:</Typography>
+                      <Typography sx={{ fontSize: 'sm', color:'#2e7d32' }}>
+                        {product.cobertura}
+                      </Typography>
+                    </div>
+                  </CardContent>
+                </Card>
               </Link>
             ))
           ) : (

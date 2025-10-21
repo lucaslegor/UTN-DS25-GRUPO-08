@@ -16,7 +16,7 @@ model Usuario {
   createdAt    DateTime      @default(now())
   mail         String        @unique
   adminProfile AdminProfile?
-  pedidos      Pedido[]
+  solicitudes  Solicitud[]
 }
 
 model AdminProfile {
@@ -31,88 +31,51 @@ model AdminProfile {
 }
 
 model Producto {
-  id           Int           @id @default(autoincrement())
-  titulo       String
-  descripcion  String
-  cobertura    String
-  tipo         TipoSeguro
-  isActive     Boolean
-  createdAt    DateTime      @default(now())
-  precio       Float?        @db.Real
-  imagenUrl    String?
-  itemsCarrito CarritoItem[]
-  itemsPedido  PedidoItem[]
+  id              Int               @id @default(autoincrement())
+  titulo          String
+  descripcion     String
+  cobertura       String
+  tipo            TipoSeguro
+  isActive        Boolean
+  createdAt       DateTime          @default(now())
+  imagenUrl       String?
+  itemsSolicitud  SolicitudItem[]
 }
 
 model Poliza {
-  id         Int          @id @default(autoincrement())
-  idPedido   Int          @unique
-  archivoUrl String
-  estado     EstadoPoliza @default(PENDIENTE)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  pedido     Pedido       @relation(fields: [idPedido], references: [id])
+  id          Int          @id @default(autoincrement())
+  idSolicitud Int          @unique
+  archivoUrl  String
+  estado      EstadoPoliza @default(PENDIENTE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  solicitud   Solicitud    @relation(fields: [idSolicitud], references: [id])
 }
 
-model PedidoItem {
+model SolicitudItem {
   idProducto Int
-  idPedido   Int
+  idSolicitud Int
   titulo     String
-  precio     Decimal  @db.Money
   cantidad   Int
-  pedido     Pedido   @relation(fields: [idPedido], references: [id])
-  producto   Producto @relation(fields: [idProducto], references: [id])
+  solicitud  Solicitud @relation(fields: [idSolicitud], references: [id])
+  producto   Producto  @relation(fields: [idProducto], references: [id])
 
-  @@id([idPedido, idProducto])
+  @@id([idSolicitud, idProducto])
 }
 
-model Pedido {
-  id        Int          @id @default(autoincrement())
-  idUsuario Int
-  subtotal  Decimal      @db.Money
-  total     Decimal      @db.Money
-  moneda    Moneda       @default(ARS)
-  estado    EstadoPedido @default(CREADO)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  pago      Pago?
-  usuario   Usuario      @relation(fields: [idUsuario], references: [id])
-  items     PedidoItem[]
-  poliza    Poliza?
+model Solicitud {
+  id              Int              @id @default(autoincrement())
+  idUsuario       Int
+  estado          EstadoSolicitud  @default(CREADA)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  usuario         Usuario          @relation(fields: [idUsuario], references: [id])
+  items           SolicitudItem[]
+  poliza          Poliza?
+  datosPersonales Json?            // Datos personales del asegurado
+  notaRechazo     String?          // Nota de rechazo del administrador
 }
 
-model CarritoItem {
-  idProducto Int
-  idCarrito  Int
-  cantidad   Int      @default(1)
-  carrito    Carrito  @relation(fields: [idCarrito], references: [id])
-  producto   Producto @relation(fields: [idProducto], references: [id])
-
-  @@id([idCarrito, idProducto])
-}
-
-model Carrito {
-  id        Int           @id @default(autoincrement())
-  total     Decimal       @default(0) @db.Money
-  moneda    Moneda        @default(ARS)
-  updatedAt DateTime      @updatedAt
-  items     CarritoItem[]
-}
-
-model Pago {
-  id        Int          @id @default(autoincrement())
-  idPedido  Int          @unique
-  pasarela  PasarelaPago
-  estado    EstadoPago
-  monto     Decimal      @db.Money
-  moneda    Moneda       @default(ARS)
-  /// preferenceId?: string;  // Mercado Pago
-  ///   initPoint?: string;     // MP checkout URL
-  ///   No sabemos que hacer todavia con esto ya que
-  ///   lo vamos a conectar con MP
-  createdAt DateTime     @default(now())
-  pedido    Pedido       @relation(fields: [idPedido], references: [id])
-}
 
 enum RolUsuario {
   ADMINISTRADOR
@@ -131,28 +94,11 @@ enum EstadoPoliza {
   CARGADA
 }
 
-enum EstadoPedido {
-  CREADO
+enum EstadoSolicitud {
+  CREADA
   PENDIENTE_POLIZA
   POLIZA_CARGADA
-  PAGO_PENDIENTE
-  PAGO_APROBADO
-  PAGO_RECHAZADO
-  CANCELADO
-}
-
-enum Moneda {
-  ARS
-}
-
-enum PasarelaPago {
-  MERCADOPAGO
-}
-
-enum EstadoPago {
-  CREADO
-  PENDIENTE
-  APROBADO
-  RECHAZADO
-  CANCELADO
+  APROBADA
+  RECHAZADA
+  CANCELADA
 }

@@ -1,14 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import ProductCard from '../components/ProductCard';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { CartProvider } from '../context/CartContext';
+import { SolicitudesProvider } from '../context/SolicitudesContext';
 
 describe('ProductCard', () => {
   const productProps = {
     id: 1,
     title: 'Seguro de Auto',
     description: 'Protección completa para tu vehículo.',
-    price: 10000,
+    tipo: 'AUTO',
+    cobertura: 'Cobertura total',
     image: 'https://example.com/auto.jpg',
   };
 
@@ -16,9 +17,9 @@ describe('ProductCard', () => {
   const renderProductCard = (props) => {
     render(
       <Router>
-        <CartProvider>
+        <SolicitudesProvider>
           <ProductCard {...props} />
-        </CartProvider>
+        </SolicitudesProvider>
       </Router>
     );
   };
@@ -29,7 +30,7 @@ describe('ProductCard', () => {
 
     expect(screen.getByText('Seguro de Auto')).toBeInTheDocument();
     expect(screen.getByText('Protección completa para tu vehículo.')).toBeInTheDocument();
-    expect(screen.getByText('$10.000/año')).toBeInTheDocument();
+    expect(screen.getByText('AUTO - Cobertura total')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /seguro de auto/i })).toHaveAttribute('src', 'https://example.com/auto.jpg');
   });
 

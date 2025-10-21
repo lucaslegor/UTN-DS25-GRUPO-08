@@ -12,7 +12,7 @@ import {
   Divider,
 } from "@mui/material";
 import { Person, Policy, Logout } from "@mui/icons-material";
-import CartIcon from "./CartIcon";
+import SolicitudesIcon from "./SolicitudesIcon";
 import { getMeApi, logoutApi } from "../services/api";
 import { defaultProducts } from "../pages/Home";
 import "../styles/navbar.css";
@@ -41,13 +41,41 @@ export const NavBar = () => {
       const logged = !!auth?.token;
       setIsLogin(logged);
       setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
-      setProfileImage(auth?.user?.profileImage || "");
+      
+      // Cargar foto de perfil desde localStorage específico del usuario
+      let profileImage = auth?.user?.profileImage || "";
+      if (logged && auth?.user?.username && !profileImage) {
+        const userProfileImage = localStorage.getItem(`profileImage:${auth.user.username}`);
+        if (userProfileImage) {
+          profileImage = userProfileImage;
+          // Actualizar auth con la foto encontrada
+          const updatedAuth = {
+            ...auth,
+            user: { ...auth.user, profileImage: userProfileImage }
+          };
+          localStorage.setItem("auth", JSON.stringify(updatedAuth));
+        }
+      }
+      
+      setProfileImage(profileImage);
     } catch {
       setIsLogin(false);
       setIsAdmin(false);
       setProfileImage("");
     }
   }, [location.pathname]);
+
+  // === Listener para cambios en la foto de perfil ===
+  useEffect(() => {
+    const handleProfileImageChange = (e) => {
+      if (e.detail?.profileImage !== undefined) {
+        setProfileImage(e.detail.profileImage);
+      }
+    };
+
+    window.addEventListener('profileImageChanged', handleProfileImageChange);
+    return () => window.removeEventListener('profileImageChanged', handleProfileImageChange);
+  }, []);
 
   const handleLogout = async () => {
     try { await logoutApi(); } catch {}
@@ -109,12 +137,6 @@ export const NavBar = () => {
     navigate(`/productcard/${p.id}`);
   };
 
-  // formateo de precio (dropdown)
-  const fp = (n) =>
-    new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-    }).format(typeof n === "number" ? n : 0);
 
   return (
     <header className="navbar" id="main-navbar">
@@ -204,7 +226,7 @@ export const NavBar = () => {
                   />
                   <div className="sb-meta">
                     <span className="sb-title">{p.title}</span>
-                    <span className="sb-price">{fp(p.price)}</span>
+                    <span className="sb-price">{p.tipo?.toUpperCase() || 'N/A'} - {p.cobertura || 'Sin cobertura'}</span>
                   </div>
                 </button>
               ))
@@ -247,10 +269,10 @@ export const NavBar = () => {
               </Link>
             </li>
           )}
-          {isLogin && (
+          {isLogin && !isAdmin && (
             <li>
-              <Link className="link" to="/cart">
-                <CartIcon />
+              <Link className="link" to="/solicitudes">
+                <SolicitudesIcon />
               </Link>
             </li>
           )}
@@ -294,12 +316,14 @@ export const NavBar = () => {
                   </ListItemIcon>
                   <ListItemText>Mi perfil</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={handlePoliciesClick}>
-                  <ListItemIcon>
-                    <Policy fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Mis pólizas</ListItemText>
-                </MenuItem>
+                {!isAdmin && (
+                  <MenuItem onClick={handlePoliciesClick}>
+                    <ListItemIcon>
+                      <Policy fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Mis pólizas</ListItemText>
+                  </MenuItem>
+                )}
                 <Divider />
                 <MenuItem onClick={handleLogout}>
                   <ListItemIcon>

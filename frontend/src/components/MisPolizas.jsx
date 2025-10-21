@@ -33,14 +33,54 @@ import {
   CalendarToday as CalendarIcon,
   AttachMoney as MoneyIcon
 } from '@mui/icons-material';
-import { listPolizasApi } from '../services/api';
+import { listPolizasApi, getAuth } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const MisPolizas = () => {
+  const navigate = useNavigate();
   const [polizas, setPolizas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPoliza, setSelectedPoliza] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Verificar si el usuario es administrador
+  const isAdmin = () => {
+    const auth = getAuth();
+    return auth?.user?.rol === 'ADMINISTRADOR';
+  };
+
+  // Mostrar mensaje para administradores
+  if (isAdmin()) {
+    return (
+      <Box textAlign="center" py={8}>
+        <DescriptionIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+        <Typography variant="h4" gutterBottom>
+          Panel de Administrador
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Los administradores no pueden ver pólizas personales. 
+          Utiliza el Panel de Administración para gestionar pólizas de usuarios.
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Button 
+            variant="contained" 
+            size="large"
+            onClick={() => navigate('/adminpanel')}
+          >
+            Ir al Panel Admin
+          </Button>
+          <Button 
+            variant="outlined" 
+            size="large"
+            onClick={() => navigate('/')}
+          >
+            Ver Productos
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
 
   // Carga desde API
   useEffect(() => {

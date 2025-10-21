@@ -2,7 +2,7 @@ import { render, screen, cleanup } from '@testing-library/react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { NavBar } from '../components/NavBar';
 import { act } from 'react';
-import { CartProvider } from '../context/CartContext';
+import { SolicitudesProvider } from '../context/SolicitudesContext';
 
 // Mockear el módulo api.js para evitar el problema de import.meta.env
 jest.mock('../services/api', () => ({
@@ -34,9 +34,9 @@ describe('NavBar - Estados de Autenticación', () => {
   const renderNavBar = () => {
     render(
       <Router>
-        <CartProvider>
+        <SolicitudesProvider>
           <NavBar />
-        </CartProvider>
+        </SolicitudesProvider>
       </Router>
     );
   };

@@ -47,20 +47,20 @@ export async function getPolizaById(req: Request<{ id: string }>, res: Response,
   }
 }
 
-// POST /api/polizas/:idPedido
-export async function createPoliza(req: Request<{ idPedido: string }>, res: Response, next: NextFunction) {
+// POST /api/polizas/:idSolicitud
+export async function createPoliza(req: Request<{ idSolicitud: string }>, res: Response, next: NextFunction) {
   try {
-    const idPedido = Number(req.params.idPedido);
-    if (isNaN(idPedido)) return res.status(400).json({ message: "ID de pedido inválido" });
+    const idSolicitud = Number(req.params.idSolicitud);
+    if (isNaN(idSolicitud)) return res.status(400).json({ message: "ID de solicitud inválido" });
 
     const { id: userId, role } = req.user!;
     const esAdmin = role === 'ADMINISTRADOR';
 
-    // Verificar que el pedido pertenece al usuario (si no es admin)
+    // Verificar que la solicitud pertenece al usuario (si no es admin)
     if (!esAdmin) {
-      const pedidoExiste = await polizaService.verificarOwnershipPedido(idPedido, userId);
-      if (!pedidoExiste) {
-        return res.status(403).json({ message: "No tienes permisos para crear pólizas en este pedido" });
+      const solicitudExiste = await polizaService.verificarOwnershipSolicitud(idSolicitud, userId);
+      if (!solicitudExiste) {
+        return res.status(403).json({ message: "No tienes permisos para crear pólizas en esta solicitud" });
       }
     }
 
@@ -75,7 +75,7 @@ export async function createPoliza(req: Request<{ idPedido: string }>, res: Resp
       return res.status(400).json({ message: 'Debe adjuntar un archivo de póliza' });
     }
 
-    const nuevaPoliza = await polizaService.createPoliza(idPedido, { archivoUrl });
+    const nuevaPoliza = await polizaService.createPoliza(idSolicitud, { archivoUrl });
     res.status(201).json({ poliza: nuevaPoliza, message: "Póliza creada exitosamente" });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message });

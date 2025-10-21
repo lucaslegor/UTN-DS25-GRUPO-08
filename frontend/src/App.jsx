@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import ProductCardPage from './pages/ProductCard';
-import CartPage from './pages/CartPage';
+import SolicitudesPage from './pages/SolicitudesPage';
 import Layout from './components/Layout';
 import { LoginPage } from './pages/Login';
 import UserProfile from './pages/UserProfile';
@@ -12,36 +12,37 @@ import { Contact } from './pages/ContactPage';
 import MisPolizasPage from './pages/MisPolizasPage';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import CheckoutPage from './pages/CheckoutPage';
 import WhatsAppFloat from './components/WhatsAppFloat';
+import { SolicitudesProvider } from './context/SolicitudesContext';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Ruta /login y /register sin Layout */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+    <SolicitudesProvider>
+      <Router>
+        <Routes>
+          {/* Ruta /login y /register sin Layout */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Resto de rutas con Layout */}
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="nosotros" element={<AboutUs />} />
-          <Route path="cart" element={<CartPage />} />
-          <Route path="productcard/:id" element={<ProductCardPage />} />
-          <Route path="userProfile" element={<UserProfile/>} />
-          <Route path="adminPanel" element={<AdminPanel/>} />
-          <Route path="contacto" element={<Contact/>} />
-          <Route path="misPolizas" element={<MisPolizasPage/>} />
-          <Route path="checkout" element={<CheckoutPage />} />
-        </Route>
-      </Routes>
-      
-      {/* Botón flotante de WhatsApp */}
-      <WhatsAppFloat />
-    </Router>
+          {/* Resto de rutas con Layout */}
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="nosotros" element={<AboutUs />} />
+            <Route path="solicitudes" element={<SolicitudesPage />} />
+            <Route path="productcard/:id" element={<ProductCardPage />} />
+            <Route path="userProfile" element={<UserProfile/>} />
+            <Route path="adminPanel" element={<AdminPanel/>} />
+            <Route path="contacto" element={<Contact/>} />
+            <Route path="misPolizas" element={<MisPolizasPage/>} />
+          </Route>
+        </Routes>
+        
+        {/* Botón flotante de WhatsApp */}
+        <WhatsAppFloat />
+      </Router>
+    </SolicitudesProvider>
   );
 }
 

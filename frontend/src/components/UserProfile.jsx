@@ -137,6 +137,26 @@ export default function UserProfile() {
     })();
   }, []);
 
+  // Listener para cambios en localStorage (para actualizar la foto en tiempo real)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'auth' && e.newValue) {
+        try {
+          const auth = JSON.parse(e.newValue);
+          if (auth?.user?.profileImage && auth.user.profileImage !== user.profileImage) {
+            setUser(prev => ({ ...prev, profileImage: auth.user.profileImage }));
+            setDraft(prev => ({ ...prev, profileImage: auth.user.profileImage }));
+          }
+        } catch (error) {
+          console.error('Error parsing auth from storage:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [user.profileImage]);
+
   const startEdit = (section) => {
     setEditing(section);
     setDraft(user);
@@ -160,9 +180,12 @@ export default function UserProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    // Limpiar mensajes anteriores
+    setMsg('');
+    
     // Validar tipo de archivo
     if (!file.type.startsWith('image/')) {
-      setMsg('Por favor selecciona un archivo de imagen válido');
+      setMsg('Por favor selecciona un archivo de imagen válido (JPG, PNG, GIF, etc.)');
       return;
     }
     
@@ -176,6 +199,10 @@ export default function UserProfile() {
     reader.onloadend = () => {
       const imageData = reader.result;
       setDraft((d) => ({ ...d, profileImage: imageData }));
+      setMsg('Imagen cargada correctamente. Haz clic en "Guardar" para aplicar los cambios.');
+    };
+    reader.onerror = () => {
+      setMsg('Error al cargar la imagen. Inténtalo de nuevo.');
     };
     reader.readAsDataURL(file);
   };
@@ -237,6 +264,11 @@ export default function UserProfile() {
       if (auth?.user) {
         const merged = { ...auth.user, username: newUsername, mail: newEmail, profileImage: draft.profileImage };
         localStorage.setItem("auth", JSON.stringify({ ...auth, user: merged }));
+        
+        // Disparar evento personalizado para notificar cambios
+        window.dispatchEvent(new CustomEvent('profileImageChanged', { 
+          detail: { profileImage: draft.profileImage, username: newUsername } 
+        }));
       }
 
       setMsg(resp?.message || "Cuenta actualizada");

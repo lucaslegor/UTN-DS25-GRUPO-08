@@ -56,6 +56,13 @@ async function refreshAccessToken() {
     const msg = data?.error || data?.message || `HTTP ${res.status}`;
     throw new Error(msg);
   }
+  
+  // Mantener la foto de perfil existente al refrescar el token
+  const currentAuth = getAuth();
+  if (currentAuth?.user?.profileImage && data?.user) {
+    data.user.profileImage = currentAuth.user.profileImage;
+  }
+  
   setAuthToken(data.token);
   return data.token;
 }
@@ -80,15 +87,22 @@ async function ensureFreshToken() {
    apiFetch con refresh
    ========================= */
 export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry = false } = {}) {
-  // 1) refresh preventivo antes de pegarle al endpoint (solo si hay token)
+  console.log(`apiFetch: ${method} ${path}`);
+  
+  // 1) Refresh preventivo si hay token
   const auth = getAuth();
+  console.log('apiFetch: Auth inicial:', auth ? 'Token presente' : 'Sin token');
+  
   if (auth?.token) {
+    console.log('apiFetch: Verificando si token necesita refresh...');
     await ensureFreshToken();
   }
 
-  // 2) armo headers con token (puede haber cambiado tras refresh)
+  // 2) Obtener auth actualizado después del refresh
   const freshAuth = getAuth();
-  const hadToken = Boolean(freshAuth?.token);
+  console.log('apiFetch: Auth después de refresh:', freshAuth ? 'Token presente' : 'Sin token');
+  
+  // Armar headers con token actualizado
   const h = { 'Content-Type': 'application/json', ...headers };
   if (freshAuth?.token) h.Authorization = `Bearer ${freshAuth.token}`;
 
@@ -101,15 +115,19 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
     });
 
   let res = await doReq();
+  console.log(`apiFetch: Respuesta ${res.status} para ${path}`);
 
-  // 3) fallback: sólo si YA había token intentamos refresh y reintento 1 vez
-  if (hadToken && (res.status === 401 || res.status === 403) && !_retry) {
+  // 3) Si aún hay error 401/403, intentar refresh reactivo una vez más
+  if (freshAuth?.token && (res.status === 401 || res.status === 403) && !_retry) {
+    console.log('apiFetch: Token aún expirado, intentando refresh reactivo...');
     try {
       await refreshAccessToken();
-      const fresh = getAuth();
-      if (fresh?.token) h.Authorization = `Bearer ${fresh.token}`;
+      const finalAuth = getAuth();
+      if (finalAuth?.token) h.Authorization = `Bearer ${finalAuth.token}`;
       res = await doReq();
+      console.log(`apiFetch: Respuesta después de refresh reactivo ${res.status} para ${path}`);
     } catch (e) {
+      console.log('apiFetch: Error en refresh reactivo, limpiando auth');
       clearAuth();
       throw e;
     }
@@ -118,6 +136,7 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = data?.error || data?.message || `HTTP ${res.status}`;
+    console.log(`apiFetch: Error ${res.status}: ${msg}`);
     throw new Error(msg);
   }
   return data;
@@ -135,6 +154,15 @@ export async function loginApi({ username, mail, password }) {
     method: 'POST',
     body: payload,
   });
+  
+  // Cargar foto de perfil desde localStorage específico del usuario
+  if (data?.user?.username) {
+    const userProfileImage = localStorage.getItem(`profileImage:${data.user.username}`);
+    if (userProfileImage) {
+      data.user.profileImage = userProfileImage;
+    }
+  }
+  
   // guardamos token + user (el refresh queda en cookie httpOnly)
   saveAuth(data);
   return data;
@@ -194,32 +222,32 @@ export async function getPolizaApi(id) {
   return apiFetch(`/api/polizas/${id}`, { method: 'GET' });
 }
 
-export async function createPolizaForPedidoApi(idPedido, { archivoUrl }) {
-  return apiFetch(`/api/polizas/${idPedido}`, {
+export async function createPolizaForSolicitudApi(idSolicitud, { archivoUrl }) {
+  return apiFetch(`/api/polizas/${idSolicitud}`, {
     method: 'POST',
     body: { archivoUrl },
   });
 }
 
 /* ==============
-   PEDIDOS endpoints
+   SOLICITUDES endpoints
    ============== */
 
-export async function listPedidosApi() {
+export async function listSolicitudesApi() {
   // Admin: lista todos; Usuario: el backend actual lista todos también, ajustar si cambia
-  return apiFetch('/api/pedidos', { method: 'GET' });
+  return apiFetch('/api/solicitudes', { method: 'GET' });
 }
 
-export async function getPedidoApi(id) {
-  return apiFetch(`/api/pedidos/${id}`, { method: 'GET' });
+export async function getSolicitudApi(id) {
+  return apiFetch(`/api/solicitudes/${id}`, { method: 'GET' });
 }
 
 // Multipart upload for poliza files
-export async function uploadPolizaFileApi(idPedido, file) {
+export async function uploadPolizaFileApi(idSolicitud, file) {
   const auth = getAuth();
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch(`${API_URL}/api/polizas/${idPedido}`, {
+  const res = await fetch(`${API_URL}/api/polizas/${idSolicitud}`, {
     method: 'POST',
     headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
     body: form,

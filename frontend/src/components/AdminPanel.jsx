@@ -16,23 +16,16 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { IconButton, Tooltip, Chip } from '@mui/material';
-import { apiFetch, listPedidosApi, uploadPolizaFileApi } from '../services/api';
+import { apiFetch, uploadPolizaFileApi } from '../services/api';
 import * as yup from 'yup';
 
 /** ========= Config API ========= */
 const RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
 const API_BASE = RAW_BASE.endsWith('/api') ? RAW_BASE : `${RAW_BASE}/api`;
 
-/** Normaliza precios y estructura de productos leídos de localStorage */
+/** Normaliza estructura de productos leídos de localStorage */
 const normalizeProducts = (list) =>
   (list || []).map((p) => {
-    const raw = String(p.price ?? '')
-      .replace(/\s/g, '')
-      .replace(/[^0-9,.]/g, '');
-    const numeric = raw
-      ? parseInt(raw.replace(/\./g, '').replace(/,/g, ''), 10)
-      : Number(p.price) || 0;
-
     return {
       id: p.id ?? Date.now() + Math.random(),
       name: p.name ?? p.title ?? '',
@@ -40,15 +33,11 @@ const normalizeProducts = (list) =>
       description: p.description ?? '',
       image: p.image ?? '',
       rubro: p.rubro ?? '',
-      price: Number.isFinite(numeric) ? numeric : 0,
+      tipo: p.tipo ?? '',
+      cobertura: p.cobertura ?? '',
     };
   });
 
-/** Formatea ARS al mostrar */
-const formatARS = (n) =>
-  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(
-    typeof n === 'number' ? n : Number(n) || 0
-  ) + '/año';
 
 /** Esquema de validación con Yup */
 const productValidationSchema = yup.object({
@@ -72,24 +61,6 @@ const productValidationSchema = yup.object({
     .string()
     .required('El tipo de seguro es obligatorio')
     .oneOf(['auto', 'hogar', 'vida', 'salud'], 'Debe seleccionar un tipo válido'),
-  precio: yup
-    .string()
-    .required('El precio es obligatorio')
-    .test('is-number', 'El precio debe ser un número válido', (value) => {
-      if (!value) return false;
-      const numericValue = parseInt(String(value).replace(/\D/g, ''));
-      return !isNaN(numericValue) && numericValue > 0;
-    })
-    .test('min-price', 'El precio debe ser mayor a $1000', (value) => {
-      if (!value) return false;
-      const numericValue = parseInt(String(value).replace(/\D/g, ''));
-      return numericValue >= 1000;
-    })
-    .test('max-price', 'El precio no puede exceder $10,000,000', (value) => {
-      if (!value) return false;
-      const numericValue = parseInt(String(value).replace(/\D/g, ''));
-      return numericValue <= 10000000;
-    }),
   image: yup
     .mixed()
     .test('file-required', 'La imagen es obligatoria para nuevos productos', function(value) {
@@ -115,7 +86,6 @@ const AdminPanel = () => {
     descripcion: '',
     cobertura: '',
     tipo: '',
-    precio: '',
     isActive: true,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -135,13 +105,19 @@ const AdminPanel = () => {
   const [usersError, setUsersError] = useState('');
 
   /** ======= Polizas (asignación) ======= */
-  const [pedidos, setPedidos] = useState([]);
-  const [pedidosLoading, setPedidosLoading] = useState(false);
-  const [pedidosError, setPedidosError] = useState('');
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [solicitudesLoading, setSolicitudesLoading] = useState(false);
+  const [solicitudesError, setSolicitudesError] = useState('');
   const [assignFile, setAssignFile] = useState(null);
-  const [selectedPedidoId, setSelectedPedidoId] = useState('');
-  const [pedidoSearchTerm, setPedidoSearchTerm] = useState('');
+  const [selectedSolicitudId, setSelectedSolicitudId] = useState('');
+  const [solicitudSearchTerm, setSolicitudSearchTerm] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+  
+  /** ======= Gestión de Solicitudes ======= */
+  const [selectedSolicitud, setSelectedSolicitud] = useState(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [rejectionNote, setRejectionNote] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const navigate = useNavigate();
 
@@ -178,10 +154,10 @@ const AdminPanel = () => {
     }
   }, [activeTab]);
 
-  // Cargar pedidos para asignar pólizas
+  // Cargar solicitudes para asignar pólizas
   useEffect(() => {
     if (activeTab === 'polizas') {
-      loadPedidos();
+      loadSolicitudes();
     }
   }, [activeTab]);
 
@@ -252,49 +228,162 @@ async function loadProducts() {
     }
   }
 
-  /** ======= API Polizas/Pedidos ======= */
-  async function loadPedidos() {
-    setPedidosLoading(true);
-    setPedidosError('');
+  /** ======= API Polizas/Solicitudes ======= */
+  async function loadSolicitudes() {
+    setSolicitudesLoading(true);
+    setSolicitudesError('');
     try {
-      const data = await apiFetch(`/api/pedidos`);
-      const arr = Array.isArray(data?.pedidos) ? data.pedidos : [];
-      setPedidos(arr);
+      console.log('Cargando solicitudes para administrador...');
+      const data = await apiFetch(`/api/solicitudes`);
+      console.log('Respuesta de la API:', data);
+      const arr = Array.isArray(data?.data) ? data.data : [];
+      console.log('Solicitudes cargadas:', arr);
+      console.log('Cantidad de solicitudes:', arr.length);
+      
+      // Log detallado de cada solicitud
+      arr.forEach((solicitud, index) => {
+        console.log(`Solicitud ${index + 1}:`, {
+          id: solicitud.id,
+          idUsuario: solicitud.idUsuario,
+          estado: solicitud.estado,
+          usuario: solicitud.usuario,
+          items: solicitud.items,
+          createdAt: solicitud.createdAt
+        });
+      });
+      
+      setSolicitudes(arr);
     } catch (err) {
-      console.error(err);
-      setPedidosError('No se pudieron cargar los pedidos');
-      setPedidos([]);
+      console.error('Error cargando solicitudes:', err);
+      setSolicitudesError('No se pudieron cargar las solicitudes');
+      setSolicitudes([]);
     } finally {
-      setPedidosLoading(false);
+      setSolicitudesLoading(false);
     }
   }
 
-  // Función para filtrar pedidos
-  const filteredPedidos = pedidos.filter(p => {
-    if (!pedidoSearchTerm) return true;
-    const searchLower = pedidoSearchTerm.toLowerCase();
-    const username = (p.username || `user ${p.idUsuario}`).toLowerCase();
-    const pedidoId = String(p.idPedido || p.id);
-    return username.includes(searchLower) || pedidoId.includes(searchLower);
+  // Función para filtrar solicitudes
+  const filteredSolicitudes = solicitudes.filter(s => {
+    if (!solicitudSearchTerm) return true;
+    const searchLower = solicitudSearchTerm.toLowerCase();
+    const username = (s.usuario?.username || `user ${s.idUsuario}`).toLowerCase();
+    const solicitudId = String(s.id);
+    return username.includes(searchLower) || solicitudId.includes(searchLower);
   });
 
-  // Función para obtener el texto del pedido seleccionado
-  const getSelectedPedidoText = () => {
-    if (!selectedPedidoId) return '';
-    const pedido = pedidos.find(p => (p.idPedido || p.id) == selectedPedidoId);
-    if (!pedido) return '';
-    return `#${pedido.idPedido || pedido.id} - ${pedido.username || `user ${pedido.idUsuario}`} - ${formatARS(pedido.total)} ${pedido.poliza ? '(YA TIENE PÓLIZA)' : '(SIN PÓLIZA)'}`;
+  // Función para obtener el texto de la solicitud seleccionada
+  const getSelectedSolicitudText = () => {
+    if (!selectedSolicitudId) return '';
+    const solicitud = solicitudes.find(s => s.id == selectedSolicitudId);
+    if (!solicitud) return '';
+    return `#${solicitud.id} - ${solicitud.usuario?.username || `user ${solicitud.idUsuario}`} - ${solicitud.estado} ${solicitud.poliza ? '(YA TIENE PÓLIZA)' : '(SIN PÓLIZA)'}`;
+  };
+
+  // Función para ver detalles de la solicitud
+  const handleViewDetails = (solicitud) => {
+    setSelectedSolicitud(solicitud);
+    setDetailsModalOpen(true);
+  };
+
+  // Función para aprobar solicitud
+  const handleApproveSolicitud = async (solicitudId) => {
+    setIsUpdating(true);
+    try {
+      await apiFetch(`/api/solicitudes/${solicitudId}`, {
+        method: 'PUT',
+        body: { estado: 'APROBADA' }
+      });
+      
+      // Recargar solicitudes
+      await loadSolicitudes();
+      
+      // Mostrar mensaje de éxito
+      const successMessage = document.createElement('div');
+      successMessage.textContent = '✅ Solicitud aprobada exitosamente';
+      successMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #4caf50; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(successMessage);
+      
+      setTimeout(() => {
+        if (document.body.contains(successMessage)) {
+          document.body.removeChild(successMessage);
+        }
+      }, 3000);
+      
+    } catch (err) {
+      console.error(err);
+      alert('Error al aprobar la solicitud: ' + (err?.message || 'Error desconocido'));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Función para rechazar solicitud
+  const handleRejectSolicitud = async (solicitudId) => {
+    if (!rejectionNote.trim()) {
+      alert('Por favor, ingresa una nota de rechazo');
+      return;
+    }
+    
+    setIsUpdating(true);
+    try {
+      await apiFetch(`/api/solicitudes/${solicitudId}`, {
+        method: 'PUT',
+        body: { 
+          estado: 'RECHAZADA',
+          notaRechazo: rejectionNote.trim()
+        }
+      });
+      
+      // Recargar solicitudes
+      await loadSolicitudes();
+      
+      // Cerrar modal y limpiar nota
+      setDetailsModalOpen(false);
+      setRejectionNote('');
+      
+      // Mostrar mensaje de éxito
+      const successMessage = document.createElement('div');
+      successMessage.textContent = '✅ Solicitud rechazada exitosamente';
+      successMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #f44336; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(successMessage);
+      
+      setTimeout(() => {
+        if (document.body.contains(successMessage)) {
+          document.body.removeChild(successMessage);
+        }
+      }, 3000);
+      
+    } catch (err) {
+      console.error(err);
+      alert('Error al rechazar la solicitud: ' + (err?.message || 'Error desconocido'));
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   async function handleAssignPoliza(e) {
     e.preventDefault();
-    if (!selectedPedidoId) return;
+    if (!selectedSolicitudId) return;
     try {
       if (!assignFile) throw new Error('Seleccione un archivo');
       
-      // Verificar si el pedido ya tiene póliza para mostrar mensaje apropiado
-      const pedidoSeleccionado = pedidos.find(p => (p.idPedido || p.id) == selectedPedidoId);
-      const esReemplazo = pedidoSeleccionado && pedidoSeleccionado.poliza;
+      // Verificar si la solicitud ya tiene póliza para mostrar mensaje apropiado
+      const solicitudSeleccionada = solicitudes.find(s => s.id == selectedSolicitudId);
+      
+      // Validar que la solicitud esté aprobada
+      if (solicitudSeleccionada?.estado !== 'APROBADA') {
+        throw new Error('Solo se pueden asignar pólizas a solicitudes aprobadas');
+      }
+      
+      const esReemplazo = solicitudSeleccionada && solicitudSeleccionada.poliza;
       
       // Mostrar mensaje de carga
       const loadingMessage = document.createElement('div');
@@ -306,14 +395,14 @@ async function loadProducts() {
       `;
       document.body.appendChild(loadingMessage);
       
-      await uploadPolizaFileApi(Number(selectedPedidoId), assignFile);
+      await uploadPolizaFileApi(Number(selectedSolicitudId), assignFile);
       
       // Remover mensaje de carga
       document.body.removeChild(loadingMessage);
       
       setAssignFile(null);
-      setSelectedPedidoId('');
-      await loadPedidos();
+      setSelectedSolicitudId('');
+      await loadSolicitudes();
       
       // Mostrar mensaje de éxito apropiado
       const successMessage = document.createElement('div');
@@ -436,7 +525,6 @@ async function updateUserRole(userId, newRole) {
       descripcion: '',
       cobertura: '',
       tipo: '',
-      precio: '',
       isActive: true,
     });
     setPreviewUrl(null);
@@ -478,7 +566,6 @@ async function updateUserRole(userId, newRole) {
         descripcion: product.descripcion,
         cobertura: product.cobertura,
         tipo: product.tipo,
-        precio: product.precio,
         image: imageFile
       }, { context: { editingId } });
       
@@ -510,22 +597,11 @@ async function updateUserRole(userId, newRole) {
     setProductsLoading(true);
     
     try {
-      const numericPrice = parseInt(
-        String(product.precio).replace(/\D/g, '') || '0',
-        10
-      );
-
-      if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-        setMessage('El precio debe ser un número válido mayor a 0');
-        return;
-      }
-
       const productData = {
         titulo: product.titulo.trim(),
         descripcion: product.descripcion.trim(),
         cobertura: product.cobertura.trim(),
         tipo: product.tipo,
-        precio: Number.isFinite(numericPrice) ? numericPrice : 0,
         isActive: product.isActive,
       };
 
@@ -573,7 +649,6 @@ async function updateUserRole(userId, newRole) {
       descripcion: p.descripcion || '',
       cobertura: p.cobertura || '',
       tipo: p.tipo || '',
-      precio: p.precio ?? '',
       isActive: p.isActive ?? true,
     });
     setPreviewUrl(p.image || null);
@@ -714,35 +789,6 @@ async function updateUserRole(userId, newRole) {
               </div>
 
               <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="precio">
-                    <span className="label-icon">💰</span>
-                    Precio (ARS)
-                  </label>
-                  <input
-                    type="text"
-                    id="precio"
-                    name="precio"
-                    value={product.precio}
-                    onChange={handleInputChange}
-                    placeholder="Ej: 15000"
-                    className={validationErrors.precio ? 'error' : ''}
-                    style={{
-                      borderColor: validationErrors.precio ? '#f44336' : '#ddd',
-                      borderWidth: validationErrors.precio ? '2px' : '1px'
-                    }}
-                  />
-                  {validationErrors.precio && (
-                    <div className="error-message" style={{
-                      color: '#f44336',
-                      fontSize: '12px',
-                      marginTop: '4px',
-                      fontWeight: '500'
-                    }}>
-                      ⚠️ {validationErrors.precio}
-                    </div>
-                  )}
-                </div>
 
                 <div className="form-group">
                   <label htmlFor="tipo">
@@ -959,7 +1005,6 @@ async function updateUserRole(userId, newRole) {
                     <th>ID</th>
                     <th>Título</th>
                     <th>Tipo</th>
-                    <th>Precio</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
@@ -988,13 +1033,6 @@ async function updateUserRole(userId, newRole) {
                           color="primary" 
                           size="small" 
                         />
-                      </td>
-                      <td>
-                        <div className="product-price">
-                          <span className="price-amount">
-                            {formatARS(p.precio)}
-                          </span>
-                        </div>
                       </td>
                       <td>
                         <Chip
@@ -1175,35 +1213,35 @@ async function updateUserRole(userId, newRole) {
             <div className="form-header">
               <h2>
                 <DescriptionIcon className="form-header-icon" />
-                Asignar póliza a pedido
+                Asignar póliza a solicitud
               </h2>
             </div>
 
             <form onSubmit={handleAssignPoliza} className="admin-form">
               <div className="form-grid">
                 <div className="form-group">
-                  <label htmlFor="pedido">
-                    <span className="label-icon">🧾</span>
-                    Seleccionar Pedido
+                  <label htmlFor="solicitud">
+                    <span className="label-icon">📋</span>
+                    Seleccionar Solicitud
                   </label>
                   
                   <div style={{ position: 'relative' }}>
                     <input
                       type="text"
-                      value={isSelectOpen ? pedidoSearchTerm : getSelectedPedidoText()}
+                      value={isSelectOpen ? solicitudSearchTerm : getSelectedSolicitudText()}
                       onChange={(e) => {
-                        setPedidoSearchTerm(e.target.value);
+                        setSolicitudSearchTerm(e.target.value);
                         setIsSelectOpen(true);
                       }}
                       onFocus={() => {
                         setIsSelectOpen(true);
-                        loadPedidos();
+                        loadSolicitudes();
                       }}
                       onBlur={() => {
                         // Delay para permitir hacer clic en las opciones
                         setTimeout(() => setIsSelectOpen(false), 200);
                       }}
-                      placeholder="Escribe para buscar pedidos..."
+                      placeholder="Escribe para buscar solicitudes..."
                       style={{ 
                         width: '100%',
                         padding: '12px',
@@ -1231,30 +1269,30 @@ async function updateUserRole(userId, newRole) {
                         zIndex: 1000,
                         boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                       }}>
-                        {filteredPedidos.length === 0 ? (
+                        {filteredSolicitudes.length === 0 ? (
                           <div style={{ padding: '12px', color: '#666', textAlign: 'center' }}>
-                            {pedidosLoading ? 'Cargando pedidos...' : 'No se encontraron pedidos'}
+                            {solicitudesLoading ? 'Cargando solicitudes...' : 'No se encontraron solicitudes'}
                           </div>
                         ) : (
-                          filteredPedidos.map((p) => (
+                          filteredSolicitudes.map((s) => (
                             <div
-                              key={p.idPedido || p.id}
+                              key={s.id}
                               onClick={() => {
-                                setSelectedPedidoId(p.idPedido || p.id);
-                                setPedidoSearchTerm('');
+                                setSelectedSolicitudId(s.id);
+                                setSolicitudSearchTerm('');
                                 setIsSelectOpen(false);
                               }}
                               style={{
                                 padding: '12px',
                                 cursor: 'pointer',
                                 borderBottom: '1px solid #f0f0f0',
-                                backgroundColor: selectedPedidoId == (p.idPedido || p.id) ? '#f5f5f5' : 'white'
+                                backgroundColor: selectedSolicitudId == s.id ? '#f5f5f5' : 'white'
                               }}
                               onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = selectedPedidoId == (p.idPedido || p.id) ? '#f5f5f5' : 'white'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = selectedSolicitudId == s.id ? '#f5f5f5' : 'white'}
                             >
-                              #{p.idPedido || p.id} - {p.username || `user ${p.idUsuario}`} - {formatARS(p.total)} 
-                              {p.poliza ? ' (YA TIENE PÓLIZA)' : ' (SIN PÓLIZA)'}
+                              #{s.id} - {s.usuario?.username || `user ${s.idUsuario}`} - {s.estado} 
+                              {s.poliza ? ' (YA TIENE PÓLIZA)' : ' (SIN PÓLIZA)'}
                             </div>
                           ))
                         )}
@@ -1262,8 +1300,8 @@ async function updateUserRole(userId, newRole) {
                     )}
                   </div>
                   
-                  {pedidosLoading && <div className="message">Cargando pedidos…</div>}
-                  {pedidosError && <div className="message error">{pedidosError}</div>}
+                  {solicitudesLoading && <div className="message">Cargando solicitudes…</div>}
+                  {solicitudesError && <div className="message error">{solicitudesError}</div>}
                 </div>
 
                 <div className="form-group">
@@ -1284,12 +1322,21 @@ async function updateUserRole(userId, newRole) {
 
 
               <div className="form-actions">
-                <button type="submit" className="submit-button" disabled={!selectedPedidoId || !assignFile}>
-                  {selectedPedidoId && pedidos.find(p => (p.idPedido || p.id) == selectedPedidoId)?.poliza 
+                <button 
+                  type="submit" 
+                  className="submit-button" 
+                  disabled={!selectedSolicitudId || !assignFile || (selectedSolicitudId && solicitudes.find(s => s.id == selectedSolicitudId)?.estado !== 'APROBADA')}
+                >
+                  {selectedSolicitudId && solicitudes.find(s => s.id == selectedSolicitudId)?.poliza 
                     ? 'Reemplazar Póliza' 
                     : 'Asignar Póliza'
                   }
                 </button>
+                {selectedSolicitudId && solicitudes.find(s => s.id == selectedSolicitudId)?.estado !== 'APROBADA' && (
+                  <div style={{ marginTop: '8px', color: '#d32f2f', fontSize: '14px' }}>
+                    ⚠️ Solo se pueden asignar pólizas a solicitudes aprobadas
+                  </div>
+                )}
               </div>
             </form>
 
@@ -1297,40 +1344,329 @@ async function updateUserRole(userId, newRole) {
               <table className="products-table">
                 <thead>
                   <tr>
-                    <th>ID Pedido</th>
+                    <th>ID Solicitud</th>
                     <th>Usuario</th>
-                    <th>Total</th>
                     <th>Estado</th>
+                    <th>Productos</th>
                     <th>Póliza</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pedidos.map((p) => (
-                    <tr key={p.idPedido || p.id}>
-                      <td>#{p.idPedido || p.id}</td>
-                      <td>{p.username || p.idUsuario}</td>
-                      <td>{formatARS(p.total)}</td>
+                  {solicitudes.map((s) => (
+                    <tr key={s.id}>
+                      <td>#{s.id}</td>
                       <td>
-                        <Chip label={p.estado} color={p.estado?.includes('PAGO') ? 'success' : 'default'} size="small" />
+                        <div>
+                          <strong>{s.usuario?.username || `user ${s.idUsuario}`}</strong>
+                          {s.usuario?.mail && (
+                            <div style={{ fontSize: '12px', color: '#666' }}>
+                              {s.usuario.mail}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td>
-                        {p.poliza ? (
-                          <Chip label={`Póliza #${p.poliza.id}`} color="primary" size="small" />
+                        <Chip 
+                          label={s.estado || 'CREADA'} 
+                          color={s.estado === 'APROBADA' ? 'success' : s.estado === 'RECHAZADA' ? 'error' : 'default'}
+                          size="small"
+                        />
+                      </td>
+                      <td>{s.items?.length || 0} productos</td>
+                      <td>
+                        {s.poliza ? (
+                          <Chip label={`Póliza #${s.poliza.id}`} color="primary" size="small" />
+                        ) : s.estado === 'RECHAZADA' ? (
+                          <Chip label="No asignable" color="error" size="small" />
                         ) : (
                           <Chip label="Sin póliza" color="warning" size="small" />
                         )}
                       </td>
+                      <td>
+                        <div className="action-buttons">
+                          <Tooltip title="Ver detalles">
+                            <IconButton
+                              className="edit-button"
+                              onClick={() => handleViewDetails(s)}
+                              size="small"
+                            >
+                              <SearchIcon />
+                            </IconButton>
+                          </Tooltip>
+                          {s.estado === 'CREADA' && (
+                            <>
+                              <Tooltip title="Aprobar solicitud">
+                                <IconButton
+                                  className="edit-button"
+                                  onClick={() => handleApproveSolicitud(s.id)}
+                                  size="small"
+                                  disabled={isUpdating}
+                                  style={{ color: '#4caf50' }}
+                                >
+                                  ✓
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Rechazar solicitud">
+                                <IconButton
+                                  className="delete-button"
+                                  onClick={() => handleViewDetails(s)}
+                                  size="small"
+                                  disabled={isUpdating}
+                                >
+                                  ✗
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
-                  {!pedidosLoading && pedidos.length === 0 && (
+                  {!solicitudesLoading && solicitudes.length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', opacity: 0.7 }}>
-                        No hay pedidos
+                      <td colSpan={6} style={{ textAlign: 'center', opacity: 0.7 }}>
+                        No hay solicitudes
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de detalles de solicitud */}
+        {detailsModalOpen && selectedSolicitud && (
+          <div className="modal-overlay" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div className="modal-content" style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '24px',
+              maxWidth: '600px',
+              width: '90%',
+              maxHeight: '80vh',
+              overflowY: 'auto'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2>Detalles de la Solicitud #{selectedSolicitud.id}</h2>
+                <button
+                  onClick={() => {
+                    setDetailsModalOpen(false);
+                    setSelectedSolicitud(null);
+                    setRejectionNote('');
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <h3>Información del Usuario</h3>
+                <p><strong>Usuario:</strong> {selectedSolicitud.usuario?.username || `user ${selectedSolicitud.idUsuario}`}</p>
+                <p><strong>Email:</strong> {selectedSolicitud.usuario?.mail || 'No disponible'}</p>
+                <div><strong>Estado:</strong> 
+                  <Chip 
+                    label={selectedSolicitud.estado || 'CREADA'} 
+                    color={selectedSolicitud.estado === 'APROBADA' ? 'success' : selectedSolicitud.estado === 'RECHAZADA' ? 'error' : 'default'}
+                    size="small"
+                    style={{ marginLeft: '8px' }}
+                  />
+                </div>
+              </div>
+
+              {selectedSolicitud.datosPersonales && (
+                <div style={{ marginBottom: '20px', padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+                  <h3 style={{ margin: '0 0 16px 0', color: '#1976d2', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ marginRight: '8px' }}>👤</span>
+                    Datos Personales del Asegurado
+                  </h3>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                      <strong style={{ color: '#495057' }}>Nombre:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.nombre}</span>
+                    </div>
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                      <strong style={{ color: '#495057' }}>Apellido:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.apellido}</span>
+                    </div>
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                      <strong style={{ color: '#495057' }}>Email:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.email}</span>
+                    </div>
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                      <strong style={{ color: '#495057' }}>Teléfono:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.telefono}</span>
+                    </div>
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                      <strong style={{ color: '#495057' }}>DNI:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.dni}</span>
+                    </div>
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                      <strong style={{ color: '#495057' }}>Fecha de Nacimiento:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.fechaNacimiento}</span>
+                    </div>
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6', gridColumn: '1 / -1' }}>
+                      <strong style={{ color: '#495057' }}>Dirección:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.direccion}</span>
+                    </div>
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                      <strong style={{ color: '#495057' }}>Ciudad:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.ciudad}</span>
+                    </div>
+                    {selectedSolicitud.datosPersonales.codigoPostal && (
+                      <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                        <strong style={{ color: '#495057' }}>Código Postal:</strong><br/>
+                        <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.codigoPostal}</span>
+                      </div>
+                    )}
+                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                      <strong style={{ color: '#495057' }}>Tipo de Documento:</strong><br/>
+                      <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.tipoDocumento}</span>
+                    </div>
+                    {selectedSolicitud.datosPersonales.genero && (
+                      <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                        <strong style={{ color: '#495057' }}>Género:</strong><br/>
+                        <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.genero}</span>
+                      </div>
+                    )}
+                    {selectedSolicitud.datosPersonales.estadoCivil && (
+                      <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                        <strong style={{ color: '#495057' }}>Estado Civil:</strong><br/>
+                        <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.estadoCivil}</span>
+                      </div>
+                    )}
+                    {selectedSolicitud.datosPersonales.ocupacion && (
+                      <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                        <strong style={{ color: '#495057' }}>Ocupación:</strong><br/>
+                        <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.ocupacion}</span>
+                      </div>
+                    )}
+                    {selectedSolicitud.datosPersonales.ingresosMensuales && (
+                      <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #dee2e6' }}>
+                        <strong style={{ color: '#495057' }}>Ingresos Mensuales:</strong><br/>
+                        <span style={{ color: '#212529' }}>{selectedSolicitud.datosPersonales.ingresosMensuales}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginBottom: '20px' }}>
+                <h3>Productos Solicitados</h3>
+                {selectedSolicitud.items?.map((item, index) => (
+                  <div key={index} style={{ 
+                    border: '1px solid #ddd', 
+                    borderRadius: '4px', 
+                    padding: '10px', 
+                    marginBottom: '10px' 
+                  }}>
+                    <p><strong>{item.titulo}</strong></p>
+                    <p>Cantidad: {item.cantidad}</p>
+                  </div>
+                ))}
+              </div>
+
+              {selectedSolicitud.notaRechazo && (
+                <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px' }}>
+                  <h3 style={{ color: '#d32f2f' }}>Nota de Rechazo</h3>
+                  <p>{selectedSolicitud.notaRechazo}</p>
+                </div>
+              )}
+
+              {selectedSolicitud.estado === 'CREADA' && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h3>Acciones</h3>
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <button
+                      onClick={() => handleApproveSolicitud(selectedSolicitud.id)}
+                      disabled={isUpdating}
+                      style={{
+                        backgroundColor: '#4caf50',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '4px',
+                        cursor: isUpdating ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {isUpdating ? 'Procesando...' : '✓ Aprobar Solicitud'}
+                    </button>
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px' }}>
+                      <strong>Nota de Rechazo (opcional):</strong>
+                    </label>
+                    <textarea
+                      value={rejectionNote}
+                      onChange={(e) => setRejectionNote(e.target.value)}
+                      placeholder="Ingresa el motivo del rechazo..."
+                      style={{
+                        width: '100%',
+                        minHeight: '80px',
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        resize: 'vertical'
+                      }}
+                    />
+                    <button
+                      onClick={() => handleRejectSolicitud(selectedSolicitud.id)}
+                      disabled={isUpdating}
+                      style={{
+                        backgroundColor: '#f44336',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '4px',
+                        cursor: isUpdating ? 'not-allowed' : 'pointer',
+                        marginTop: '10px'
+                      }}
+                    >
+                      {isUpdating ? 'Procesando...' : '✗ Rechazar Solicitud'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ textAlign: 'right' }}>
+                <button
+                  onClick={() => {
+                    setDetailsModalOpen(false);
+                    setSelectedSolicitud(null);
+                    setRejectionNote('');
+                  }}
+                  style={{
+                    backgroundColor: '#666',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
           </div>
         )}

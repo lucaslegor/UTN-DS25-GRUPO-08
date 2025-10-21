@@ -11,7 +11,7 @@ export async function getAllPolizas(): Promise<Poliza[]> {
   return await prisma.poliza.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
-      pedido: {
+      solicitud: {
         include: {
           items: true,
         },
@@ -25,7 +25,7 @@ export async function getPolizaById(id: number): Promise<Poliza | null> {
   return await prisma.poliza.findUnique({
     where: { id },
     include: {
-      pedido: {
+      solicitud: {
         include: {
           items: true,
         },
@@ -34,12 +34,12 @@ export async function getPolizaById(id: number): Promise<Poliza | null> {
   });
 }
 
-// GET by pedido ID
-export async function getPolizaByPedidoId(idPedido: number): Promise<Poliza | null> {
+// GET by solicitud ID
+export async function getPolizaBySolicitudId(idSolicitud: number): Promise<Poliza | null> {
   return await prisma.poliza.findUnique({
-    where: { idPedido },
+    where: { idSolicitud },
     include: {
-      pedido: {
+      solicitud: {
         include: {
           items: true,
         },
@@ -49,7 +49,7 @@ export async function getPolizaByPedidoId(idPedido: number): Promise<Poliza | nu
 }
 
 // CREATE OR UPDATE
-export async function createPoliza(idPedido: number, data: CrearPolizaRequest): Promise<Poliza> {
+export async function createPoliza(idSolicitud: number, data: CrearPolizaRequest): Promise<Poliza> {
   if (!data.archivoUrl) {
     const error: any = new Error("La póliza debe contener una URL de archivo");
     error.statusCode = 400;
@@ -57,13 +57,13 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
   }
 
   try {
-    // Verificar que el pedido existe
-    const pedido = await prisma.pedido.findUnique({
-      where: { id: idPedido }
+    // Verificar que la solicitud existe
+    const solicitud = await prisma.solicitud.findUnique({
+      where: { id: idSolicitud }
     });
 
-    if (!pedido) {
-      const error: any = new Error("El pedido no existe");
+    if (!solicitud) {
+      const error: any = new Error("La solicitud no existe");
       error.statusCode = 404;
       throw error;
     }
@@ -72,9 +72,9 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
     
     // Usar transacción para crear o actualizar la póliza
     const result = await prisma.$transaction(async (tx) => {
-      // Verificar si ya existe una póliza para este pedido
+      // Verificar si ya existe una póliza para esta solicitud
       const polizaExistente = await tx.poliza.findUnique({
-        where: { idPedido }
+        where: { idSolicitud }
       });
 
       let poliza;
@@ -88,7 +88,7 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
             updatedAt: new Date()
           },
           include: {
-            pedido: {
+            solicitud: {
               include: {
                 items: true,
               },
@@ -99,12 +99,12 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
         // Crear nueva póliza
         poliza = await tx.poliza.create({
           data: {
-            idPedido,
+            idSolicitud,
             archivoUrl: data.archivoUrl,
             estado: estadoInicial
           },
           include: {
-            pedido: {
+            solicitud: {
               include: {
                 items: true,
               },
@@ -113,9 +113,9 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
         });
       }
 
-      // Actualizar el estado del pedido a POLIZA_CARGADA
-      await tx.pedido.update({
-        where: { id: idPedido },
+      // Actualizar el estado de la solicitud a POLIZA_CARGADA
+      await tx.solicitud.update({
+        where: { id: idSolicitud },
         data: { estado: "POLIZA_CARGADA" }
       });
 
@@ -125,7 +125,7 @@ export async function createPoliza(idPedido: number, data: CrearPolizaRequest): 
     return result;
   } catch (err: any) {
     if (err.code === "P2003") { 
-      const e: any = new Error("El pedido no existe (violación de clave foránea)");
+      const e: any = new Error("La solicitud no existe (violación de clave foránea)");
       e.statusCode = 400;
       throw e;
     }
@@ -143,7 +143,7 @@ export async function updatePoliza(id: number, data: ActualizarPolizaRequest): P
         updatedAt: new Date()
       },
       include: {
-        pedido: {
+        solicitud: {
           include: {
             items: true,
           },
@@ -183,12 +183,12 @@ export async function deletePoliza(id: number): Promise<Poliza | null> {
 export async function getPolizasByUsuario(idUsuario: number): Promise<Poliza[]> {
   return await prisma.poliza.findMany({
     where: {
-      pedido: {
+      solicitud: {
         idUsuario: idUsuario
       }
     },
     include: {
-      pedido: {
+      solicitud: {
         include: {
           items: true,
         },
@@ -203,7 +203,7 @@ export async function getPolizaByIdConOwnership(id: number, idUsuario: number): 
   const poliza = await prisma.poliza.findFirst({
     where: {
       id: id,
-      pedido: {
+      solicitud: {
         idUsuario: idUsuario
       }
     }
@@ -211,13 +211,13 @@ export async function getPolizaByIdConOwnership(id: number, idUsuario: number): 
   return poliza;
 }
 
-// Función para verificar si un pedido pertenece a un usuario
-export async function verificarOwnershipPedido(idPedido: number, idUsuario: number): Promise<boolean> {
-  const pedido = await prisma.pedido.findFirst({
+// Función para verificar si una solicitud pertenece a un usuario
+export async function verificarOwnershipSolicitud(idSolicitud: number, idUsuario: number): Promise<boolean> {
+  const solicitud = await prisma.solicitud.findFirst({
     where: {
-      id: idPedido,
+      id: idSolicitud,
       idUsuario: idUsuario
     }
   });
-  return !!pedido;
+  return !!solicitud;
 }
