@@ -66,7 +66,7 @@ if (result.isConfirmed) {
   };
 
   const handleCheckout = () => {
-    alert('Funcionalidad de checkout próximamente');
+    navigate('/checkout');
   };
 
   if (cartItems.length === 0) {
