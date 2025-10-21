@@ -50,8 +50,8 @@ const Home = () => {
           setProducts(parsed);
           localStorage.setItem("products", JSON.stringify(parsed));
         } else {
-          setProducts(defaultProducts);
-          localStorage.setItem("products", JSON.stringify(defaultProducts));
+          setProducts([]);
+          localStorage.setItem("products", JSON.stringify([]));
         }
       });
     return () => { mounted = false; };

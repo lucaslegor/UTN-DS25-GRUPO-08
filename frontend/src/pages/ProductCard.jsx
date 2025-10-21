@@ -5,48 +5,6 @@ import { getAuth } from "../services/api";
 import "../styles/productDetail.css";
 
 // Seed solo por si el storage está vacío (sin precios - sistema de solicitudes)
-const defaultProducts = [
-  {
-    id: 1,
-    title: "Seguro de Auto",
-    description:
-      "Protección completa para tu vehículo ante accidentes, robos y daños a terceros.",
-    tipo: "AUTO",
-    cobertura: "Cobertura total hasta $5.000.000",
-    image:
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    title: "Seguro de Hogar",
-    description:
-      "Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.",
-    tipo: "HOGAR",
-    cobertura: "Cobertura hasta $2.000.000",
-    image:
-      "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    title: "Seguro de Vida",
-    description:
-      "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
-    tipo: "VIDA",
-    cobertura: "Beneficio de $3.000.000",
-    image:
-      "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    title: "Seguro de Salud",
-    description:
-      "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    tipo: "SALUD",
-    cobertura: "Cobertura 100% en internaciones y cirugías",
-    image:
-      "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
-  },
-];
 
 // Normaliza lo que venga del storage (sin precios - sistema de solicitudes)
 const normalize = (list) =>
@@ -83,13 +41,13 @@ export default function ProductDetailPage() {
       const parsed = normalize(JSON.parse(stored));
       setAllProducts(parsed);
       if (parsed.length === 0) {
-        // Si por alguna razón está vacío, seed
-        setAllProducts(defaultProducts);
-        localStorage.setItem("products", JSON.stringify(defaultProducts));
+        // Si por alguna razón está vacío, usar array vacío
+        setAllProducts([]);
+        localStorage.setItem("products", JSON.stringify([]));
       }
     } else {
-      setAllProducts(defaultProducts);
-      localStorage.setItem("products", JSON.stringify(defaultProducts));
+      setAllProducts([]);
+      localStorage.setItem("products", JSON.stringify([]));
     }
   }, []);
 

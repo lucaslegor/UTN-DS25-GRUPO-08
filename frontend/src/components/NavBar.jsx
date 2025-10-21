@@ -14,7 +14,6 @@ import {
 import { Person, Policy, Logout } from "@mui/icons-material";
 import SolicitudesIcon from "./SolicitudesIcon";
 import { getMeApi, logoutApi } from "../services/api";
-import { defaultProducts } from "../pages/Home";
 import "../styles/navbar.css";
 
 export const NavBar = () => {
@@ -100,7 +99,7 @@ export const NavBar = () => {
   };
 
   // ---------- FILTRO ----------
-  // Tomamos productos de localStorage; si no hay, usamos defaultProducts
+  // Tomamos productos de localStorage
   const stored = (() => {
     try {
       return JSON.parse(localStorage.getItem("products") || "[]");
@@ -108,8 +107,7 @@ export const NavBar = () => {
       return [];
     }
   })();
-  const base = stored.length ? stored : defaultProducts;
-  const list = Array.isArray(base) ? base : [];
+  const list = Array.isArray(stored) ? stored : [];
 
   const filteredProducts = search.trim()
     ? list.filter(
