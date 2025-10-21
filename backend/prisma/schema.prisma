@@ -31,15 +31,15 @@ model AdminProfile {
 }
 
 model Producto {
-  id              Int               @id @default(autoincrement())
-  titulo          String
-  descripcion     String
-  cobertura       String
-  tipo            TipoSeguro
-  isActive        Boolean
-  createdAt       DateTime          @default(now())
-  imagenUrl       String?
-  itemsSolicitud  SolicitudItem[]
+  id             Int             @id @default(autoincrement())
+  titulo         String
+  descripcion    String
+  cobertura      String
+  tipo           TipoSeguro
+  isActive       Boolean
+  createdAt      DateTime        @default(now())
+  imagenUrl      String?
+  itemsSolicitud SolicitudItem[]
 }
 
 model Poliza {
@@ -53,29 +53,28 @@ model Poliza {
 }
 
 model SolicitudItem {
-  idProducto Int
+  idProducto  Int
   idSolicitud Int
-  titulo     String
-  cantidad   Int
-  solicitud  Solicitud @relation(fields: [idSolicitud], references: [id])
-  producto   Producto  @relation(fields: [idProducto], references: [id])
+  titulo      String
+  cantidad    Int
+  producto    Producto  @relation(fields: [idProducto], references: [id])
+  solicitud   Solicitud @relation(fields: [idSolicitud], references: [id])
 
   @@id([idSolicitud, idProducto])
 }
 
 model Solicitud {
-  id              Int              @id @default(autoincrement())
+  id              Int             @id @default(autoincrement())
   idUsuario       Int
-  estado          EstadoSolicitud  @default(CREADA)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  usuario         Usuario          @relation(fields: [idUsuario], references: [id])
-  items           SolicitudItem[]
+  estado          EstadoSolicitud @default(CREADA)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  datosPersonales Json?
+  notaRechazo     String?
   poliza          Poliza?
-  datosPersonales Json?            // Datos personales del asegurado
-  notaRechazo     String?          // Nota de rechazo del administrador
+  usuario         Usuario         @relation(fields: [idUsuario], references: [id])
+  items           SolicitudItem[]
 }
-
 
 enum RolUsuario {
   ADMINISTRADOR
