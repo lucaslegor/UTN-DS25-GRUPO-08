@@ -53,6 +53,8 @@ function mapRowToSolicitud(row: any): Solicitud {
 }
 
 export async function obtenerSolicitudesPorUsuario(idUsuario: number): Promise<Solicitud[]> {
+  console.log('obtenerSolicitudesPorUsuario: Buscando solicitudes para usuario ID:', idUsuario);
+  
   const rows = await prisma.solicitud.findMany({
     where: { idUsuario },
     include: { 
@@ -68,7 +70,16 @@ export async function obtenerSolicitudesPorUsuario(idUsuario: number): Promise<S
     },
     orderBy: { createdAt: "desc" },
   });
-  return rows.map(mapRowToSolicitud);
+  
+  console.log('obtenerSolicitudesPorUsuario: Filas encontradas:', rows.length);
+  rows.forEach((row, index) => {
+    console.log(`Solicitud ${index + 1}: ID=${row.id}, Usuario=${row.idUsuario}, Estado=${row.estado}`);
+  });
+  
+  const result = rows.map(mapRowToSolicitud);
+  console.log('obtenerSolicitudesPorUsuario: Resultado mapeado:', result.length);
+  
+  return result;
 }
 
 export async function obtenerSolicitudPorId(id: number): Promise<Solicitud | null> {

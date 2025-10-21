@@ -36,7 +36,6 @@ export const createProduct = async(req: Request, res: Response<ProductResponse>,
         const product = await productService.createProduct({
           titulo: body.titulo,
           descripcion: body.descripcion,
-          precio: Number(body.precio),
           cobertura: body.cobertura,
           tipo: body.tipo,
           isActive: body.isActive !== undefined ? body.isActive === 'true' || body.isActive === true : true,
@@ -58,7 +57,6 @@ export const updateProduct = async(req: Request<{id: string}, ProductResponse, U
         const updateData = {
           titulo: body.titulo,
           descripcion: body.descripcion,
-          precio: body.precio ? Number(body.precio) : undefined,
           cobertura: body.cobertura,
           tipo: body.tipo,
           isActive: body.isActive !== undefined ? body.isActive === 'true' || body.isActive === true : undefined,

@@ -89,16 +89,22 @@ const MisPolizas = () => {
     setError(null);
     listPolizasApi()
       .then((data) => {
+        console.log('Datos recibidos de listPolizasApi:', data);
         const arr = Array.isArray(data?.polizas) ? data.polizas : [];
+        console.log('Array de pólizas:', arr);
         // Normalizamos fechas si vienen como string
-        const normalized = arr.map((p) => ({
-          ...p,
-          createdAt: p.createdAt,
-          updatedAt: p.updatedAt,
-        }));
+        const normalized = arr.map((p) => {
+          console.log('Estructura de póliza:', p);
+          return {
+            ...p,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt,
+          };
+        });
         if (mounted) setPolizas(normalized);
       })
       .catch((e) => {
+        console.error('Error al cargar pólizas:', e);
         if (mounted) setError(e.message || 'Error al cargar');
       })
       .finally(() => {
@@ -272,25 +278,42 @@ const MisPolizas = () => {
                 {/* Información del pedido */}
                 <Box mb={{ xs: 1.5, sm: 2 }}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Pedido #{poliza.idPedido}
+                    Pedido #{poliza.idPedido || poliza.idSolicitud || 'N/A'}
                   </Typography>
                   
-                  {poliza.pedido.items.map((item, index) => (
-                    <Box key={index} display="flex" alignItems="center" mb={1}>
-                      <ShoppingCartIcon sx={{ fontSize: { xs: 14, sm: 16 }, mr: { xs: 0.5, sm: 1 }, color: 'primary.main' }} />
-                      <Typography variant="body2" noWrap sx={{ flex: 1 }}>
-                        {item.titulo}
-                      </Typography>
-                    </Box>
-                  ))}
+                  {poliza.pedido?.items && Array.isArray(poliza.pedido.items) ? (
+                    poliza.pedido.items.map((item, index) => (
+                      <Box key={index} display="flex" alignItems="center" mb={1}>
+                        <ShoppingCartIcon sx={{ fontSize: { xs: 14, sm: 16 }, mr: { xs: 0.5, sm: 1 }, color: 'primary.main' }} />
+                        <Typography variant="body2" noWrap sx={{ flex: 1 }}>
+                          {item.titulo || item.title || 'Producto sin nombre'}
+                        </Typography>
+                      </Box>
+                    ))
+                  ) : poliza.solicitud?.items && Array.isArray(poliza.solicitud.items) ? (
+                    poliza.solicitud.items.map((item, index) => (
+                      <Box key={index} display="flex" alignItems="center" mb={1}>
+                        <ShoppingCartIcon sx={{ fontSize: { xs: 14, sm: 16 }, mr: { xs: 0.5, sm: 1 }, color: 'primary.main' }} />
+                        <Typography variant="body2" noWrap sx={{ flex: 1 }}>
+                          {item.titulo || item.title || 'Producto sin nombre'}
+                        </Typography>
+                      </Box>
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Sin productos asociados
+                    </Typography>
+                  )}
                 </Box>
 
-                {/* Precio */}
-                <Box display="flex" alignItems="center" mb={{ xs: 1.5, sm: 2 }}>
-                  <Typography variant="h6" color="success.main" fontWeight="bold">
-                    {formatPrice(poliza.pedido.total)}
-                  </Typography>
-                </Box>
+                {/* Precio - Solo mostrar si existe */}
+                {poliza.pedido?.total && (
+                  <Box display="flex" alignItems="center" mb={{ xs: 1.5, sm: 2 }}>
+                    <Typography variant="h6" color="success.main" fontWeight="bold">
+                      {formatPrice(poliza.pedido.total)}
+                    </Typography>
+                  </Box>
+                )}
 
                 {/* Fechas */}
                 <Box display="flex" alignItems="center" mb={{ xs: 1.5, sm: 2 }}>
@@ -403,27 +426,31 @@ const MisPolizas = () => {
                       </ListItemIcon>
                       <ListItemText
                         primary="Número de pedido"
-                        secondary={`#${selectedPoliza.pedido.idPedido}`}
+                        secondary={`#${selectedPoliza.pedido?.idPedido || selectedPoliza.idSolicitud || 'N/A'}`}
                       />
                     </ListItem>
-                    <ListItem>
-                      <ListItemIcon>
-                        <MoneyIcon color="primary" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Total"
-                        secondary={formatPrice(selectedPoliza.pedido.total)}
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemIcon>
-                        <CheckCircleIcon color="primary" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Estado del pedido"
-                        secondary={selectedPoliza.pedido.estado}
-                      />
-                    </ListItem>
+                    {selectedPoliza.pedido?.total && (
+                      <ListItem>
+                        <ListItemIcon>
+                          <MoneyIcon color="primary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Total"
+                          secondary={formatPrice(selectedPoliza.pedido.total)}
+                        />
+                      </ListItem>
+                    )}
+                    {selectedPoliza.pedido?.estado && (
+                      <ListItem>
+                        <ListItemIcon>
+                          <CheckCircleIcon color="primary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Estado del pedido"
+                          secondary={selectedPoliza.pedido.estado}
+                        />
+                      </ListItem>
+                    )}
                   </List>
                 </Grid>
               </Grid>
@@ -434,16 +461,37 @@ const MisPolizas = () => {
                 Productos incluidos
               </Typography>
               <Paper variant="outlined" sx={{ p: { xs: 1.5, sm: 2 } }}>
-                {selectedPoliza.pedido.items.map((item, index) => (
-                  <Box key={index} display="flex" justifyContent="space-between" alignItems="center" py={1}>
-                    <Typography variant="body1">
-                      {item.titulo}
-                    </Typography>
-                    <Typography variant="h6" color="primary">
-                      {formatPrice(item.precio)}
-                    </Typography>
-                  </Box>
-                ))}
+                {selectedPoliza.pedido?.items && Array.isArray(selectedPoliza.pedido.items) ? (
+                  selectedPoliza.pedido.items.map((item, index) => (
+                    <Box key={index} display="flex" justifyContent="space-between" alignItems="center" py={1}>
+                      <Typography variant="body1">
+                        {item.titulo || item.title || 'Producto sin nombre'}
+                      </Typography>
+                      {item.precio && (
+                        <Typography variant="h6" color="primary">
+                          {formatPrice(item.precio)}
+                        </Typography>
+                      )}
+                    </Box>
+                  ))
+                ) : selectedPoliza.solicitud?.items && Array.isArray(selectedPoliza.solicitud.items) ? (
+                  selectedPoliza.solicitud.items.map((item, index) => (
+                    <Box key={index} display="flex" justifyContent="space-between" alignItems="center" py={1}>
+                      <Typography variant="body1">
+                        {item.titulo || item.title || 'Producto sin nombre'}
+                      </Typography>
+                      {item.precio && (
+                        <Typography variant="h6" color="primary">
+                          {formatPrice(item.precio)}
+                        </Typography>
+                      )}
+                    </Box>
+                  ))
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Sin productos asociados
+                  </Typography>
+                )}
               </Paper>
             </Box>
           )}

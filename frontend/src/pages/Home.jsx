@@ -5,49 +5,6 @@ import "../styles/styles.css";
 import { Box, Typography } from '@mui/material';
 import { Card, CardContent, AspectRatio } from '@mui/joy';
 
-// 👉 Seed solo para la primera carga si no hay nada en localStorage
-export const defaultProducts = [
-  {
-    id: 1,
-    title: "Seguro de Auto",
-    description:
-      "Protección completa para tu vehículo ante accidentes, robos y daños a terceros.",
-    tipo: "auto",
-    cobertura: "Cobertura total hasta $5.000.000",
-    image:
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    title: "Seguro de Hogar",
-    description:
-      "Cubre daños por incendio, robo y responsabilidad civil en tu vivienda.",
-    tipo: "hogar",
-    cobertura: "Cobertura hasta $2.000.000",
-    image:
-      "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    title: "Seguro de Vida",
-    description:
-      "Garantiza el bienestar de tus seres queridos ante cualquier eventualidad.",
-    tipo: "vida",
-    cobertura: "Beneficio de $3.000.000",
-    image:
-      "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    title: "Seguro de Salud",
-    description:
-      "Acceso a la mejor atención médica y cobertura de gastos hospitalarios.",
-    tipo: "salud",
-    cobertura: "Cobertura 100% en internaciones y cirugías",
-    image:
-      "https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=800&q=80",
-  },
-];
 
 const Home = () => {
   const [search, setSearch] = React.useState("");

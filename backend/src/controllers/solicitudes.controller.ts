@@ -11,9 +11,12 @@ export async function obtenerSolicitudes(
     const userId = (req as any).user?.id;
     const role = (req as any).user?.role; // Cambiado de 'rol' a 'role'
     
+    console.log('=== OBTENER SOLICITUDES ===');
     console.log('obtenerSolicitudes: userId:', userId, 'role:', role);
+    console.log('obtenerSolicitudes: user object completo:', (req as any).user);
     
     if (!userId) {
+      console.log('obtenerSolicitudes: ERROR - Usuario no autenticado');
       return res.status(401).json({ message: "Usuario no autenticado" });
     }
 
@@ -26,9 +29,11 @@ export async function obtenerSolicitudes(
       // Los usuarios ven solo sus solicitudes
       console.log('obtenerSolicitudes: Cargando solicitudes para usuario:', userId);
       solicitudes = await solicitudesService.obtenerSolicitudesPorUsuario(userId);
+      console.log('obtenerSolicitudes: Solicitudes del usuario:', solicitudes);
     }
     
     console.log('obtenerSolicitudes: Solicitudes encontradas:', solicitudes.length);
+    console.log('obtenerSolicitudes: Primera solicitud:', solicitudes[0]);
     res.json({ success: true, data: solicitudes });
   } catch (error) {
     console.error('obtenerSolicitudes: Error:', error);

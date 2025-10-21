@@ -33,6 +33,80 @@ import { useSolicitudes } from '../context/SolicitudesContext';
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from '../services/api';
 import Swal from 'sweetalert2';
+import * as yup from 'yup';
+
+// Esquema de validación con Yup
+const validationSchema = yup.object({
+  nombre: yup
+    .string()
+    .required('El nombre es requerido')
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .max(50, 'El nombre no puede exceder 50 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'El nombre solo puede contener letras'),
+  apellido: yup
+    .string()
+    .required('El apellido es requerido')
+    .min(2, 'El apellido debe tener al menos 2 caracteres')
+    .max(50, 'El apellido no puede exceder 50 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'El apellido solo puede contener letras'),
+  email: yup
+    .string()
+    .required('El email es requerido')
+    .email('Debe ser un email válido'),
+  telefono: yup
+    .string()
+    .required('El teléfono es requerido')
+    .matches(/^[0-9+\-\s()]+$/, 'El teléfono solo puede contener números y caracteres válidos')
+    .min(8, 'El teléfono debe tener al menos 8 caracteres'),
+  dni: yup
+    .string()
+    .required('El número de documento es requerido')
+    .matches(/^[0-9]+$/, 'El DNI solo puede contener números')
+    .min(7, 'El DNI debe tener al menos 7 dígitos')
+    .max(8, 'El DNI no puede exceder 8 dígitos'),
+  fechaNacimiento: yup
+    .string()
+    .required('La fecha de nacimiento es requerida')
+    .test('age', 'Debe ser mayor de 18 años', function(value) {
+      if (!value) return false;
+      const today = new Date();
+      const birthDate = new Date(value);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        return age - 1 >= 18;
+      }
+      return age >= 18;
+    }),
+  direccion: yup
+    .string()
+    .required('La dirección es requerida')
+    .min(10, 'La dirección debe tener al menos 10 caracteres')
+    .max(100, 'La dirección no puede exceder 100 caracteres'),
+  ciudad: yup
+    .string()
+    .required('La ciudad es requerida')
+    .min(2, 'La ciudad debe tener al menos 2 caracteres')
+    .max(50, 'La ciudad no puede exceder 50 caracteres'),
+  codigoPostal: yup
+    .string()
+    .matches(/^[0-9]*$/, 'El código postal solo puede contener números')
+    .max(10, 'El código postal no puede exceder 10 caracteres'),
+  tipoDocumento: yup
+    .string()
+    .required('El tipo de documento es requerido'),
+  genero: yup
+    .string(),
+  estadoCivil: yup
+    .string(),
+  ocupacion: yup
+    .string()
+    .max(100, 'La ocupación no puede exceder 100 caracteres'),
+  ingresosMensuales: yup
+    .string()
+    .matches(/^[0-9]*$/, 'Los ingresos mensuales solo pueden contener números')
+    .max(15, 'Los ingresos mensuales no pueden exceder 15 dígitos')
+});
 
 const SolicitudesPage = () => {
   const { 
@@ -48,6 +122,7 @@ const SolicitudesPage = () => {
   const [misSolicitudes, setMisSolicitudes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [errors, setErrors] = useState({});
 
   // Verificar si el usuario es administrador
   const isAdmin = () => {
@@ -84,16 +159,52 @@ const SolicitudesPage = () => {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
+    // Validación en tiempo real
+    try {
+      await validationSchema.validateAt(name, { ...formData, [name]: value });
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: error.message
+      }));
+    }
   };
 
-  const handleNext = () => {
-    setActiveStep(prev => prev + 1);
+  const handleNext = async () => {
+    if (activeStep === 1) {
+      // Validar formulario antes de avanzar al paso de confirmación
+      try {
+        await validationSchema.validate(formData, { abortEarly: false });
+        setErrors({});
+        setActiveStep(prev => prev + 1);
+      } catch (error) {
+        const validationErrors = {};
+        error.inner.forEach(err => {
+          validationErrors[err.path] = err.message;
+        });
+        setErrors(validationErrors);
+        
+        Swal.fire({
+          title: 'Formulario incompleto',
+          text: 'Por favor corrige los errores antes de continuar',
+          icon: 'warning'
+        });
+      }
+    } else {
+      setActiveStep(prev => prev + 1);
+    }
   };
 
   const handleBack = () => {
@@ -130,14 +241,20 @@ const SolicitudesPage = () => {
       return;
     }
 
-    // Validar campos requeridos
-    const requiredFields = ['nombre', 'apellido', 'email', 'telefono', 'dni', 'fechaNacimiento', 'direccion', 'ciudad'];
-    const missingFields = requiredFields.filter(field => !formData[field]);
-    
-    if (missingFields.length > 0) {
+    // Validar formulario con Yup
+    try {
+      await validationSchema.validate(formData, { abortEarly: false });
+      setErrors({});
+    } catch (error) {
+      const validationErrors = {};
+      error.inner.forEach(err => {
+        validationErrors[err.path] = err.message;
+      });
+      setErrors(validationErrors);
+      
       Swal.fire({
-        title: 'Campos requeridos',
-        text: `Por favor completa: ${missingFields.join(', ')}`,
+        title: 'Formulario incompleto',
+        text: 'Por favor corrige los errores antes de enviar la solicitud',
         icon: 'warning'
       });
       return;
@@ -170,6 +287,7 @@ const SolicitudesPage = () => {
         ocupacion: '',
         ingresosMensuales: ''
       });
+      setErrors({});
     } catch (error) {
       Swal.fire({
         title: 'Error',
@@ -313,6 +431,8 @@ const SolicitudesPage = () => {
                   name="nombre"
                   value={formData.nombre}
                   onChange={handleInputChange}
+                  error={!!errors.nombre}
+                  helperText={errors.nombre}
                   required
                 />
               </Grid>
@@ -323,6 +443,8 @@ const SolicitudesPage = () => {
                   name="apellido"
                   value={formData.apellido}
                   onChange={handleInputChange}
+                  error={!!errors.apellido}
+                  helperText={errors.apellido}
                   required
                 />
               </Grid>
@@ -334,6 +456,8 @@ const SolicitudesPage = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  error={!!errors.email}
+                  helperText={errors.email}
                   required
                 />
               </Grid>
@@ -344,11 +468,13 @@ const SolicitudesPage = () => {
                   name="telefono"
                   value={formData.telefono}
                   onChange={handleInputChange}
+                  error={!!errors.telefono}
+                  helperText={errors.telefono}
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <FormControl fullWidth>
+                <FormControl fullWidth error={!!errors.tipoDocumento}>
                   <InputLabel>Tipo de Documento</InputLabel>
                   <Select
                     name="tipoDocumento"
@@ -359,6 +485,11 @@ const SolicitudesPage = () => {
                     <MenuItem value="PASAPORTE">Pasaporte</MenuItem>
                     <MenuItem value="CEDULA">Cédula</MenuItem>
                   </Select>
+                  {errors.tipoDocumento && (
+                    <Typography variant="caption" color="error" sx={{ mt: 1, ml: 2 }}>
+                      {errors.tipoDocumento}
+                    </Typography>
+                  )}
                 </FormControl>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -368,6 +499,8 @@ const SolicitudesPage = () => {
                   name="dni"
                   value={formData.dni}
                   onChange={handleInputChange}
+                  error={!!errors.dni}
+                  helperText={errors.dni}
                   required
                 />
               </Grid>
@@ -380,6 +513,8 @@ const SolicitudesPage = () => {
                   value={formData.fechaNacimiento}
                   onChange={handleInputChange}
                   InputLabelProps={{ shrink: true }}
+                  error={!!errors.fechaNacimiento}
+                  helperText={errors.fechaNacimiento}
                   required
                 />
               </Grid>
@@ -404,6 +539,8 @@ const SolicitudesPage = () => {
                   name="direccion"
                   value={formData.direccion}
                   onChange={handleInputChange}
+                  error={!!errors.direccion}
+                  helperText={errors.direccion}
                   required
                 />
               </Grid>
@@ -414,6 +551,8 @@ const SolicitudesPage = () => {
                   name="ciudad"
                   value={formData.ciudad}
                   onChange={handleInputChange}
+                  error={!!errors.ciudad}
+                  helperText={errors.ciudad}
                   required
                 />
               </Grid>
@@ -424,6 +563,8 @@ const SolicitudesPage = () => {
                   name="codigoPostal"
                   value={formData.codigoPostal}
                   onChange={handleInputChange}
+                  error={!!errors.codigoPostal}
+                  helperText={errors.codigoPostal}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -448,6 +589,20 @@ const SolicitudesPage = () => {
                   name="ocupacion"
                   value={formData.ocupacion}
                   onChange={handleInputChange}
+                  error={!!errors.ocupacion}
+                  helperText={errors.ocupacion}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Ingresos Mensuales"
+                  name="ingresosMensuales"
+                  value={formData.ingresosMensuales}
+                  onChange={handleInputChange}
+                  error={!!errors.ingresosMensuales}
+                  helperText={errors.ingresosMensuales}
+                  placeholder="Solo números"
                 />
               </Grid>
             </Grid>
