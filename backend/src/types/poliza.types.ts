@@ -2,7 +2,7 @@ export type EstadoPoliza = "PENDIENTE" | "CARGADA";
 
 export interface Poliza {
   id: number;
-  idPedido: number;       
+  idSolicitud: number;       
   archivoUrl: string;     
   estado: EstadoPoliza;   
   createdAt: Date;

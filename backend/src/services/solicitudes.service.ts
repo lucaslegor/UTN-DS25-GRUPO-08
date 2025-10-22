@@ -154,6 +154,7 @@ export async function crearSolicitud(
 type ActualizarSolicitudRequest = {
   estado?: EstadoSolicitud;
   items?: { productId: number; cantidad?: number }[];
+  notaRechazo?: string;
 };
 
 export async function actualizarSolicitud(
