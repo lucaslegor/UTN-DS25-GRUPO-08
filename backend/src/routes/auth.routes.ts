@@ -97,6 +97,50 @@ router.get("/user", authenticate, async (req, res) => {
   });
 });
 
+// PUT /api/auth/user (actualizar perfil propio)
+router.put("/user", authenticate, async (req, res) => {
+  try {
+    const { username, mail } = req.body;
+    
+    if (!username && !mail) {
+      return res.status(400).json({ message: "Debe proporcionar al menos un campo para actualizar" });
+    }
+
+    const updateData: any = {};
+    if (username) updateData.username = username.trim();
+    if (mail) updateData.mail = mail.trim().toLowerCase();
+
+    const updated = await prisma.usuario.update({
+      where: { id: req.user!.id },
+      data: updateData,
+      select: {
+        id: true,
+        username: true,
+        mail: true,
+        rol: true,
+        createdAt: true
+      }
+    });
+
+    return res.json({
+      user: {
+        idUsuario: updated.id,
+        username: updated.username,
+        mail: updated.mail,
+        rol: updated.rol,
+        createdAt: updated.createdAt,
+      },
+      message: "Perfil actualizado exitosamente"
+    });
+  } catch (error: any) {
+    console.error('Error updating user profile:', error);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: "El username o email ya está en uso" });
+    }
+    return res.status(500).json({ message: "Error al actualizar perfil", error: error.message });
+  }
+});
+
 // POST /api/auth/forgot (solicitar reset)
 router.post("/forgot", async (req, res) => {
   const parsed = forgotPasswordSchema.safeParse({

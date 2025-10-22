@@ -164,6 +164,14 @@
   align-items: center;
   margin-left: auto;
 }
+
+/* Control de visibilidad para solicitudes en desktop */
+.solicitudes-text-desktop {
+  display: inline;
+}
+.solicitudes-text-mobile {
+  display: none;
+}
 .link-list {
   display: flex;
   gap: 18px;
@@ -209,6 +217,13 @@
   cursor: pointer;
 }
 
+/* Asegurar que esté oculto en desktop */
+@media (min-width: 769px) {
+  .menu-toggle {
+    display: none !important;
+  }
+}
+
 /* ===== Breakpoints ===== */
 @media (max-width: 1200px) {
   #main-navbar .sb {
@@ -239,119 +254,261 @@
 }
 
 /* ===== Mobile / Tablet ===== */
-/* ===== Menú mobile bonito ===== */
+/* ===== Menú mobile mejorado ===== */
 @media (max-width: 768px){
-  .navbar{ gap: 8px; }
+  .navbar{ 
+    gap: 8px; 
+    padding: 8px 16px;
+    --navH: 60px;
+  }
 
   /* orden en mobile */
   .brand{ order: 1; }
   #main-navbar .search{ order: 2; flex: 1 1 auto; justify-content: flex-start; }
   #main-navbar .sb{ width: 100%; height: 40px; }
-  .menu-toggle{ order: 3; display: block; flex: 0 0 auto; margin-left: 8px; z-index: 1101; }
+  .menu-toggle{ 
+    order: 3; 
+    display: block; 
+    flex: 0 0 auto; 
+    margin-left: 8px; 
+    z-index: 1101;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+  .menu-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
 
-  /* Overlay + blur */
+  /* Overlay mejorado */
   .nav-links{
     position: fixed;
-    top: var(--navH); left: 0; right: 0; bottom: 0;
-    display: flex; justify-content: center; align-items: flex-start;
-    padding: 12px 10px;
-    background: rgba(2, 6, 23, 0.35);                /* overlay */
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    opacity: 0; transform: translateY(-6px);
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; 
+    justify-content: flex-end; 
+    align-items: flex-start;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0; 
+    transform: translateX(100%);
     pointer-events: none;
-    transition: opacity .18s ease, transform .18s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     z-index: 1100;
   }
   .nav-links.open{
-    opacity: 1; transform: translateY(0); pointer-events: auto;
+    opacity: 1; 
+    transform: translateX(0); 
+    pointer-events: auto;
   }
 
-  /* “Card” centrada para los items */
+  /* Panel lateral deslizable */
   .link-list{
-    width: min(92vw, 720px);
-    background: #0f1b3d;
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 16px;
-    box-shadow: 0 24px 48px rgba(2, 6, 23, .45);
-    padding: 8px;
-    margin: 8px auto 0;
-    display: flex; flex-direction: column; gap: 6px;
-    animation: menuPop .18s ease-out both;
+    width: 320px;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    border-left: 1px solid rgba(255,255,255,0.1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+    padding: 80px 0 20px 0;
+    margin: 0 0 0 auto;
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px;
+    animation: slideInRight 0.3s ease-out both;
+    overflow-y: auto;
   }
 
-  /* Item */
-  .link-list li{ width: 100%; }
+  /* Header del menú */
+  .link-list::before {
+    content: "MENÚ";
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Item mejorado */
+  .link-list li{ 
+    width: 100%; 
+    margin: 0 16px;
+  }
   .link{
-    display: flex; align-items: center; justify-content: flex-start;
+    display: flex; 
+    align-items: center; 
+    justify-content: flex-start;
     width: 100%;
-    color: #e8eeff;
-    font-weight: 700;
-    letter-spacing: .2px;
-    padding: 14px 14px;
+    color: #e2e8f0;
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+    padding: 16px 20px;
     border-radius: 12px;
     text-decoration: none;
-    transition: background .15s ease, color .15s ease, transform .02s ease;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
   }
-  .link:hover{ color:#ffffff; background: rgba(255,255,255,.06); }
-  .link:active{ transform: scale(.995); }
-
-  /* Botón “Iniciar sesión” dentro del panel */
-  .session-btn{
+  .link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    transition: width 0.3s ease;
+  }
+  .link:hover{ 
+    color: #ffffff; 
+    background: rgba(255,255,255,0.08);
+    transform: translateX(4px);
+  }
+  .link:hover::before {
     width: 100%;
-    background: #ffffff;
-    color: #1e43c0;
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-weight: 800;
-    box-shadow: 0 2px 10px rgba(17,24,39,.18);
-    border: 1px solid rgba(30,67,192,.20);
   }
-  .session-btn:hover{ background:#1e43c0; color:#fff; }
+  .link:active{ 
+    transform: translateX(2px) scale(0.98); 
+  }
 
-  /* Íconos sueltos (perfil / carrito) alineados y visibles */
-  .link-list .MuiIconButton-root{ color:#fff; width: 100%; justify-content: flex-start; padding: 12px; }
-  .link-list a .cart-icon, .link-list svg{ color:#fff; }
+  /* Botón "Iniciar sesión" mejorado */
+  .session-btn{
+    width: calc(100% - 32px);
+    margin: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    color: #1e40af;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(30, 64, 175, 0.2);
+    transition: all 0.2s ease;
+  }
+  .session-btn:hover{ 
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 64, 175, 0.3);
+  }
 
-  /* Dropdown de resultados del buscador adaptado al ancho */
+  /* Íconos mejorados */
+  .link-list .MuiIconButton-root{ 
+    color: #e2e8f0; 
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    justify-content: flex-start; 
+    padding: 16px 20px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  .link-list .MuiIconButton-root:hover {
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+    transform: translateX(4px);
+  }
+  .link-list a .cart-icon, .link-list svg{ color: inherit; }
+
+  /* Control de visibilidad para solicitudes */
+  .solicitudes-text-desktop {
+    display: none;
+  }
+  .solicitudes-text-mobile {
+    display: inline;
+  }
+
+  /* Dropdown de resultados del buscador mejorado */
   #main-navbar .sb-results{
-    left: 0; right: 0; transform: none; width: auto; margin: 0 12px;
+    left: 16px; 
+    right: 16px; 
+    transform: none; 
+    width: auto; 
+    margin: 0;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   }
 
-  .title{ font-size: 19px; } .title img{ width: 40px; }
+  .title{ font-size: 18px; } 
+  .title img{ width: 36px; }
 }
 @media (max-width: 560px){
-  .navbar{ --navH: 58px; padding: 8px 12px; }
-  #main-navbar .sb{ height: 38px; }
-  .title{ font-size: 18px; } .title img{ width: 36px; }
-}
-@media (max-width: 420px){
-  .title{ font-size: 16px; } .title img{ width: 32px; }
+  .navbar{ 
+    --navH: 56px; 
+    padding: 6px 12px; 
+  }
+  #main-navbar .sb{ 
+    height: 36px; 
+    font-size: 14px;
+  }
+  .title{ 
+    font-size: 16px; 
+  } 
+  .title img{ 
+    width: 32px; 
+  }
+  
+  /* Panel más estrecho en pantallas pequeñas */
+  .link-list{
+    width: 280px;
+  }
+  
+  .link{
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+  
+  .session-btn{
+    padding: 14px 16px;
+    font-size: 15px;
+  }
 }
 
-/* Animación de entrada del card */
+@media (max-width: 420px){
+  .navbar{ 
+    --navH: 52px; 
+    padding: 4px 8px; 
+  }
+  .title{ 
+    font-size: 14px; 
+  } 
+  .title img{ 
+    width: 28px; 
+  }
+  
+  /* Panel aún más estrecho */
+  .link-list{
+    width: 260px;
+  }
+  
+  .link{
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  .session-btn{
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+}
+
+/* Animaciones mejoradas */
+@keyframes slideInRight{
+  from{ 
+    opacity: 0; 
+    transform: translateX(100%); 
+  }
+  to{ 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
 @keyframes menuPop{
   from{ opacity: 0; transform: translateY(-6px) scale(.995); }
   to{ opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@media (max-width: 560px) {
-  .navbar {
-    --navH: 58px;
-    padding: 8px 12px;
-  }
-  #main-navbar .sb {
-    height: 38px;
-  }
-  .title {
-    font-size: 14px;
-  }
-  .title img {
-    width: 36px;
-  }
-}
-@media (max-width: 420px) {
-  .title img {
-    width: 32px;
-  }
-}

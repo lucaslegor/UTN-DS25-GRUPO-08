@@ -26,7 +26,7 @@ const Home = () => {
   React.useEffect(() => {
     let mounted = true;
     // Preferimos API; si falla, fallback a localStorage/seed
-    apiFetch('/api/productos')
+    apiFetch('/productos')
       .then((data) => {
         const list = Array.isArray(data?.products) ? data.products : (data?.productos || []);
         const onlyActive = list.filter((p) => p.isActive !== false);

@@ -593,18 +593,6 @@ const SolicitudesPage = () => {
                   helperText={errors.ocupacion}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Ingresos Mensuales"
-                  name="ingresosMensuales"
-                  value={formData.ingresosMensuales}
-                  onChange={handleInputChange}
-                  error={!!errors.ingresosMensuales}
-                  helperText={errors.ingresosMensuales}
-                  placeholder="Solo números"
-                />
-              </Grid>
             </Grid>
           </Paper>
         );
@@ -845,12 +833,75 @@ const SolicitudesPage = () => {
                       </Box>
                     )}
                     
-                    {solicitud.notaRechazo && (
-                      <Alert severity="error" sx={{ mt: 2 }}>
-                        <Typography variant="subtitle2" gutterBottom>
-                          <strong>Motivo de Rechazo:</strong>
+                    {solicitud.estado === 'POLIZA_CARGADA' && solicitud.poliza ? (
+                      <Alert 
+                        severity="info" 
+                        sx={{ 
+                          mt: 2,
+                          backgroundColor: '#e3f2fd',
+                          border: '2px solid #2196f3',
+                          '& .MuiAlert-icon': {
+                            fontSize: '32px'
+                          }
+                        }}
+                      >
+                        <Typography variant="h6" gutterBottom sx={{ 
+                          color: '#1976d2',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}>
+                          🎉 ¡Póliza Cargada Exitosamente!
                         </Typography>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ 
+                          color: '#1565c0',
+                          lineHeight: 1.6,
+                          mb: 2
+                        }}>
+                          <strong>¡Felicitaciones!</strong> Tu póliza ha sido procesada y cargada exitosamente en nuestro sistema.
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                          color: '#1565c0',
+                          lineHeight: 1.6,
+                          mb: 2
+                        }}>
+                          Esperamos que tu experiencia en nuestra página haya sido excelente y que hayas encontrado exactamente lo que necesitabas.
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                          color: '#1565c0',
+                          lineHeight: 1.6,
+                          mb: 2
+                        }}>
+                          <strong>¡Gracias por confiar en nosotros!</strong> Estamos aquí para brindarte la mejor protección y tranquilidad.
+                        </Typography>
+                        <Box sx={{
+                          mt: 2,
+                          p: 2,
+                          backgroundColor: '#f3e5f5',
+                          borderRadius: 1,
+                          border: '1px solid #9c27b0'
+                        }}>
+                          <Typography variant="body2" sx={{ 
+                            color: '#7b1fa2',
+                            fontWeight: 'bold',
+                            textAlign: 'center'
+                          }}>
+                            📄 Póliza #{solicitud.poliza.id} - Lista para descargar
+                          </Typography>
+                        </Box>
+                      </Alert>
+                    ) : solicitud.notaRechazo && solicitud.estado !== 'POLIZA_CARGADA' && (
+                      <Alert 
+                        severity={solicitud.estado === 'APROBADA' ? 'success' : 'error'} 
+                        sx={{ mt: 2 }}
+                      >
+                        <Typography variant="subtitle2" gutterBottom>
+                          <strong>
+                            {solicitud.estado === 'APROBADA' ? '📋 Información Importante:' : '❌ Motivo de Rechazo:'}
+                          </strong>
+                        </Typography>
+                        <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
                           {solicitud.notaRechazo}
                         </Typography>
                       </Alert>

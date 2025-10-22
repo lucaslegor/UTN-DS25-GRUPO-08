@@ -90,7 +90,7 @@ export function SolicitudesProvider({ children }) {
         throw new Error('No hay producto seleccionado');
       }
 
-      const response = await apiFetch('/api/solicitudes', {
+      const response = await apiFetch('/solicitudes', {
         method: 'POST',
         body: { 
           items: [{ productId: solicitudItem.id, cantidad: 1 }],
@@ -113,7 +113,7 @@ export function SolicitudesProvider({ children }) {
   // Obtener solicitudes del usuario
   const getSolicitudes = async () => {
     try {
-      const response = await apiFetch('/api/solicitudes');
+      const response = await apiFetch('/solicitudes');
       return response.data || [];
     } catch (error) {
       console.error('Error fetching solicitudes:', error);

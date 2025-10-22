@@ -1,46 +1,31 @@
 import React, { useEffect, useState } from "react";
+import { apiFetch, getAuth } from "../services/api";
 import "../styles/userProfile.css";
-
-
-const RAW_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
-const API_BASE = RAW_BASE.endsWith("/api") ? RAW_BASE : `${RAW_BASE}/api`;
-
-function getAuth() {
-  try {
-    return JSON.parse(localStorage.getItem("auth") || "{}");
-  } catch {
-    return {};
-  }
-}
 
 async function apiGetUser(username) {
   if (!username) return null;
-  const { token } = getAuth();
-  const res = await fetch(`${API_BASE}/usuarios/${encodeURIComponent(username)}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data?.usuario || data || null;
+  try {
+    // Usar el endpoint /auth/user que devuelve la información del usuario actual
+    const data = await apiFetch(`/auth/user`);
+    return data?.user || data || null;
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    return null;
+  }
 }
 
 async function apiUpdateUser(currentUsername, payload) {
-  const { token } = getAuth();
   if (!currentUsername) throw new Error("No hay usuario actual");
-  if (!token) throw new Error("No autenticado");
-  const res = await fetch(`${API_BASE}/usuarios/${encodeURIComponent(currentUsername)}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.message || "Error actualizando usuario");
+  try {
+    // Usar el endpoint /auth/user para actualizar el perfil propio
+    const data = await apiFetch(`/auth/user`, {
+      method: "PUT",
+      body: payload,
+    });
+    return data;
+  } catch (error) {
+    throw new Error(error?.message || "Error actualizando usuario");
   }
-  return res.json();
 }
 
 /* ===== Secciones ===== */

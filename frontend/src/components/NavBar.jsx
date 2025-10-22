@@ -238,12 +238,29 @@ export const NavBar = () => {
         className="menu-toggle"
         onClick={() => setMenuOpen(!menuOpen)}
         aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '40px',
+          height: '40px',
+          borderRadius: '8px',
+          transition: 'all 0.2s ease'
+        }}
       >
-        {menuOpen ? <X size={28} /> : <MenuIcon fontSize="medium" />}
+        {menuOpen ? <X size={24} /> : <MenuIcon fontSize="medium" />}
       </button>
 
       {/* LINKS */}
-      <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
+      <nav 
+        className={`nav-links ${menuOpen ? "open" : ""}`}
+        onClick={(e) => {
+          // Cerrar menú al hacer clic en el overlay (no en el panel)
+          if (e.target === e.currentTarget) {
+            setMenuOpen(false);
+          }
+        }}
+      >
         <ul className="link-list" onClick={() => setMenuOpen(false)}>
           <li>
             <Link className="link" to="/">
@@ -270,7 +287,12 @@ export const NavBar = () => {
           {isLogin && !isAdmin && (
             <li>
               <Link className="link" to="/solicitudes">
-                <SolicitudesIcon />
+                <span className="solicitudes-text-desktop">
+                  <SolicitudesIcon />
+                </span>
+                <span className="solicitudes-text-mobile">
+                  Mis Solicitudes
+                </span>
               </Link>
             </li>
           )}

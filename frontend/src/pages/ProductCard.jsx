@@ -94,8 +94,6 @@ export default function ProductDetailPage() {
 
   return (
     <div className="pd-container">
-      <h1 className="pd-title">{displayTitle}</h1>
-
       <div className="pd-main">
         {/* Imagen principal */}
         <div className="pd-images">
@@ -117,16 +115,20 @@ export default function ProductDetailPage() {
 
         {/* Buy box */}
         <div className="pd-buy">
-          <div className="pd-price-wrap">
-            <div className="pd-price">
-              <strong>Tipo:</strong> {product.tipo?.toUpperCase() || 'N/A'}
+          {/* Título dentro del card */}
+          <h1 className="pd-title">{displayTitle}</h1>
+
+          {/* Tipo y cobertura más pequeños */}
+          <div className="pd-details-compact">
+            <div className="pd-detail-item">
+              <span className="pd-detail-label">Tipo:</span>
+              <span className="pd-detail-value pd-detail-type">{product.tipo?.toUpperCase() || 'N/A'}</span>
             </div>
-            <div className="pd-price" style={{ marginTop: '8px' }}>
-              <strong>Cobertura:</strong> {product.cobertura || 'No especificada'}
+            <div className="pd-detail-item">
+              <span className="pd-detail-label">Cobertura:</span>
+              <span className="pd-detail-value pd-detail-coverage">{product.cobertura || 'No especificada'}</span>
             </div>
           </div>
-
-          <div className="pd-stock">Stock disponible</div>
 
           <div className="pd-desc" style={{ marginTop: "20px" }}>
             <h2 className="pd-section-title">Descripción del producto</h2>

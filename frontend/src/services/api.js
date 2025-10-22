@@ -1,5 +1,6 @@
 // services/api.js
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const RAW_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+const API_URL = RAW_BASE.endsWith("/api") ? RAW_BASE : `${RAW_BASE}/api`;
 
 /* =========================
    Auth helpers (localStorage)
@@ -46,7 +47,7 @@ function getTokenExpMs(token) {
 }
 
 async function refreshAccessToken() {
-  const res = await fetch(`${API_URL}/api/auth/refresh`, {
+  const res = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
     credentials: 'include', // envía cookie httpOnly del refresh
   });
@@ -150,7 +151,7 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
 export async function loginApi({ username, mail, password }) {
   // tu backend acepta username o mail; enviamos el que tengas
   const payload = mail ? { mail, password } : { username, password };
-  const data = await apiFetch('/api/auth/login', {
+  const data = await apiFetch('/auth/login', {
     method: 'POST',
     body: payload,
   });
@@ -170,7 +171,7 @@ export async function loginApi({ username, mail, password }) {
 
 // Registro (rol opcional; server default = USUARIO/USUARIO)
 export async function registerApi({ username, mail, password, rol }) {
-  return apiFetch('/api/usuarios', {
+  return apiFetch('/usuarios', {
     method: 'POST',
     body: { username, mail, password, rol },
   });
@@ -178,13 +179,13 @@ export async function registerApi({ username, mail, password, rol }) {
 
 // Quién soy (protegido). Si el token expira, apiFetch hará refresh y reintentará.
 export async function getMeApi() {
-  return apiFetch('/api/auth/user', { method: 'GET' });
+  return apiFetch('/auth/user', { method: 'GET' });
 }
 
 // Logout: limpia cookie httpOnly en backend y localStorage en frontend
 export async function logoutApi() {
   try {
-    await fetch(`${API_URL}/api/auth/logout`, {
+    await fetch(`${API_URL}/auth/logout`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -196,14 +197,14 @@ export async function logoutApi() {
 // === Password reset ===
 
 export async function resetPasswordApi({ token, newPassword }) {
-  return apiFetch('/api/auth/reset', {
+  return apiFetch('/auth/reset', {
     method: 'POST',
     body: { token, newPassword }, 
   });
 }
 
 export async function forgotPasswordApi(mail) {
-  return apiFetch('/api/auth/forgot', {
+  return apiFetch('/auth/forgot', {
     method: 'POST',
     body: { mail, origin: window.location.origin }, // <= importante
   });
@@ -215,11 +216,11 @@ export async function forgotPasswordApi(mail) {
 
 export async function listPolizasApi() {
   // Devuelve { polizas, total }
-  return apiFetch('/api/polizas', { method: 'GET' });
+  return apiFetch('/polizas', { method: 'GET' });
 }
 
 export async function getPolizaApi(id) {
-  return apiFetch(`/api/polizas/${id}`, { method: 'GET' });
+  return apiFetch(`/polizas/${id}`, { method: 'GET' });
 }
 
 export async function createPolizaForSolicitudApi(idSolicitud, { archivoUrl }) {
@@ -235,11 +236,11 @@ export async function createPolizaForSolicitudApi(idSolicitud, { archivoUrl }) {
 
 export async function listSolicitudesApi() {
   // Admin: lista todos; Usuario: el backend actual lista todos también, ajustar si cambia
-  return apiFetch('/api/solicitudes', { method: 'GET' });
+  return apiFetch('/solicitudes', { method: 'GET' });
 }
 
 export async function getSolicitudApi(id) {
-  return apiFetch(`/api/solicitudes/${id}`, { method: 'GET' });
+  return apiFetch(`/solicitudes/${id}`, { method: 'GET' });
 }
 
 // Multipart upload for poliza files
@@ -247,7 +248,7 @@ export async function uploadPolizaFileApi(idSolicitud, file) {
   const auth = getAuth();
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch(`${API_URL}/api/polizas/${idSolicitud}`, {
+  const res = await fetch(`${API_URL}/polizas/${idSolicitud}`, {
     method: 'POST',
     headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
     body: form,

@@ -30,47 +30,140 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
   };
 
   return (
-    <>
-      <Card sx={{ width: 320, backgroundColor: 'transparent', borderColor:'#dbe1f0' }}>
-        <div>
-          <Typography level="title-lg" sx={{color: '#3877ffff'}}>{title}</Typography>
-          <Typography level="body-sm">{description}</Typography>
+    <Card sx={{ 
+      width: 320, 
+      backgroundColor: 'white', 
+      borderColor: '#e0e7ff',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+        transform: 'translateY(-2px)'
+      }
+    }}>
+      {/* Imagen */}
+      <AspectRatio minHeight="160px" maxHeight="180px">
+        <img
+          src={image}
+          loading="lazy"
+          alt={title || 'Imagen'}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+      </AspectRatio>
+
+      {/* Contenido */}
+      <CardContent sx={{ p: 2.5 }}>
+        {/* Título y descripción */}
+        <div sx={{ mb: 2 }}>
+          <Typography 
+            level="title-md" 
+            sx={{ 
+              color: '#1e293b',
+              fontWeight: 600,
+              mb: 0.5,
+              lineHeight: 1.3
+            }}
+          >
+            {title}
+          </Typography>
+          <Typography 
+            level="body-sm" 
+            sx={{ 
+              color: '#64748b',
+              lineHeight: 1.4,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}
+          >
+            {description}
+          </Typography>
         </div>
-        <AspectRatio minHeight="120px" maxHeight="200px">
-          <img
-            src={image}
-            loading="lazy"
-            alt={title || 'Imagen'}
-          />
-        </AspectRatio>
-        <CardContent orientation="vertical">
-          <div>
-            <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666' }}>Tipo:</Typography>
-            <Typography sx={{ fontSize: 'md', fontWeight: 'lg', color:'#1976d2', mb: 1 }}>
+
+        {/* Tipo y cobertura compactos */}
+        <div sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography 
+              level="body-xs" 
+              sx={{ 
+                color: '#64748b',
+                fontWeight: 500,
+                minWidth: '35px'
+              }}
+            >
+              Tipo:
+            </Typography>
+            <Typography 
+              sx={{ 
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: '#1976d2',
+                backgroundColor: '#e3f2fd',
+                px: 1,
+                py: 0.25,
+                borderRadius: '4px'
+              }}
+            >
               {tipo?.toUpperCase()}
             </Typography>
-            <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666' }}>Cobertura:</Typography>
-            <Typography sx={{ fontSize: 'sm', color:'#2e7d32', mb: 2 }}>
+          </div>
+          
+          <div sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+            <Typography 
+              level="body-xs" 
+              sx={{ 
+                color: '#64748b',
+                fontWeight: 500,
+                minWidth: '35px',
+                mt: 0.25
+              }}
+            >
+              Cobertura:
+            </Typography>
+            <Typography 
+              sx={{ 
+                fontSize: '0.75rem',
+                color: '#059669',
+                backgroundColor: '#ecfdf5',
+                px: 1,
+                py: 0.25,
+                borderRadius: '4px',
+                flex: 1,
+                lineHeight: 1.3
+              }}
+            >
               {cobertura}
             </Typography>
           </div>
-          <Button
-            variant={isAdmin() ? "outlined" : (inSolicitud ? "soft" : "solid")}
-            color={isAdmin() ? "neutral" : (inSolicitud ? "success" : "primary")}
-            startDecorator={isAdmin() ? <LockIcon /> : (inSolicitud ? <VisibilityIcon /> : <BookmarkAddIcon />)}
-            onClick={isAdmin() ? undefined : (inSolicitud ? handleViewSolicitudes : handleAddToSolicitud)}
-            disabled={isAdmin()}
-            fullWidth
-            title={isAdmin() ? "Los administradores no pueden hacer solicitudes" : ""}
-          >
-            {isAdmin() ? 'Solo para usuarios' : (inSolicitud ? 'Ver mis solicitudes' : 'Agregar a solicitud')}
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
 
-
-    </>
-
+        {/* Botón */}
+        <Button
+          variant={isAdmin() ? "outlined" : (inSolicitud ? "soft" : "solid")}
+          color={isAdmin() ? "neutral" : (inSolicitud ? "success" : "primary")}
+          startDecorator={isAdmin() ? <LockIcon /> : (inSolicitud ? <VisibilityIcon /> : <BookmarkAddIcon />)}
+          onClick={isAdmin() ? undefined : (inSolicitud ? handleViewSolicitudes : handleAddToSolicitud)}
+          disabled={isAdmin()}
+          fullWidth
+          size="sm"
+          sx={{
+            fontWeight: 600,
+            borderRadius: '8px',
+            py: 1
+          }}
+          title={isAdmin() ? "Los administradores no pueden hacer solicitudes" : ""}
+        >
+          {isAdmin() ? 'Solo para usuarios' : (inSolicitud ? 'Ver mis solicitudes' : 'Agregar a solicitud')}
+        </Button>
+      </CardContent>
+    </Card>
   );
 };
 

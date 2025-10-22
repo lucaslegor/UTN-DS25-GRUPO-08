@@ -16,7 +16,7 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { IconButton, Tooltip, Chip } from '@mui/material';
-import { apiFetch, uploadPolizaFileApi } from '../services/api';
+import { apiFetch, uploadPolizaFileApi, getAuth } from '../services/api';
 import * as yup from 'yup';
 
 /** ========= Config API ========= */
@@ -118,6 +118,8 @@ const AdminPanel = () => {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [rejectionNote, setRejectionNote] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [replacingPolizaId, setReplacingPolizaId] = useState(null);
+  const [replaceFile, setReplaceFile] = useState(null);
 
   const navigate = useNavigate();
 
@@ -180,7 +182,7 @@ async function loadProducts() {
   setProductsLoading(true);
   setProductsError('');
   try {
-    const data = await apiFetch('/api/productos');   // <-- usa apiFetch
+    const data = await apiFetch('/productos');   // <-- usa apiFetch
     setProducts(data.products || []);
   } catch (err) {
     console.error(err);
@@ -194,7 +196,7 @@ async function loadProducts() {
 
   async function createProduct(productData) {
     try {
-      const data = await apiFetch('/api/productos', {
+      const data = await apiFetch('/productos', {
         method: 'POST',
         body: productData,
       });
@@ -207,7 +209,7 @@ async function loadProducts() {
 
   async function updateProduct(id, productData) {
     try {
-      const data = await apiFetch(`/api/productos/${id}`, {
+      const data = await apiFetch(`/productos/${id}`, {
         method: 'PUT',
         body: productData,
       });
@@ -220,7 +222,7 @@ async function loadProducts() {
 
   async function deleteProduct(id) {
     try {
-      await apiFetch(`/api/productos/${id}`, { method: 'DELETE' });
+      await apiFetch(`/productos/${id}`, { method: 'DELETE' });
       return true;
     } catch (err) {
       console.error(err);
@@ -234,7 +236,7 @@ async function loadProducts() {
     setSolicitudesError('');
     try {
       console.log('Cargando solicitudes para administrador...');
-      const data = await apiFetch(`/api/solicitudes`);
+      const data = await apiFetch(`/solicitudes`);
       console.log('Respuesta de la API:', data);
       const arr = Array.isArray(data?.data) ? data.data : [];
       console.log('Solicitudes cargadas:', arr);
@@ -285,21 +287,146 @@ async function loadProducts() {
     setDetailsModalOpen(true);
   };
 
-  // Función para aprobar solicitud
-  const handleApproveSolicitud = async (solicitudId) => {
-    setIsUpdating(true);
+  // Función para ver el contenido de la póliza
+  const handleViewPoliza = (polizaUrl) => {
+    if (polizaUrl) {
+      window.open(polizaUrl, '_blank');
+    }
+  };
+
+  // Función para reemplazar póliza
+  const handleReplacePoliza = async (e) => {
+    e.preventDefault();
+    if (!replacingPolizaId || !replaceFile) return;
+
     try {
-      await apiFetch(`/api/solicitudes/${solicitudId}`, {
+      // Buscar la solicitud para obtener el ID de la póliza
+      const solicitud = solicitudes.find(s => s.id == replacingPolizaId);
+      if (!solicitud?.poliza?.id) {
+        throw new Error('No se encontró la póliza a reemplazar');
+      }
+
+      console.log('Reemplazando póliza ID:', solicitud.poliza.id);
+      console.log('Archivo seleccionado:', replaceFile.name);
+
+      // Usar fetch directo para FormData con manejo manual de tokens
+      const formData = new FormData();
+      formData.append('file', replaceFile);
+      
+      // Obtener token fresco
+      const currentAuth = getAuth();
+      if (!currentAuth?.token) {
+        throw new Error('No hay token de autenticación');
+      }
+      
+      console.log('Token presente:', !!currentAuth?.token);
+      console.log('Usuario rol:', currentAuth?.user?.rol);
+      
+      const res = await fetch(`${API_BASE}/polizas/${solicitud.poliza.id}`, {
         method: 'PUT',
-        body: { estado: 'APROBADA' }
+        headers: {
+          Authorization: `Bearer ${currentAuth.token}`,
+        },
+        body: formData,
+        credentials: 'include',
+      });
+
+      console.log('Respuesta del servidor:', res.status, res.statusText);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Error del servidor:', errorData);
+        throw new Error(errorData?.message || 'Error al reemplazar la póliza');
+      }
+
+      const result = await res.json();
+      console.log('Póliza reemplazada exitosamente:', result);
+
+      // Actualizar el estado de la solicitud a POLIZA_CARGADA después de reemplazar póliza
+      await apiFetch(`/solicitudes/${replacingPolizaId}`, {
+        method: 'PUT',
+        body: { 
+          estado: 'POLIZA_CARGADA'
+        }
       });
       
       // Recargar solicitudes
       await loadSolicitudes();
       
+      // Actualizar selectedSolicitud si está abierto el modal
+      if (selectedSolicitud && selectedSolicitud.id == replacingPolizaId) {
+        setSelectedSolicitud(prev => ({
+          ...prev,
+          estado: 'POLIZA_CARGADA'
+        }));
+      }
+      
+      // Limpiar estado
+      setReplacingPolizaId(null);
+      setReplaceFile(null);
+      
       // Mostrar mensaje de éxito
       const successMessage = document.createElement('div');
-      successMessage.textContent = '✅ Solicitud aprobada exitosamente';
+      successMessage.textContent = '✅ Póliza reemplazada exitosamente';
+      successMessage.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #4caf50; color: white; padding: 12px 20px;
+        border-radius: 4px; font-weight: 500;
+      `;
+      document.body.appendChild(successMessage);
+      
+      setTimeout(() => {
+        if (document.body.contains(successMessage)) {
+          document.body.removeChild(successMessage);
+        }
+      }, 3000);
+
+    } catch (err) {
+      console.error('Error completo:', err);
+      alert('Error al reemplazar la póliza: ' + (err?.message || 'Error desconocido'));
+    }
+  };
+
+  // Función para aprobar solicitud
+  const handleApproveSolicitud = async (solicitudId) => {
+    setIsUpdating(true);
+    try {
+      // Nota automática de aprobación
+      const notaAprobacion = `¡Excelente noticia! Tu solicitud de seguro ha sido APROBADA. 
+
+IMPORTANTE: Aunque tu solicitud fue aprobada, tu póliza aún no está activa. Para completar el proceso:
+
+1. Contacta con nuestro equipo comercial para conocer las opciones de pago disponibles
+2. Una vez efectuado el pago, tu póliza será procesada
+3. Entre 24 y 48 horas hábiles recibirás tu póliza activa por este mismo medio
+
+Si tienes alguna consulta, no dudes en contactarnos.
+
+¡Gracias por confiar en nosotros!`;
+
+      await apiFetch(`/solicitudes/${solicitudId}`, {
+        method: 'PUT',
+        body: { 
+          estado: 'APROBADA',
+          notaRechazo: notaAprobacion
+        }
+      });
+      
+      // Recargar solicitudes
+      await loadSolicitudes();
+      
+      // Actualizar selectedSolicitud si está abierto el modal
+      if (selectedSolicitud && selectedSolicitud.id === solicitudId) {
+        setSelectedSolicitud(prev => ({
+          ...prev,
+          estado: 'APROBADA',
+          notaRechazo: notaAprobacion
+        }));
+      }
+      
+      // Mostrar mensaje de éxito
+      const successMessage = document.createElement('div');
+      successMessage.textContent = '✅ Solicitud aprobada exitosamente con nota informativa';
       successMessage.style.cssText = `
         position: fixed; top: 20px; right: 20px; z-index: 9999;
         background: #4caf50; color: white; padding: 12px 20px;
@@ -330,7 +457,7 @@ async function loadProducts() {
     
     setIsUpdating(true);
     try {
-      await apiFetch(`/api/solicitudes/${solicitudId}`, {
+      await apiFetch(`/solicitudes/${solicitudId}`, {
         method: 'PUT',
         body: { 
           estado: 'RECHAZADA',
@@ -340,6 +467,15 @@ async function loadProducts() {
       
       // Recargar solicitudes
       await loadSolicitudes();
+      
+      // Actualizar selectedSolicitud si está abierto el modal
+      if (selectedSolicitud && selectedSolicitud.id === solicitudId) {
+        setSelectedSolicitud(prev => ({
+          ...prev,
+          estado: 'RECHAZADA',
+          notaRechazo: rejectionNote.trim()
+        }));
+      }
       
       // Cerrar modal y limpiar nota
       setDetailsModalOpen(false);
@@ -378,8 +514,8 @@ async function loadProducts() {
       // Verificar si la solicitud ya tiene póliza para mostrar mensaje apropiado
       const solicitudSeleccionada = solicitudes.find(s => s.id == selectedSolicitudId);
       
-      // Validar que la solicitud esté aprobada
-      if (solicitudSeleccionada?.estado !== 'APROBADA') {
+      // Validar que la solicitud esté aprobada (solo para nuevas asignaciones, no para reemplazos)
+      if (solicitudSeleccionada?.estado !== 'APROBADA' && !solicitudSeleccionada?.poliza) {
         throw new Error('Solo se pueden asignar pólizas a solicitudes aprobadas');
       }
       
@@ -397,12 +533,28 @@ async function loadProducts() {
       
       await uploadPolizaFileApi(Number(selectedSolicitudId), assignFile);
       
+      // Actualizar el estado de la solicitud a POLIZA_CARGADA después de asignar póliza
+      await apiFetch(`/solicitudes/${selectedSolicitudId}`, {
+        method: 'PUT',
+        body: { 
+          estado: 'POLIZA_CARGADA'
+        }
+      });
+      
       // Remover mensaje de carga
       document.body.removeChild(loadingMessage);
       
       setAssignFile(null);
       setSelectedSolicitudId('');
       await loadSolicitudes();
+      
+      // Actualizar selectedSolicitud si está abierto el modal
+      if (selectedSolicitud && selectedSolicitud.id == selectedSolicitudId) {
+        setSelectedSolicitud(prev => ({
+          ...prev,
+          estado: 'POLIZA_CARGADA'
+        }));
+      }
       
       // Mostrar mensaje de éxito apropiado
       const successMessage = document.createElement('div');
@@ -458,8 +610,8 @@ async function loadUsers() {
   setUsersError('');
   try {
     const path = userQuery.trim()
-      ? `/api/usuarios/${encodeURIComponent(userQuery.trim())}`
-      : `/api/usuarios`;
+      ? `/usuarios/${encodeURIComponent(userQuery.trim())}`
+      : `/usuarios`;
 
     const data = await apiFetch(path);    
     const arr = Array.isArray(data?.usuarios)
@@ -479,7 +631,7 @@ async function loadUsers() {
 
 async function updateUserRole(userId, newRole) {
   try {
-    const data = await apiFetch(`/api/usuarios/${userId}`, {
+    const data = await apiFetch(`/usuarios/${userId}`, {
       method: 'PUT',
       body: { rol: newRole },
     });
@@ -1325,14 +1477,14 @@ async function updateUserRole(userId, newRole) {
                 <button 
                   type="submit" 
                   className="submit-button" 
-                  disabled={!selectedSolicitudId || !assignFile || (selectedSolicitudId && solicitudes.find(s => s.id == selectedSolicitudId)?.estado !== 'APROBADA')}
+                  disabled={!selectedSolicitudId || !assignFile || (selectedSolicitudId && solicitudes.find(s => s.id == selectedSolicitudId)?.estado !== 'APROBADA' && !solicitudes.find(s => s.id == selectedSolicitudId)?.poliza)}
                 >
                   {selectedSolicitudId && solicitudes.find(s => s.id == selectedSolicitudId)?.poliza 
                     ? 'Reemplazar Póliza' 
                     : 'Asignar Póliza'
                   }
                 </button>
-                {selectedSolicitudId && solicitudes.find(s => s.id == selectedSolicitudId)?.estado !== 'APROBADA' && (
+                {selectedSolicitudId && solicitudes.find(s => s.id == selectedSolicitudId)?.estado !== 'APROBADA' && !solicitudes.find(s => s.id == selectedSolicitudId)?.poliza && (
                   <div style={{ marginTop: '8px', color: '#d32f2f', fontSize: '14px' }}>
                     ⚠️ Solo se pueden asignar pólizas a solicitudes aprobadas
                   </div>
@@ -1394,6 +1546,32 @@ async function updateUserRole(userId, newRole) {
                               <SearchIcon />
                             </IconButton>
                           </Tooltip>
+                          
+                          {s.poliza && (
+                            <>
+                              <Tooltip title="Ver póliza">
+                                <IconButton
+                                  className="edit-button"
+                                  onClick={() => handleViewPoliza(s.poliza.archivoUrl)}
+                                  size="small"
+                                  style={{ color: '#1976d2' }}
+                                >
+                                  📄
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Reemplazar póliza">
+                                <IconButton
+                                  className="edit-button"
+                                  onClick={() => setReplacingPolizaId(s.id)}
+                                  size="small"
+                                  style={{ color: '#ff9800' }}
+                                >
+                                  🔄
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                          
                           {s.estado === 'CREADA' && (
                             <>
                               <Tooltip title="Aprobar solicitud">
@@ -1432,6 +1610,102 @@ async function updateUserRole(userId, newRole) {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Modal para reemplazar póliza */}
+        {replacingPolizaId && (
+          <div className="modal-overlay" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div className="modal-content" style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '24px',
+              maxWidth: '500px',
+              width: '90%'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2>🔄 Reemplazar Póliza</h2>
+                <button
+                  onClick={() => {
+                    setReplacingPolizaId(null);
+                    setReplaceFile(null);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleReplacePoliza}>
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                    Seleccionar nuevo archivo de póliza:
+                  </label>
+                  <input
+                    type="file"
+                    accept="application/pdf,image/*"
+                    onChange={(e) => setReplaceFile(e.target.files?.[0] || null)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReplacingPolizaId(null);
+                      setReplaceFile(null);
+                    }}
+                    style={{
+                      backgroundColor: '#666',
+                      color: 'white',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!replaceFile}
+                    style={{
+                      backgroundColor: replaceFile ? '#ff9800' : '#ccc',
+                      color: 'white',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '4px',
+                      cursor: replaceFile ? 'pointer' : 'not-allowed'
+                    }}
+                  >
+                    Reemplazar Póliza
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
@@ -1585,10 +1859,87 @@ async function updateUserRole(userId, newRole) {
                 ))}
               </div>
 
-              {selectedSolicitud.notaRechazo && (
-                <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px' }}>
-                  <h3 style={{ color: '#d32f2f' }}>Nota de Rechazo</h3>
-                  <p>{selectedSolicitud.notaRechazo}</p>
+              {selectedSolicitud.notaRechazo && selectedSolicitud.estado !== 'POLIZA_CARGADA' && (
+                <div style={{ 
+                  marginBottom: '20px', 
+                  padding: '16px', 
+                  backgroundColor: selectedSolicitud.estado === 'APROBADA' ? '#e8f5e8' : '#ffebee', 
+                  borderRadius: '8px',
+                  border: selectedSolicitud.estado === 'APROBADA' ? '1px solid #4caf50' : '1px solid #f44336'
+                }}>
+                  <h3 style={{ 
+                    color: selectedSolicitud.estado === 'APROBADA' ? '#2e7d32' : '#d32f2f',
+                    margin: '0 0 12px 0',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <span style={{ marginRight: '8px' }}>
+                      {selectedSolicitud.estado === 'APROBADA' ? '✅' : '❌'}
+                    </span>
+                    {selectedSolicitud.estado === 'APROBADA' ? 'Nota de Aprobación' : 'Nota de Rechazo'}
+                  </h3>
+                  <div style={{ 
+                    whiteSpace: 'pre-line',
+                    lineHeight: '1.6',
+                    color: selectedSolicitud.estado === 'APROBADA' ? '#1b5e20' : '#c62828'
+                  }}>
+                    {selectedSolicitud.notaRechazo}
+                  </div>
+                </div>
+              )}
+
+              {selectedSolicitud.poliza && (
+                <div style={{ 
+                  marginBottom: '20px', 
+                  padding: '20px', 
+                  backgroundColor: '#e3f2fd', 
+                  borderRadius: '12px',
+                  border: '2px solid #2196f3',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ 
+                    fontSize: '48px', 
+                    marginBottom: '16px',
+                    color: '#1976d2'
+                  }}>
+                    🎉
+                  </div>
+                  <h3 style={{ 
+                    color: '#1976d2',
+                    margin: '0 0 12px 0',
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                  }}>
+                    ¡Póliza Cargada Exitosamente!
+                  </h3>
+                  <div style={{ 
+                    color: '#1565c0',
+                    lineHeight: '1.6',
+                    fontSize: '16px',
+                    maxWidth: '500px',
+                    margin: '0 auto'
+                  }}>
+                    <p style={{ margin: '0 0 12px 0' }}>
+                      <strong>¡Felicitaciones!</strong> Tu póliza ha sido procesada y cargada exitosamente en nuestro sistema.
+                    </p>
+                    <p style={{ margin: '0 0 12px 0' }}>
+                      Esperamos que tu experiencia en nuestra página haya sido excelente y que hayas encontrado exactamente lo que necesitabas.
+                    </p>
+                    <p style={{ margin: '0' }}>
+                      <strong>¡Gracias por confiar en nosotros!</strong> Estamos aquí para brindarte la mejor protección y tranquilidad.
+                    </p>
+                  </div>
+                  <div style={{
+                    marginTop: '16px',
+                    padding: '12px',
+                    backgroundColor: '#f3e5f5',
+                    borderRadius: '8px',
+                    border: '1px solid #9c27b0'
+                  }}>
+                    <div style={{ color: '#7b1fa2', fontSize: '14px', fontWeight: 'bold' }}>
+                      📄 Póliza #{selectedSolicitud.poliza.id} - Lista para descargar
+                    </div>
+                  </div>
                 </div>
               )}
 
