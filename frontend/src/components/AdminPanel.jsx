@@ -18,6 +18,7 @@ import {
 import { IconButton, Tooltip, Chip } from '@mui/material';
 import { apiFetch, uploadPolizaFileApi, getAuth } from '../services/api';
 import * as yup from 'yup';
+import Swal from 'sweetalert2';
 
 /** ========= Config API ========= */
 const RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -60,22 +61,7 @@ const productValidationSchema = yup.object({
   tipo: yup
     .string()
     .required('El tipo de seguro es obligatorio')
-    .oneOf(['auto', 'hogar', 'vida', 'salud'], 'Debe seleccionar un tipo válido'),
-  image: yup
-    .mixed()
-    .test('file-required', 'La imagen es obligatoria para nuevos productos', function(value) {
-      const { editingId } = this.options.context || {};
-      if (!editingId && !value) return false;
-      return true;
-    })
-    .test('file-type', 'Solo se permiten archivos de imagen (JPG, PNG, JPEG)', function(value) {
-      if (!value) return true; // Si no hay archivo, no validar tipo
-      return ['image/jpeg', 'image/jpg', 'image/png'].includes(value.type);
-    })
-    .test('file-size', 'El archivo no puede exceder 5MB', function(value) {
-      if (!value) return true; // Si no hay archivo, no validar tamaño
-      return value.size <= 5 * 1024 * 1024; // 5MB
-    })
+    .oneOf(['auto', 'hogar', 'vida', 'salud', 'AUTO', 'HOGAR', 'VIDA', 'SALUD'], 'Debe seleccionar un tipo válido')
 });
 
 const AdminPanel = () => {
@@ -87,6 +73,7 @@ const AdminPanel = () => {
     cobertura: '',
     tipo: '',
     isActive: true,
+    image: '',
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [imageFile, setImageFile] = useState(null);
@@ -678,6 +665,7 @@ async function updateUserRole(userId, newRole) {
       cobertura: '',
       tipo: '',
       isActive: true,
+      image: '',
     });
     setPreviewUrl(null);
     setEditingId(null);
@@ -687,10 +675,15 @@ async function updateUserRole(userId, newRole) {
 
   // Función para validar un campo específico
   const validateField = async (fieldName, value) => {
+    // No validar el campo de imagen con Yup
+    if (fieldName === 'image') {
+      return;
+    }
+    
     try {
+      const normalizedValue = fieldName === 'tipo' ? value?.trim().toLowerCase() : value;
       await productValidationSchema.validateAt(fieldName, {
-        [fieldName]: value,
-        image: imageFile,
+        [fieldName]: normalizedValue,
         editingId: editingId
       }, { context: { editingId } });
       
@@ -713,13 +706,14 @@ async function updateUserRole(userId, newRole) {
   const validateForm = async () => {
     setIsValidating(true);
     try {
-      await productValidationSchema.validate({
-        titulo: product.titulo,
-        descripcion: product.descripcion,
-        cobertura: product.cobertura,
-        tipo: product.tipo,
-        image: imageFile
-      }, { context: { editingId } });
+      const dataToValidate = {
+        titulo: product.titulo?.trim() || '',
+        descripcion: product.descripcion?.trim() || '',
+        cobertura: product.cobertura?.trim() || '',
+        tipo: product.tipo?.trim().toLowerCase() || ''
+      };
+      
+      await productValidationSchema.validate(dataToValidate, { context: { editingId } });
       
       setValidationErrors({});
       return true;
@@ -753,13 +747,34 @@ async function updateUserRole(userId, newRole) {
         titulo: product.titulo.trim(),
         descripcion: product.descripcion.trim(),
         cobertura: product.cobertura.trim(),
-        tipo: product.tipo,
+        tipo: product.tipo?.toLowerCase() || product.tipo,
         isActive: product.isActive,
       };
+      
+      console.log('Datos que se van a enviar:', productData);
+      console.log('Estado del producto:', product);
 
       let updatedProduct;
       if (editingId) {
-        updatedProduct = await updateProduct(editingId, productData);
+        // Si se está editando y hay una nueva imagen, usar FormData
+        if (imageFile) {
+          const form = new FormData();
+          Object.entries(productData).forEach(([k, v]) => form.append(k, String(v)));
+          form.append('image', imageFile);
+          const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+          const res = await fetch(`${API_BASE}/productos/${editingId}`, {
+            method: 'PUT',
+            headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
+            body: form,
+            credentials: 'include',
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.message || 'Error actualizando producto');
+          updatedProduct = data.product;
+        } else {
+          // Si no hay nueva imagen, enviar solo los datos (mantener imagen existente)
+          updatedProduct = await updateProduct(editingId, productData);
+        }
         setMessage('Producto actualizado exitosamente');
       } else {
         // multipart si hay imagen
@@ -802,24 +817,63 @@ async function updateUserRole(userId, newRole) {
       cobertura: p.cobertura || '',
       tipo: p.tipo || '',
       isActive: p.isActive ?? true,
+      image: p.image || '', // Agregar la imagen al estado del producto
     });
     setPreviewUrl(p.image || null);
-    setImageFile(null);
+    setImageFile(null); // Mantener null para indicar que no hay archivo nuevo
     setEditingId(p.id);
+    setValidationErrors({}); // Limpiar errores de validación anteriores
     setActiveTab('form');
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
+    // Mostrar confirmación con SweetAlert2
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'No podrás revertir esta acción',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
     
     try {
       await deleteProduct(id);
-      setMessage('Producto eliminado exitosamente');
+      
+      // Mostrar mensaje de éxito
+      Swal.fire({
+        title: '¡Eliminado!',
+        text: 'El producto ha sido eliminado exitosamente',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
       // Recargar la lista de productos
       await loadProducts();
     } catch (err) {
       console.error(err);
-      setMessage('Error al eliminar el producto: ' + err.message);
+      
+      // Verificar si el error es por solicitudes relacionadas
+      if (err.message && err.message.includes('solicitudes')) {
+        Swal.fire({
+          title: 'No se puede eliminar',
+          text: 'Este producto no puede ser eliminado porque tiene solicitudes relacionadas. Primero debe eliminar o procesar todas las solicitudes asociadas.',
+          icon: 'error',
+          confirmButtonText: 'Entendido'
+        });
+      } else {
+        Swal.fire({
+          title: 'Error',
+          text: 'Error al eliminar el producto: ' + (err.message || 'Error desconocido'),
+          icon: 'error',
+          confirmButtonText: 'Entendido'
+        });
+      }
     }
   };
 
@@ -947,6 +1001,47 @@ async function updateUserRole(userId, newRole) {
                     <span className="label-icon">💼</span>
                     Tipo de Seguro
                   </label>
+                  
+                  {/* Mostrar información del tipo actual cuando se está editando */}
+                  {editingId && product.tipo && (
+                    <div style={{
+                      marginBottom: '12px',
+                      padding: '12px',
+                      backgroundColor: '#f5f5f5',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        backgroundColor: '#1976d2',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '16px'
+                      }}>
+                        {product.tipo === 'auto' ? '🚗' : 
+                         product.tipo === 'hogar' ? '🏠' : 
+                         product.tipo === 'vida' ? '❤️' : 
+                         product.tipo === 'salud' ? '🏥' : '💼'}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', color: '#1976d2', marginBottom: '4px' }}>
+                          💼 Tipo actual: {product.tipo.charAt(0).toUpperCase() + product.tipo.slice(1)}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>
+                          Selecciona un nuevo tipo si deseas cambiarlo
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <select
                     id="tipo"
                     name="tipo"
@@ -958,7 +1053,7 @@ async function updateUserRole(userId, newRole) {
                       borderWidth: validationErrors.tipo ? '2px' : '1px'
                     }}
                   >
-                    <option value="">Seleccionar</option>
+                    <option value="">{editingId ? 'Mantener tipo actual' : 'Seleccionar'}</option>
                     <option value="auto">Auto</option>
                     <option value="hogar">Hogar</option>
                     <option value="vida">Vida</option>
@@ -1049,6 +1144,41 @@ async function updateUserRole(userId, newRole) {
                   <Image className="label-icon" />
                   Imagen del Producto
                 </label>
+                
+                {/* Mostrar información de la imagen existente cuando se está editando */}
+                {editingId && product.image && (
+                  <div style={{
+                    marginBottom: '12px',
+                    padding: '12px',
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <img 
+                      src={product.image} 
+                      alt="Imagen actual" 
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        objectFit: 'cover',
+                        borderRadius: '4px',
+                        border: '1px solid #ccc'
+                      }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 'bold', color: '#1976d2', marginBottom: '4px' }}>
+                        📷 Imagen actual del producto
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#666' }}>
+                        Si no seleccionas una nueva imagen, se mantendrá la actual
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="file-input-container">
                   <input
                     type="file"
@@ -1056,32 +1186,24 @@ async function updateUserRole(userId, newRole) {
                     name="image"
                     onChange={handleImageChange}
                     accept="image/*"
-                    required={!editingId && !product.image}
+                    required={!editingId}
                     style={{
-                      borderColor: validationErrors.image ? '#f44336' : '#ddd',
-                      borderWidth: validationErrors.image ? '2px' : '1px'
+                      borderColor: '#ddd',
+                      borderWidth: '1px'
                     }}
                   />
                   <div className="file-input-overlay">
                     <Image className="file-icon" />
-                    <span>Seleccionar imagen</span>
+                    <span>
+                      {editingId ? 'Seleccionar nueva imagen (opcional)' : 'Seleccionar imagen'}
+                    </span>
                   </div>
                 </div>
-                {validationErrors.image && (
-                  <div className="error-message" style={{
-                    color: '#f44336',
-                    fontSize: '12px',
-                    marginTop: '4px',
-                    fontWeight: '500'
-                  }}>
-                    ⚠️ {validationErrors.image}
-                  </div>
-                )}
 
                 {previewUrl && previewUrl.trim() !== "" && (
                   <div className="image-preview">
                     <img src={previewUrl} alt="Preview" />
-                    <Chip label="Vista previa" color="info" size="small" />
+                    <Chip label="Nueva imagen seleccionada" color="success" size="small" />
                   </div>
                 )}
               </div>
@@ -1092,8 +1214,8 @@ async function updateUserRole(userId, newRole) {
                   className="submit-button"
                   disabled={productsLoading || isValidating}
                   style={{
-                    backgroundColor: Object.keys(validationErrors).length > 0 ? '#ccc' : '#1976d2',
-                    cursor: Object.keys(validationErrors).length > 0 ? 'not-allowed' : 'pointer'
+                    backgroundColor: (Object.keys(validationErrors).length > 0) ? '#ccc' : '#1976d2',
+                    cursor: (Object.keys(validationErrors).length > 0) ? 'not-allowed' : 'pointer'
                   }}
                 >
                   <Save className="button-icon" />
@@ -1101,7 +1223,7 @@ async function updateUserRole(userId, newRole) {
                     ? 'Procesando...' 
                     : isValidating 
                       ? 'Validando...'
-                      : Object.keys(validationErrors).length > 0
+                      : (Object.keys(validationErrors).length > 0)
                         ? 'Corrige los errores'
                         : editingId ? 'Actualizar Producto' : 'Agregar Producto'
                   }
