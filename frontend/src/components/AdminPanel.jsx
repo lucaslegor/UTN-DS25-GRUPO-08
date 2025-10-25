@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '../styles/AdminPanel.css';
+import '../styles/adminpanel.css';
 import { useNavigate } from 'react-router-dom';
 import DescriptionIcon from '@mui/icons-material/Description';
 import {

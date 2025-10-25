@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch, getAuth } from "../services/api";
-import "../styles/userProfile.css";
+import "../styles/UserProfile.css";
 
 async function apiGetUser(username) {
   if (!username) return null;

@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "installCommand": "npm install",
+  "env": {
+    "VITE_API_URL": "https://utn-ds25-grupo-08-wuql.onrender.com",
+    "VITE_GOOGLE_CLIENT_ID": "97231523973-8e1t3mtomvcg8qvns035tdfdcalem9vt.apps.googleusercontent.com"
+  }
+}
