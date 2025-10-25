@@ -44,19 +44,19 @@ export const AboutUs = () => {
               name="Maximiliano Perez"
               role="CEO y Fundador"
               description="Con más de 15 años de experiencia en venta de seguros."
-              image="/public/maxi.jpg"
+              image="/maxi.jpg"
             />
             <TeamMember
               name="Diana Niz"
               role="Directora"
               description="Experta en seguros y pólizas."
-              image="/public/diana.jpg"
+              image="/diana.jpg"
             />
             <TeamMember
               name="Cesar Do porto"
               role="Jefe de Venta"
               description="Líder en la sección de ventas."
-              image="/public/cesar.jpg"
+              image="/cesar.jpg"
             />
           </div>
         </section>

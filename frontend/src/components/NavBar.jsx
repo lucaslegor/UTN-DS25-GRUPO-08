@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import logo from "../assets/images/maxiColor.png";
+import logo from "../assets/images/MaxiColor.png";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, X } from "lucide-react";
 import { AccountCircle, Menu as MenuIcon } from "@mui/icons-material";
