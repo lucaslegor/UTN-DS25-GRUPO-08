@@ -13,7 +13,7 @@ import cors from "cors";
 import morgan from "morgan";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // CORS: permitir múltiples orígenes (p. ej., 5173 y 5174) o configurables por env
 const corsOriginsEnv = process.env.CORS_ORIGINS || process.env.FRONTEND_URL || "http://localhost:5173,http://localhost:5174";

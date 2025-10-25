@@ -7,6 +7,10 @@ import {
   resetPassword,
 } from "../services/auth.service";
 import {
+  verifyGoogleToken,
+  findOrCreateGoogleUser,
+} from "../services/google-auth.service";
+import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -207,6 +211,52 @@ router.post("/reset", async (req, res) => {
     return res
       .status(err.statusCode ?? 400)
       .json({ message: err.message || "Error" });
+  }
+});
+
+// POST /api/auth/google (login con Google)
+router.post("/google", async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ message: "Token de Google requerido" });
+    }
+
+    // Verificar token de Google
+    const googleUser = await verifyGoogleToken(token);
+    
+    if (!googleUser.verified_email) {
+      return res.status(400).json({ message: "Email no verificado por Google" });
+    }
+
+    // Buscar o crear usuario
+    const { user, token: accessToken, refreshToken } = await findOrCreateGoogleUser(googleUser);
+
+    // Cookie httpOnly con refresh
+    res.cookie("rt", refreshToken, {
+      httpOnly: true,
+      secure: false, // true en prod con HTTPS
+      sameSite: "lax",
+      path: "/api/auth",
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
+    });
+
+    return res.json({
+      token: accessToken,
+      user: {
+        idUsuario: user.id,
+        username: user.username,
+        mail: user.mail,
+        rol: user.rol,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (err: any) {
+    console.error("Google auth error:", err);
+    return res
+      .status(401)
+      .json({ message: err.message || "Error en autenticación con Google" });
   }
 });
 

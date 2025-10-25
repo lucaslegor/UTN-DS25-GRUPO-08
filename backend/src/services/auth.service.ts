@@ -22,14 +22,14 @@ const coerceExp = (v: string): SignOptions["expiresIn"] =>
 // ===========================
 // Firmas de tokens
 // ===========================
-function signAccessToken(payload: object) {
+export function signAccessToken(payload: object) {
   const secret = mustEnv("JWT_SECRET");
   const exp = coerceExp(process.env.JWT_EXPIRES_IN || "15m"); // p.ej. "15m"
   const opts: SignOptions = { expiresIn: exp };
   return sign(payload, secret, opts);
 }
 
-function signRefreshToken(payload: object) {
+export function signRefreshToken(payload: object) {
   const secret = mustEnv("JWT_REFRESH_SECRET");
   const exp = coerceExp(process.env.JWT_REFRESH_EXPIRES_IN || "7d"); // p.ej. "7d"
   const opts: SignOptions = { expiresIn: exp };

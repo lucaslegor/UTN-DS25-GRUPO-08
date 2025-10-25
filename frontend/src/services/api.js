@@ -1,6 +1,14 @@
 // services/api.js
-const RAW_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
-const API_URL = RAW_BASE.endsWith("/api") ? RAW_BASE : `${RAW_BASE}/api`;
+// Forzar URL del backend para evitar problemas de .env
+const RAW_BASE = "http://localhost:3001";
+const API_URL = `${RAW_BASE}/api`;
+
+// Debug: mostrar la URL que se está usando
+console.log('🔧 API Configuration:', {
+  VITE_API_URL: import.meta.env.VITE_API_URL,
+  RAW_BASE: RAW_BASE,
+  API_URL: API_URL
+});
 
 /* =========================
    Auth helpers (localStorage)
@@ -154,6 +162,26 @@ export async function loginApi({ username, mail, password }) {
   const data = await apiFetch('/auth/login', {
     method: 'POST',
     body: payload,
+  });
+  
+  // Cargar foto de perfil desde localStorage específico del usuario
+  if (data?.user?.username) {
+    const userProfileImage = localStorage.getItem(`profileImage:${data.user.username}`);
+    if (userProfileImage) {
+      data.user.profileImage = userProfileImage;
+    }
+  }
+  
+  // guardamos token + user (el refresh queda en cookie httpOnly)
+  saveAuth(data);
+  return data;
+}
+
+// Login con Google
+export async function loginWithGoogleApi(token) {
+  const data = await apiFetch('/auth/google', {
+    method: 'POST',
+    body: { token },
   });
   
   // Cargar foto de perfil desde localStorage específico del usuario

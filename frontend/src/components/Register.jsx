@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
 import { Button } from "@mui/material";
@@ -11,13 +11,19 @@ const Register = () => {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ username: "", mail: "", password: "", confirmPassword: "" });
   const registerSchema = yup.object({
     username: yup.string().required('Ingresá un usuario').min(3, 'Mínimo 3 caracteres'),
     mail: yup.string().required('Ingresá un email').email('Email inválido'),
-    password: yup.string().required('Ingresá una contraseña').min(8, 'Mínimo 8 caracteres'),
+    password: yup
+      .string()
+      .required('Ingresá una contraseña')
+      .min(8, 'Mínimo 8 caracteres')
+      .matches(/^(?=.*[A-Z])(?=.*[0-9])/, 'Debe contener al menos una mayúscula y un número'),
     confirmPassword: yup
       .string()
       .required('Repetí la contraseña')
@@ -113,31 +119,51 @@ const Register = () => {
 
             <div className="form-grupo-login">
               <label htmlFor="password">Contraseña:</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => onFieldChange('password', e.target.value)}
-                placeholder="Introduce tu contraseña"
-                required
-                aria-invalid={!!fieldErrors.password}
-                className={`input-login ${fieldErrors.password ? 'is-error' : (password ? 'is-valid' : '')}`}
-              />
+              <div className="password-input-container">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => onFieldChange('password', e.target.value)}
+                  placeholder="Introduce tu contraseña"
+                  required
+                  aria-invalid={!!fieldErrors.password}
+                  className={`input-login password-input ${fieldErrors.password ? 'is-error' : (password ? 'is-valid' : '')}`}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {fieldErrors.password && <small className="error-message">{fieldErrors.password}</small>}
             </div>
 
             <div className="form-grupo-login">
               <label htmlFor="confirmPassword">Confirmar contraseña:</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => onFieldChange('confirmPassword', e.target.value)}
-                placeholder="Repetí tu contraseña"
-                required
-                aria-invalid={!!fieldErrors.confirmPassword}
-                className={`input-login ${fieldErrors.confirmPassword ? 'is-error' : (confirmPassword ? 'is-valid' : '')}`}
-              />
+              <div className="password-input-container">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => onFieldChange('confirmPassword', e.target.value)}
+                  placeholder="Repetí tu contraseña"
+                  required
+                  aria-invalid={!!fieldErrors.confirmPassword}
+                  className={`input-login password-input ${fieldErrors.confirmPassword ? 'is-error' : (confirmPassword ? 'is-valid' : '')}`}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={showConfirmPassword ? "Ocultar confirmación de contraseña" : "Mostrar confirmación de contraseña"}
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {fieldErrors.confirmPassword && <small className="error-message">{fieldErrors.confirmPassword}</small>}
             </div>
 
