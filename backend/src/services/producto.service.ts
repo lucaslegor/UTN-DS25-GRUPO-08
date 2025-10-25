@@ -1,7 +1,7 @@
 import { Product, CreateProductRequest, UpdateProductRequest} from "../types/productos.types"; 
 import { TipoSeguro } from '../types/productos.types'
 import prisma from "../config/prisma";
-import { Prisma } from "../generated/prisma";
+import { Prisma } from "@prisma/client";
 
 const mockProducts: Product[] = [
   {
