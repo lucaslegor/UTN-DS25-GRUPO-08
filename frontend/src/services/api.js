@@ -1,6 +1,5 @@
 // services/api.js
-// Forzar URL del backend para evitar problemas de .env
-const RAW_BASE = "http://localhost:3001";
+const RAW_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
 const API_URL = `${RAW_BASE}/api`;
 
 // Debug: mostrar la URL que se está usando
