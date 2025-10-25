@@ -8,7 +8,7 @@ const router = Router();
 router.get("/", authenticate, solicitudesController.obtenerSolicitudes);
 
 // Obtener solicitudes de un usuario específico (solo admin)
-router.get("/usuario/:idUsuario", authenticate, authorize(["ADMINISTRADOR"]), solicitudesController.obtenerSolicitudesPorUsuario);
+router.get("/usuario/:idUsuario", authenticate, authorize("ADMINISTRADOR"), solicitudesController.obtenerSolicitudesPorUsuario);
 
 // Obtener solicitud por ID
 router.get("/:id", authenticate, solicitudesController.obtenerSolicitudPorId);
