@@ -75,7 +75,21 @@ export async function obtenerSolicitudPorId(
       return res.status(404).json({ message: "Solicitud no encontrada" });
     }
 
-    res.json({ success: true, data: solicitud });
+    // Adaptar el tipo para que coincida con la interfaz Solicitud
+    const solicitudFixed = {
+      ...solicitud,
+      poliza: solicitud.poliza === null ? undefined : {
+        id: solicitud.poliza.id,
+        archivoUrl: solicitud.poliza.archivoUrl,
+        estado: solicitud.poliza.estado as "PENDIENTE" | "CARGADA",
+        createdAt: solicitud.poliza.createdAt,
+        updatedAt: solicitud.poliza.updatedAt,
+      },
+      datosPersonales: solicitud.datosPersonales as any, // Cast para manejar JsonValue
+      notaRechazo: solicitud.notaRechazo || undefined,
+    } as any;
+
+    res.json({ success: true, data: solicitudFixed });
   } catch (error) {
     next(error);
   }
@@ -93,7 +107,22 @@ export async function crearSolicitud(
     }
 
     const solicitud = await solicitudesService.crearSolicitud(idUsuario, req.body);
-    res.status(201).json({ success: true, data: solicitud });
+    
+    // Adaptar el tipo para que coincida con la interfaz Solicitud
+    const solicitudFixed = {
+      ...solicitud,
+      poliza: solicitud.poliza === null ? undefined : {
+        id: solicitud.poliza.id,
+        archivoUrl: solicitud.poliza.archivoUrl,
+        estado: solicitud.poliza.estado as "PENDIENTE" | "CARGADA",
+        createdAt: solicitud.poliza.createdAt,
+        updatedAt: solicitud.poliza.updatedAt,
+      },
+      datosPersonales: solicitud.datosPersonales as any, // Cast para manejar JsonValue
+      notaRechazo: solicitud.notaRechazo || undefined,
+    } as any;
+    
+    res.status(201).json({ success: true, data: solicitudFixed });
   } catch (error) {
     next(error);
   }
@@ -115,7 +144,21 @@ export async function actualizarSolicitud(
       return res.status(404).json({ message: "Solicitud no encontrada" });
     }
 
-    res.json({ success: true, data: solicitud, message: "Solicitud actualizada exitosamente" });
+    // Adaptar el tipo para que coincida con la interfaz Solicitud
+    const solicitudFixed = {
+      ...solicitud,
+      poliza: solicitud.poliza === null ? undefined : {
+        id: solicitud.poliza.id,
+        archivoUrl: solicitud.poliza.archivoUrl,
+        estado: solicitud.poliza.estado as "PENDIENTE" | "CARGADA",
+        createdAt: solicitud.poliza.createdAt,
+        updatedAt: solicitud.poliza.updatedAt,
+      },
+      datosPersonales: solicitud.datosPersonales as any, // Cast para manejar JsonValue
+      notaRechazo: solicitud.notaRechazo || undefined,
+    } as any;
+
+    res.json({ success: true, data: solicitudFixed, message: "Solicitud actualizada exitosamente" });
   } catch (error) {
     next(error);
   }

@@ -69,11 +69,12 @@ export async function crearSolicitud(idUsuario: number, datos: any) {
       items: { create: datos.items },
     },
     include: { 
+      items: true,
+      poliza: true,
       usuario: { 
-        select: { mail: true, username: true } 
+        select: { id: true, mail: true, username: true } 
       } 
     },
-    include: { usuario: { select: { mail: true, username: true } } },
   });
 
   // Notificamos al cliente y al equipo
@@ -113,8 +114,10 @@ export async function actualizarSolicitud(idSolicitud: number, datos: any) {
     where: { id: idSolicitud },
     data: updateData,
     include: { 
+      items: true,
+      poliza: true,
       usuario: { 
-        select: { mail: true, username: true } 
+        select: { id: true, mail: true, username: true } 
       } 
     },
   });

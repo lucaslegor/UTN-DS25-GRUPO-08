@@ -1,8 +1,4 @@
-import { EMAIL_CONFIG } from '../config/email.config';
-
 export function renderSolicitudClienteTemplate(nombre: string, idSolicitud: string, estado: string) {
-  const urls = EMAIL_CONFIG.getUrls();
-  
   const mensajes: Record<string, string> = {
     CREADA: 'Recibimos tu solicitud correctamente. Nuestro equipo la revisará y te informaremos cualquier novedad.',
     PENDIENTE_POLIZA: 'Tu solicitud fue revisada y está pendiente de carga de la póliza. Te avisaremos cuando esté disponible.',
@@ -43,7 +39,7 @@ export function renderSolicitudClienteTemplate(nombre: string, idSolicitud: stri
         </p>
 
         <div style="text-align:center; margin:30px 0;">
-          <a href="${urls}"
+          <a href="https://utn-ds-25-grupo-08.vercel.app/dashboard"
             style="background-color:#3d6de2; color:#fff; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:bold;">
             Ver mi solicitud
           </a>
