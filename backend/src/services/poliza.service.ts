@@ -2,7 +2,7 @@
 // backend/src/services/poliza.service.ts
 // ==========================================
 import { PrismaClient as PrismaClient2 } from '@prisma/client';
-import { enviarNotificacionPolizaCargada } from './email.service'
+import { enviarNotificacionPolizaCargada } from './email.service';
 
 const prisma2 = new PrismaClient2();
 
@@ -47,7 +47,7 @@ export async function getPolizasByUsuario(idUsuario: number) {
     },
     orderBy: { createdAt: 'desc' }
   });
-}
+} // ← ESTA LLAVE FALTABA
 
 export async function getPolizaById(id: number) {
   return await prisma2.poliza.findUnique({
