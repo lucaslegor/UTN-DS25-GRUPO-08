@@ -47,10 +47,8 @@ export async function getPolizasByUsuario(idUsuario: number) {
     },
     orderBy: { createdAt: 'desc' }
   });
-<<<<<<< HEAD
-} // ← ESTA LLAVE FALTABA
-=======
->>>>>>> 5e49e9a80e85d35b06d61f5575809b69e7bcb608
+} 
+
 
 export async function getPolizaById(id: number) {
   return await prisma2.poliza.findUnique({
