@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { toUsuarioPublic } from "../utils/UserMapperToPublic";
 import { mapDbToUsuario, rolToPrisma } from "../utils/userMapperPrisma";
 import type { UsuarioPublic, Rol } from "../types/usuarios.types";
+import { enviarBienvenida } from "./email.service";
 
 export async function listarUsuarios(): Promise<UsuarioPublic[]> {
   const rows = await prisma.usuario.findMany({ orderBy: { id: "asc" } });
@@ -36,6 +37,9 @@ export async function crearUsuario(
       rol: rolToPrisma(rol), // 'ADMINISTRADOR' | 'USUARIO'
     },
   });
+
+  // Enviamos email de bienvenida
+  await enviarBienvenida(created.username, created.mail);
 
   return toUsuarioPublic(mapDbToUsuario(created));
 }
