@@ -47,7 +47,6 @@ export async function getPolizasByUsuario(idUsuario: number) {
     },
     orderBy: { createdAt: 'desc' }
   });
-}
 
 export async function getPolizaById(id: number) {
   return await prisma2.poliza.findUnique({

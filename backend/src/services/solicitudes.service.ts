@@ -73,6 +73,7 @@ export async function crearSolicitud(idUsuario: number, datos: any) {
         select: { mail: true, username: true } 
       } 
     },
+    include: { usuario: { select: { mail: true, username: true } } },
   });
 
   // Notificamos al cliente y al equipo

@@ -1,6 +1,7 @@
 import { OAuth2Client } from 'google-auth-library';
 import prisma from '../config/prisma';
 import { signAccessToken, signRefreshToken } from './auth.service';
+import { enviarBienvenida } from './email.service';
 
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID || '97231523973-8e1t3mtomvcg8qvns035tdfdcalem9vt.apps.googleusercontent.com',
@@ -59,6 +60,9 @@ export async function findOrCreateGoogleUser(googleUser: GoogleUserInfo) {
         rol: 'USUARIO',
       }
     });
+    
+    // Enviamos email de bienvenida para nuevos usuarios de Google
+    await enviarBienvenida(user.username, user.mail);
   }
 
   // Generar tokens
