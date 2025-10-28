@@ -2,6 +2,7 @@
 import prisma from "../config/prisma";
 import bcrypt from "bcryptjs";
 import { sign, verify, type SignOptions } from "jsonwebtoken";
+import { enviarRecupero } from "./email.service";
 
 type DbRol = "ADMINISTRADOR" | "USUARIO";
 type TokenRol = "ADMINISTRADOR" | "USUARIO";
@@ -124,8 +125,8 @@ export async function forgotPassword(mail: string, origin?: string) {
   const appUrl = origin || process.env.APP_URL || "http://localhost:5173";
   const resetUrl = `${appUrl.replace(/\/$/, "")}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
-  // Si implementás nodemailer, envialo en el controller:
-  // await sendPasswordResetEmail({ to: user.mail, username: user.username, resetUrl });
+  // Enviamos el email de recuperación
+  await enviarRecupero(user.mail, resetUrl);
 
   return { ok: true, resetToken, resetUrl };
 }
