@@ -21,6 +21,11 @@ export function renderResetPasswordTemplate(link: string) {
             Restablecer contraseña
           </a>
         </div>
+        
+        <p style="color:#999; font-size:12px; text-align:center; margin-top:20px;">
+          Si el botón no funciona, copiá y pegá este link en tu navegador:<br>
+          <span style="word-break: break-all;">${link}</span>
+        </p>
 
         <p style="color:#666666; font-size:14px; text-align:center;">
           Si no solicitaste este cambio, podés ignorar este correo.<br>

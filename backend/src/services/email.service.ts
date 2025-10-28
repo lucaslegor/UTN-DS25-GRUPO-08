@@ -4,10 +4,10 @@ import { renderResetPasswordTemplate } from '../templates/resetPassword';
 import { renderSolicitudClienteTemplate } from '../templates/solicitudCliente';
 import { renderSolicitudEquipoTemplate } from '../templates/solicitudEquipo';
 import { renderPolizaCargadaTemplate } from '../templates/polizaCargada';
-
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM || 'Maps Seguros <onboarding@resend.dev>';
-const EQUIPO_MAIL = 'equipo@mapsseguros.com'; // Cambiá este por el real del equipo
+const EQUIPO_MAIL = 'equipo@mapsseguros.com'; 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // ========== Base ==========
 async function enviarEmail({
