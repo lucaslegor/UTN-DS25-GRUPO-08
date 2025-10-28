@@ -1,305 +1,150 @@
-import { PrismaClient } from "@prisma/client";
-import { Solicitud, CrearSolicitudRequest, EstadoSolicitud } from "../types/solicitudes.types";
+
+// ==========================================
+// backend/src/services/solicitudes.service.ts
+// ==========================================
+import { PrismaClient } from '@prisma/client';
+import { enviarNotificacionSolicitud } from './email.service';
+import { EstadoSolicitud } from '../types/solicitudes.types';
 
 const prisma = new PrismaClient();
 
-// Mapear fila de BD a objeto Solicitud
-function mapRowToSolicitud(row: any): Solicitud {
-  console.log('mapRowToSolicitud: Procesando fila:', {
-    id: row.id,
-    idUsuario: row.idUsuario,
-    estado: row.estado,
-    hasUsuario: !!row.usuario,
-    hasItems: !!row.items,
-    itemsCount: row.items?.length || 0
+export async function getAllSolicitudes() {
+  return await prisma.solicitud.findMany({
+    include: {
+      items: true,
+      poliza: true,
+      usuario: {
+        select: {
+          id: true,
+          username: true,
+          mail: true
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
   });
-  
-  const result = {
-    id: row.id,
-    idUsuario: row.idUsuario,
-    estado: row.estado,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-    items: row.items?.map((item: any) => ({
-      idProducto: item.idProducto,
-      titulo: item.titulo,
-      cantidad: item.cantidad,
-    })) || [],
-    poliza: row.poliza ? {
-      id: row.poliza.id,
-      archivoUrl: row.poliza.archivoUrl,
-      estado: row.poliza.estado,
-      createdAt: row.poliza.createdAt,
-      updatedAt: row.poliza.updatedAt,
-    } : undefined,
-    datosPersonales: row.datosPersonales || undefined,
-    notaRechazo: row.notaRechazo || undefined,
-    usuario: row.usuario ? {
-      id: row.usuario.id,
-      username: row.usuario.username,
-      mail: row.usuario.mail,
-    } : undefined,
-  };
-  
-  console.log('mapRowToSolicitud: Resultado mapeado:', {
-    id: result.id,
-    idUsuario: result.idUsuario,
-    estado: result.estado,
-    hasUsuario: !!result.usuario,
-    itemsCount: result.items.length
-  });
-  
-  return result;
 }
 
-export async function obtenerSolicitudesPorUsuario(idUsuario: number): Promise<Solicitud[]> {
-  console.log('obtenerSolicitudesPorUsuario: Buscando solicitudes para usuario ID:', idUsuario);
-  
-  const rows = await prisma.solicitud.findMany({
+export async function obtenerSolicitudesPorUsuario(idUsuario: number) {
+  return await prisma.solicitud.findMany({
     where: { idUsuario },
-    include: { 
-      items: true, 
+    include: {
+      items: true,
       poliza: true,
       usuario: {
         select: {
           id: true,
           username: true,
-          mail: true,
-        },
-      },
+          mail: true
+        }
+      }
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' }
   });
-  
-  console.log('obtenerSolicitudesPorUsuario: Filas encontradas:', rows.length);
-  rows.forEach((row, index) => {
-    console.log(`Solicitud ${index + 1}: ID=${row.id}, Usuario=${row.idUsuario}, Estado=${row.estado}`);
-  });
-  
-  const result = rows.map(mapRowToSolicitud);
-  console.log('obtenerSolicitudesPorUsuario: Resultado mapeado:', result.length);
-  
-  return result;
 }
 
-export async function obtenerSolicitudPorId(id: number): Promise<Solicitud | null> {
-  const row = await prisma.solicitud.findUnique({
+export async function obtenerSolicitudPorId(id: number) {
+  return await prisma.solicitud.findUnique({
     where: { id },
-    include: { 
-      items: true, 
+    include: {
+      items: true,
       poliza: true,
       usuario: {
         select: {
           id: true,
           username: true,
-          mail: true,
-        },
-      },
-    },
+          mail: true
+        }
+      }
+    }
   });
-  return row ? mapRowToSolicitud(row) : null;
 }
 
-export async function crearSolicitud(
-  idUsuario: number,
-  data: CrearSolicitudRequest
-): Promise<Solicitud> {
-  const ids = data.items.map(i => i.productId);
-  const productos = await prisma.producto.findMany({
-    where: { id: { in: ids } },
-  });
-  if (productos.length !== ids.length) {
-    const notFound = ids.filter(id => !productos.find(p => p.id === id));
-    throw new Error(`Productos inexistentes: ${notFound.join(", ")}`);
-  }
-
-  const itemsToCreate = productos.map(p => {
-    const cant = data.items.find(i => i.productId === p.id)?.cantidad ?? 1;
-    return {
-      idProducto: p.id,
-      titulo: p.titulo,
-      cantidad: cant,
-    };
-  });
-
-  const created = await prisma.solicitud.create({
+export async function crearSolicitud(idUsuario: number, datos: any) {
+  const solicitud = await prisma.solicitud.create({
     data: {
       idUsuario,
-      estado: "CREADA",
-      datosPersonales: data.datosPersonales || undefined,
-      items: {
-        create: itemsToCreate.map(it => ({
-          idProducto: it.idProducto,
-          titulo: it.titulo,
-          cantidad: it.cantidad,
-        })),
-      },
+      estado: 'CREADA',
+      datosPersonales: datos.datosPersonales,
+      items: { create: datos.items },
     },
     include: { 
-      items: true, 
-      poliza: true,
-      usuario: {
-        select: {
-          id: true,
-          username: true,
-          mail: true,
-        },
-      },
+      usuario: { 
+        select: { mail: true, username: true } 
+      } 
     },
   });
 
-  return mapRowToSolicitud(created);
-}
-
-type ActualizarSolicitudRequest = {
-  estado?: EstadoSolicitud;
-  items?: { productId: number; cantidad?: number }[];
-  notaRechazo?: string;
-};
-
-export async function actualizarSolicitud(
-  id: number,
-  body: ActualizarSolicitudRequest
-): Promise<Solicitud | null> {
-  if (body.items && body.items.length > 0) {
-    const productos = await prisma.producto.findMany({
-      where: { id: { in: body.items.map(i => i.productId) } },
-    });
-    if (productos.length !== body.items.length) {
-      const notFound = body.items
-        .map(i => i.productId)
-        .filter(pid => !productos.find(p => p.id === pid));
-      throw new Error(`Productos inexistentes: ${notFound.join(", ")}`);
-    }
-
-    const itemsToCreate = productos.map(p => {
-      const cant = body.items?.find(i => i.productId === p.id)?.cantidad ?? 1;
-      return {
-        idProducto: p.id,
-        titulo: p.titulo,
-        cantidad: cant,
-      };
-    });
-
+  // Notificamos al cliente y al equipo
+  if (solicitud.usuario?.mail && solicitud.usuario?.username) {
     try {
-      const updated = await prisma.$transaction(async (tx) => {
-        await tx.solicitud.update({ where: { id }, data: {} });
-
-        await tx.solicitudItem.deleteMany({ where: { idSolicitud: id } });
-        await tx.solicitudItem.createMany({
-          data: itemsToCreate.map(it => ({
-            idSolicitud: id,
-            idProducto: it.idProducto,
-            titulo: it.titulo,
-            cantidad: it.cantidad,
-          })),
-        });
-
-        return await tx.solicitud.update({
-          where: { id },
-          data: {
-            ...(body.estado ? { estado: body.estado } : {}),
-            ...(body.notaRechazo ? { notaRechazo: body.notaRechazo } : {}),
-          },
-          include: { 
-            items: true, 
-            poliza: true,
-            usuario: {
-              select: {
-                id: true,
-                username: true,
-                mail: true,
-              },
-            },
-          },
-        });
-      });
-
-      return mapRowToSolicitud(updated);
-    } catch (e: any) {
-      if (e.code === "P2025") return null;
-      throw e;
+      await enviarNotificacionSolicitud(
+        solicitud.usuario.mail,
+        solicitud.usuario.username,
+        String(solicitud.id),
+        'CREADA'
+      );
+    } catch (error) {
+      console.error('Error enviando email de notificación:', error);
+      // No lanzamos el error para no bloquear la creación de la solicitud
     }
   }
 
-  try {
-    const updated = await prisma.solicitud.update({
-      where: { id },
-      data: {
-        ...(body.estado ? { estado: body.estado } : {}),
-        ...(body.notaRechazo ? { notaRechazo: body.notaRechazo } : {}),
-      },
-      include: { 
-        items: true, 
-        poliza: true,
-        usuario: {
-          select: {
-            id: true,
-            username: true,
-            mail: true,
-          },
-        },
-      },
-    });
-    return mapRowToSolicitud(updated);
-  } catch (e: any) {
-    if (e.code === "P2025") return null;
-    throw e;
-  }
+  return solicitud;
 }
 
-export async function eliminarSolicitud(id: number): Promise<boolean> {
+export async function actualizarSolicitud(idSolicitud: number, datos: any) {
+  const updateData: any = {};
+  
+  if (datos.estado) {
+    updateData.estado = datos.estado;
+  }
+  
+  if (datos.datosPersonales) {
+    updateData.datosPersonales = datos.datosPersonales;
+  }
+  
+  if (datos.notaRechazo !== undefined) {
+    updateData.notaRechazo = datos.notaRechazo;
+  }
+
+  const updatedSolicitud = await prisma.solicitud.update({
+    where: { id: idSolicitud },
+    data: updateData,
+    include: { 
+      usuario: { 
+        select: { mail: true, username: true } 
+      } 
+    },
+  });
+
+  // Notificamos solo si cambió el estado
+  if (datos.estado && updatedSolicitud.usuario?.mail && updatedSolicitud.usuario?.username) {
+    try {
+      await enviarNotificacionSolicitud(
+        updatedSolicitud.usuario.mail,
+        updatedSolicitud.usuario.username,
+        String(updatedSolicitud.id),
+        datos.estado
+      );
+    } catch (error) {
+      console.error('Error enviando email de notificación:', error);
+    }
+  }
+
+  return updatedSolicitud;
+}
+
+export async function eliminarSolicitud(id: number) {
   try {
-    await prisma.solicitud.delete({ where: { id } });
+    await prisma.solicitud.delete({
+      where: { id }
+    });
     return true;
-  } catch (e: any) {
-    if (e.code === "P2025") return false;
-    throw e;
-  }
-}
-
-export async function getAllSolicitudes(): Promise<Solicitud[]> {
-  console.log('getAllSolicitudes: Iniciando consulta...');
-  try {
-    // Primero, consulta simple sin includes para ver cuántas hay
-    const count = await prisma.solicitud.count();
-    console.log('getAllSolicitudes: Total de solicitudes en BD:', count);
-    
-    const rows = await prisma.solicitud.findMany({
-      include: {
-        items: true,
-        poliza: true,
-        usuario: {
-          select: {
-            id: true,
-            username: true,
-            mail: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    console.log('getAllSolicitudes: Filas encontradas con includes:', rows.length);
-    
-    // Log de cada fila individual
-    rows.forEach((row, index) => {
-      console.log(`getAllSolicitudes: Fila ${index + 1}:`, {
-        id: row.id,
-        idUsuario: row.idUsuario,
-        estado: row.estado,
-        hasUsuario: !!row.usuario,
-        hasItems: !!row.items,
-        itemsCount: row.items?.length || 0,
-        createdAt: row.createdAt
-      });
-    });
-    
-    const result = rows.map(mapRowToSolicitud);
-    console.log('getAllSolicitudes: Resultado mapeado:', result.length);
-    
-    return result;
-  } catch (error) {
-    console.error('getAllSolicitudes: Error en consulta:', error);
+  } catch (error: any) {
+    if (error?.code === 'P2025') {
+      return false; // No encontrado
+    }
     throw error;
   }
 }
