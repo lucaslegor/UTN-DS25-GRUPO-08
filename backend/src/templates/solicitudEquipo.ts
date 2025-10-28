@@ -1,8 +1,4 @@
-import { EMAIL_CONFIG } from '../config/email.config';
-
 export function renderSolicitudEquipoTemplate(nombreCliente: string, idSolicitud: string, estado: string) {
-  const urls = EMAIL_CONFIG.getUrls();
-  
   const mensajes: Record<string, string> = {
     CREADA: 'Se registró una nueva solicitud que requiere revisión.',
     PENDIENTE_POLIZA: 'Una solicitud fue marcada como pendiente de carga de póliza. Coordiná con el área correspondiente.',
@@ -42,7 +38,7 @@ export function renderSolicitudEquipoTemplate(nombreCliente: string, idSolicitud
         </p>
 
         <div style="text-align:center; margin:30px 0;">
-          <a href="${urls}"
+          <a href="https://utn-ds-25-grupo-08.vercel.app/admin/solicitudes"
             style="background-color:#3d6de2; color:#fff; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:bold;">
             Revisar solicitud
           </a>

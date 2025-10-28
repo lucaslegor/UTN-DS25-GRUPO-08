@@ -10,25 +10,20 @@ export function renderResetPasswordTemplate(link: string) {
 
       <!-- Contenido principal -->
       <div style="padding:32px 24px; text-align:left;">
-        <h2 style="color:#3d6de2; text-align:center;">Restablecer contraseÃ±a</h2>
+        <h2 style="color:#3d6de2; text-align:center;">Restablecer contraseña</h2>
         <p style="color:#333333; font-size:16px; line-height:1.6; text-align:center;">
-          Recibimos una solicitud para restablecer tu contraseÃ±a en <strong>Maps Seguros</strong>.
+          Recibimos una solicitud para restablecer tu contraseña en <strong>Maps Seguros</strong>.
         </p>
 
         <div style="text-align:center; margin:32px 0;">
           <a href="${link}"
             style="background-color:#3d6de2; color:#ffffff; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:bold;">
-            Restablecer contraseÃ±a
+            Restablecer contraseña
           </a>
         </div>
-        
-        <p style="color:#999; font-size:12px; text-align:center; margin-top:20px;">
-          Si el botÃ³n no funciona, copiÃ¡ y pegÃ¡ este link en tu navegador:<br>
-          <span style="word-break: break-all;">${link}</span>
-        </p>
 
         <p style="color:#666666; font-size:14px; text-align:center;">
-          Si no solicitaste este cambio, podÃ©s ignorar este correo.<br>
+          Si no solicitaste este cambio, podés ignorar este correo.<br>
           El equipo de <strong>Maps Seguros</strong>
         </p>
       </div>

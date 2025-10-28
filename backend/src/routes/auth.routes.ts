@@ -1,5 +1,5 @@
 import { Router } from "express";
-import nodemailer from "nodemailer";
+// Removed nodemailer import - now using Resend service
 import {
   login,
   refreshAccessToken,
@@ -17,7 +17,7 @@ import {
 } from "../validations/auth.validation";
 import { authenticate } from "../middlewares/auth.middleware";
 import prisma from "../config/prisma";
-import { transporter } from "../utils/mailer";
+// Removed mailer import - now using Resend service
 
 const router = Router();
 
@@ -169,23 +169,7 @@ router.post("/forgot", async (req, res) => {
       return res.json({ ok: true });
     }
 
-    // Enviar email con Nodemailer (siempre)
-    const html = `
-      <p>Hola,</p>
-      <p>Para restablecer tu contraseña hacé click en el siguiente enlace:</p>
-      <p><a href="${resetUrl}" target="_blank" rel="noopener noreferrer">${resetUrl}</a></p>
-      <p>Si no solicitaste este cambio, ignorá este mensaje.</p>
-    `;
-
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || "no-reply@maps.com",
-      to: mail,
-      subject: "Restablecer contraseña",
-      html,
-    });
-
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) console.log("Ethereal preview URL:", previewUrl);
+    // El email se envía automáticamente desde el servicio auth.service.ts
 
     return res.json({ ok: true });
   } catch (err: any) {
