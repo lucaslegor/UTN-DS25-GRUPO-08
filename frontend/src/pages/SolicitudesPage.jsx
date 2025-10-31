@@ -123,6 +123,7 @@ const SolicitudesPage = () => {
   const [loading, setLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState({});
+  const [mostrarHistorial, setMostrarHistorial] = useState(true);
 
   // Verificar si el usuario es administrador
   const isAdmin = () => {
@@ -708,10 +709,19 @@ const SolicitudesPage = () => {
       {/* Historial de solicitudes */}
       {misSolicitudes.length > 0 && (
         <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Historial de Solicitudes
-          </Typography>
-          
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
+              Historial de Solicitudes
+            </Typography>
+            <Button 
+              variant="text"
+              onClick={() => setMostrarHistorial((prev) => !prev)}
+            >
+              {mostrarHistorial ? 'Ocultar historial' : 'Mostrar historial'}
+            </Button>
+          </Box>
+
+          {mostrarHistorial && (
           <Grid container spacing={2}>
             {misSolicitudes.map((solicitud) => (
               <Grid size={{ xs: 12, md: 6 }} key={solicitud.id}>
@@ -923,6 +933,7 @@ const SolicitudesPage = () => {
               </Grid>
             ))}
           </Grid>
+          )}
         </Paper>
       )}
     </Container>

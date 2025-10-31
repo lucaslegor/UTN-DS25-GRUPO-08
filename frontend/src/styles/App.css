@@ -5,6 +5,18 @@
 
 html, body, #root { height: 100%; }
 
+/* Fuente global: Inter con fallbacks seguros */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+html, body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+}
+
 .app-layout {
   min-height: 100dvh;            /* ocupa toda la pantalla */
   display: flex;

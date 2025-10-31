@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import logo from "../assets/images/MaxiColor.png";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, X } from "lucide-react";
@@ -41,7 +41,7 @@ export const NavBar = () => {
       setIsLogin(logged);
       setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
       
-      // Cargar foto de perfil desde localStorage específico del usuario
+      // Cargar foto de perfil desde localStorage especÃ­fico del usuario
       let profileImage = auth?.user?.profileImage || "";
       if (logged && auth?.user?.username && !profileImage) {
         const userProfileImage = localStorage.getItem(`profileImage:${auth.user.username}`);
@@ -141,7 +141,7 @@ export const NavBar = () => {
       <Link className="brand" to="/" style={{ textDecoration: "none" }}>
         <h1 className="title">
           <img src={logo} alt="Maps Asesores" width={70} />
-          MAPS ASESORES
+          <span className="title-text">MAPS ASESORES</span>
         </h1>
       </Link>
 
@@ -188,7 +188,7 @@ export const NavBar = () => {
           {search && (
             <button
               className="sb-clear"
-              aria-label="Limpiar búsqueda"
+              aria-label="Limpiar bÃºsqueda"
               onClick={() => {
                 setSearch("");
                 setHighlight(-1);
@@ -237,7 +237,7 @@ export const NavBar = () => {
       <button
         className="menu-toggle"
         onClick={() => setMenuOpen(!menuOpen)}
-        aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+        aria-label={menuOpen ? "Cerrar menúº" : "Abrir menúº"}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -248,14 +248,14 @@ export const NavBar = () => {
           transition: 'all 0.2s ease'
         }}
       >
-        {menuOpen ? <X size={24} /> : <MenuIcon fontSize="medium" />}
+        <MenuIcon fontSize="medium" sx={{ color: "#fff" }} />
       </button>
 
       {/* LINKS */}
       <nav 
         className={`nav-links ${menuOpen ? "open" : ""}`}
         onClick={(e) => {
-          // Cerrar menú al hacer clic en el overlay (no en el panel)
+          // Cerrar menúº al hacer clic en el overlay (no en el panel)
           if (e.target === e.currentTarget) {
             setMenuOpen(false);
           }
@@ -341,7 +341,7 @@ export const NavBar = () => {
                     <ListItemIcon>
                       <Policy fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText>Mis pólizas</ListItemText>
+                    <ListItemText>Mis pÃ³lizas</ListItemText>
                   </MenuItem>
                 )}
                 <Divider />
@@ -349,7 +349,7 @@ export const NavBar = () => {
                   <ListItemIcon>
                     <Logout fontSize="small" />
                   </ListItemIcon>
-                  <ListItemText>Cerrar sesión</ListItemText>
+                  <ListItemText>Cerrar sesiÃ³n</ListItemText>
                 </MenuItem>
               </MuiMenu>
             </li>
@@ -359,7 +359,7 @@ export const NavBar = () => {
                 className="session-btn"
                 onClick={() => navigate("/login")}
               >
-                Iniciar sesión
+                Iniciar sesiÃ³n
               </button>
             </li>
           )}
@@ -370,3 +370,4 @@ export const NavBar = () => {
 };
 
 export default NavBar;
+

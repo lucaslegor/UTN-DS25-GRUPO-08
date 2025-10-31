@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import * as polizaService from '../services/poliza.service';
+import fs from 'fs';
+import { uploadLocalFile, deleteByPublicId } from '../services/cloudinary.service';
+import prisma from "../config/prisma";
 
 // GET /api/polizas
 export async function getAllPolizas(req: Request, res: Response, next: NextFunction) {
@@ -64,18 +67,21 @@ export async function createPoliza(req: Request<{ idSolicitud: string }>, res: R
       }
     }
 
-    // Si vino archivo subido, armamos la URL pública
+    // Si vino archivo subido, subimos a Cloudinary y usamos secure_url
     let archivoUrl = (req.body as any)?.archivoUrl as string | undefined;
+    let archivoPublicId: string | undefined;
     const file = (req as any).file as Express.Multer.File | undefined;
     if (file) {
-      const base = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
-      archivoUrl = `${base}/uploads/polizas/${file.filename}`;
+      const { url, publicId } = await uploadLocalFile(file.path, 'polizas', 'auto');
+      archivoUrl = url;
+      archivoPublicId = publicId;
+      fs.unlink(file.path, () => {});
     }
     if (!archivoUrl) {
       return res.status(400).json({ message: 'Debe adjuntar un archivo de póliza' });
     }
 
-    const nuevaPoliza = await polizaService.createPoliza(idSolicitud, { archivoUrl });
+    const nuevaPoliza = await polizaService.createPoliza(idSolicitud, { archivoUrl, archivoPublicId });
     res.status(201).json({ poliza: nuevaPoliza, message: "Póliza creada exitosamente" });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message });
@@ -92,9 +98,16 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
     // Construir payload desde multipart/form-data si hay archivo
     let payload: any = { ...(req.body as any) };
     const file = (req as any).file as Express.Multer.File | undefined;
+    let prevPublicId: string | undefined;
+    try {
+      const prev = await prisma.poliza.findUnique({ where: { id }, select: { archivoPublicId: true } });
+      prevPublicId = prev?.archivoPublicId || undefined;
+    } catch {}
     if (file) {
-      const base = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
-      payload.archivoUrl = `${base}/uploads/polizas/${file.filename}`;
+      const { url, publicId } = await uploadLocalFile(file.path, 'polizas', 'auto');
+      payload.archivoUrl = url;
+      payload.archivoPublicId = publicId;
+      fs.unlink(file.path, () => {});
     }
 
     if (!payload || Object.keys(payload).length === 0) {
@@ -103,6 +116,9 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
 
     const updated = await polizaService.updatePoliza(id, payload);
     res.json({ poliza: updated, message: "Póliza actualizada exitosamente" });
+    if (payload.archivoPublicId && prevPublicId && payload.archivoPublicId !== prevPublicId) {
+      try { await deleteByPublicId(prevPublicId); } catch {}
+    }
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
@@ -116,10 +132,18 @@ export async function deletePoliza(req: Request<{ id: string }>, res: Response, 
 
     // La autorización ya se maneja en las rutas con authorize('ADMIN')
     // Solo los administradores pueden llegar hasta aquí
+    let prevPublicId: string | undefined;
+    try {
+      const prev = await prisma.poliza.findUnique({ where: { id }, select: { archivoPublicId: true } });
+      prevPublicId = prev?.archivoPublicId || undefined;
+    } catch {}
     const deleted = await polizaService.deletePoliza(id);
     if (!deleted) return res.status(404).json({ message: "Póliza no encontrada" });
 
     res.json({ poliza: deleted, message: "Póliza eliminada exitosamente" });
+    if (prevPublicId) {
+      try { await deleteByPublicId(prevPublicId); } catch {}
+    }
   } catch (err) {
     next(err);
   }

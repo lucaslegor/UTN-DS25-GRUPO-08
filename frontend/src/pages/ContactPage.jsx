@@ -151,6 +151,7 @@ export const Contact = () => {
             </button>
           </form>
         </div>
+
       </div>
     </section>
   );

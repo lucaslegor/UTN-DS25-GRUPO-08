@@ -2,13 +2,14 @@ import React from "react";
 import { apiFetch } from "../services/api";
 import { Link } from "react-router-dom";
 import "../styles/styles.css";
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, CircularProgress } from '@mui/material';
 import { Card, CardContent, AspectRatio } from '@mui/joy';
 
 
 const Home = () => {
   const [search, setSearch] = React.useState("");
   const [products, setProducts] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
   const [tipoFilter, setTipoFilter] = React.useState("todos");
   const [sortOrder, setSortOrder] = React.useState("alfabetico");
 
@@ -25,6 +26,7 @@ const Home = () => {
 
   React.useEffect(() => {
     let mounted = true;
+    setLoading(true);
     // Preferimos API; si falla, fallback a localStorage/seed
     apiFetch('/productos')
       .then((data) => {
@@ -53,7 +55,8 @@ const Home = () => {
           setProducts([]);
           localStorage.setItem("products", JSON.stringify([]));
         }
-      });
+      })
+      .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
 
@@ -97,6 +100,24 @@ const Home = () => {
 
   const visible = getFilteredAndSortedProducts();
 
+  if (loading) {
+    return (
+      <Box sx={{
+        minHeight: '60vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+      }}>
+        <CircularProgress size={56} />
+        <Typography variant="subtitle1" color="text.secondary">
+          Cargando empaquetados
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <>
       <section className="filters" style={{ textAlign: "center" }}>
@@ -107,11 +128,12 @@ const Home = () => {
         {/* Filtros compactos en la parte superior derecha */}
         <Box sx={{ 
           display: 'flex', 
-          justifyContent: 'flex-end', 
+          justifyContent: { xs: 'center', md: 'flex-end' },
           alignItems: 'center',
           gap: 2,
-          marginBottom: 2,
-          paddingRight: 2
+          mb: 2,
+          pr: { xs: 0, md: 2 },
+          mt: { xs: 2, md: 0 }
         }}>
           {/* Mini título */}
           <Typography variant="caption" sx={{ 
@@ -176,31 +198,60 @@ const Home = () => {
                 to={`/productcard/${product.id}`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
-                <Card sx={{ width: 320, backgroundColor: 'transparent', borderColor:'#dbe1f0' }}>
-                  <div>
-                    <Typography level="title-lg" sx={{color: '#3877ffff'}}>{product.title}</Typography>
-                    <Typography level="body-sm">{product.description}</Typography>
+                <div className="catalog-card">
+                  <div className="catalog-card__inner">
+                    <Card sx={{ width: '100%', backgroundColor: 'transparent', boxShadow: 'none', border: 'none' }}>
+                      <div className="catalog-card__header">
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: '#2a55c7',
+                            fontWeight: 800,
+                            letterSpacing: '.2px',
+                            mb: 0.2,
+                            fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                          }}
+                        >
+                          {product.title}
+                        </Typography>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: '#2f2f2f',
+                            lineHeight: 1.5,
+                            fontSize: '1.08rem',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {product.description}
+                        </Typography>
+                      </div>
+                      <AspectRatio minHeight="120px" maxHeight="200px" className="catalog-card__media">
+                        <img
+                          src={product.image}
+                          loading="lazy"
+                          alt={product.title || 'Imagen'}
+                        />
+                      </AspectRatio>
+                      <div className="catalog-card__divider" />
+                      <CardContent orientation="vertical">
+                        <div className="catalog-card__meta">
+                          <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666', fontSize: '0.9rem' }}>Tipo:</Typography>
+                          <Typography sx={{ fontSize: '1.05rem', fontWeight: '700', color:'#1976d2', mb: 1 }}>
+                            {product.tipo?.toUpperCase()}
+                          </Typography>
+                          <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666', fontSize: '0.9rem' }}>Cobertura:</Typography>
+                          <Typography sx={{ fontSize: '0.95rem', color:'#2e7d32' }}>
+                            {product.cobertura}
+                          </Typography>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
-                  <AspectRatio minHeight="120px" maxHeight="200px">
-                    <img
-                      src={product.image}
-                      loading="lazy"
-                      alt={product.title || 'Imagen'}
-                    />
-                  </AspectRatio>
-                  <CardContent orientation="vertical">
-                    <div>
-                      <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666' }}>Tipo:</Typography>
-                      <Typography sx={{ fontSize: 'md', fontWeight: 'lg', color:'#1976d2', mb: 1 }}>
-                        {product.tipo?.toUpperCase()}
-                      </Typography>
-                      <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666' }}>Cobertura:</Typography>
-                      <Typography sx={{ fontSize: 'sm', color:'#2e7d32' }}>
-                        {product.cobertura}
-                      </Typography>
-                    </div>
-                  </CardContent>
-                </Card>
+                </div>
               </Link>
             ))
           ) : (

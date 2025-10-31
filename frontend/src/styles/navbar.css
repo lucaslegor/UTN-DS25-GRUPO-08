@@ -1,4 +1,4 @@
-/* ===== Base ===== */
+﻿/* ===== Base ===== */
 .navbar {
   --navH: 72px;
   background-color: #3d6de2;
@@ -217,7 +217,7 @@
   cursor: pointer;
 }
 
-/* Asegurar que esté oculto en desktop */
+/* Asegurar que estÃ© oculto en desktop */
 @media (min-width: 769px) {
   .menu-toggle {
     display: none !important;
@@ -254,18 +254,33 @@
 }
 
 /* ===== Mobile / Tablet ===== */
-/* ===== Menú mobile mejorado ===== */
+/* ===== menúº mobile mejorado ===== */
 @media (max-width: 768px){
   .navbar{ 
     gap: 8px; 
     padding: 8px 16px;
     --navH: 60px;
   }
+  /* Forzar Inter en el menú mobile para evitar fallback de MUI/UA */
+  #main-navbar,
+  #main-navbar .nav-links,
+  #main-navbar .link-list,
+  #main-navbar .link,
+  #main-navbar .session-btn,
+  #main-navbar .MuiMenuItem-root,
+  #main-navbar .MuiListItemText-root,
+  #main-navbar .MuiButtonBase-root {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+  }
 
   /* orden en mobile */
   .brand{ order: 1; }
   #main-navbar .search{ order: 2; flex: 1 1 auto; justify-content: flex-start; }
-  #main-navbar .sb{ width: 100%; height: 40px; }
+  /* Searchbar más grande en mobile */
+  #main-navbar .sb{ width: 100%; height: 48px; }
+  #main-navbar .sb-input{ font-size: 1rem; padding: 12px 8px; }
+  /* Ocultar texto del título y dejar solo el logo */
+  .title-text{ display: none; }
   .menu-toggle{ 
     order: 3; 
     display: block; 
@@ -321,7 +336,7 @@
 
   /* Header del menú */
   .link-list::before {
-    content: "MENÚ";
+    content: "MENU";
     position: absolute;
     top: 20px;
     left: 24px;
@@ -375,7 +390,7 @@
     transform: translateX(2px) scale(0.98); 
   }
 
-  /* Botón "Iniciar sesión" mejorado */
+  /* BotÃ³n "Iniciar sesiÃ³n" mejorado */
   .session-btn{
     width: calc(100% - 32px);
     margin: 16px;
@@ -396,7 +411,7 @@
     box-shadow: 0 6px 20px rgba(30, 64, 175, 0.3);
   }
 
-  /* Íconos mejorados */
+  /* Ãconos mejorados */
   .link-list .MuiIconButton-root{ 
     color: #e2e8f0; 
     width: calc(100% - 32px);
@@ -423,14 +438,24 @@
 
   /* Dropdown de resultados del buscador mejorado */
   #main-navbar .sb-results{
-    left: 16px; 
-    right: 16px; 
+    position: fixed;
+    top: calc(var(--navH) + 8px);
+    left: 12px; 
+    right: 12px; 
     transform: none; 
     width: auto; 
     margin: 0;
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-height: 60vh;
   }
+
+  /* Items responsive: texto en columna y sin recortes */
+  #main-navbar .sb-item{ align-items: flex-start; gap: 10px; }
+  #main-navbar .sb-thumb{ width: 40px; height: 40px; }
+  #main-navbar .sb-meta{ flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+  #main-navbar .sb-title{ font-size: 1rem; line-height: 1.3; white-space: normal; }
+  #main-navbar .sb-price{ font-size: 0.85rem; padding: 2px 8px; }
 
   .title{ font-size: 18px; } 
   .title img{ width: 36px; }
@@ -440,10 +465,8 @@
     --navH: 56px; 
     padding: 6px 12px; 
   }
-  #main-navbar .sb{ 
-    height: 36px; 
-    font-size: 14px;
-  }
+  #main-navbar .sb{ height: 44px; font-size: 15px; }
+  #main-navbar .sb-input{ font-size: 1rem; }
   .title{ 
     font-size: 16px; 
   } 
@@ -451,7 +474,7 @@
     width: 32px; 
   }
   
-  /* Panel más estrecho en pantallas pequeñas */
+  /* Panel mÃ¡s estrecho en pantallas pequeÃ±as */
   .link-list{
     width: 280px;
   }
@@ -479,7 +502,7 @@
     width: 28px; 
   }
   
-  /* Panel aún más estrecho */
+  /* Panel aÃºn mÃ¡s estrecho */
   .link-list{
     width: 260px;
   }
@@ -507,8 +530,47 @@
   }
 }
 
-@keyframes menuPop{
+@keyframes menúPop{
   from{ opacity: 0; transform: translateY(-6px) scale(.995); }
   to{ opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+
+
+
+
+
+
+
+
+/* --- Overrides robustos para el botón hamburguesa (mobile) --- */
+/* Asegura selector correcto y estilos sin fondo ni borde */
+.menu-toggle{
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+.menu-toggle:hover,
+.menu-toggle:focus{
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+@media (max-width: 768px){
+  #main-navbar .menu-toggle{
+    order: 3 !important;
+    display: block !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-left: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 0;
+  }
 }
 

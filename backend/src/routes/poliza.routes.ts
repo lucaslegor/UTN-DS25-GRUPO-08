@@ -24,8 +24,6 @@ router.put(
   '/:id',
   authorize('ADMINISTRADOR'),
   uploadPoliza.single('file'),
-  // Si tu actualización también soporta campos JSON, puedes volver a agregar validate aquí
-  // validate(actualizarPolizaSchema),
   polizaController.updatePoliza
 );
 router.delete('/:id', authorize('ADMINISTRADOR'), polizaController.deletePoliza);

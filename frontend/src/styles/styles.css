@@ -39,6 +39,108 @@
   color:inherit;
 }
 
+/* Tarjeta con borde animado y hover suave */
+.catalog-card{
+  position: relative;
+  border-radius: 16px;
+  padding: 2px; /* grosor del borde */
+  background: conic-gradient(from var(--angle, 0deg), #3d6de2, #1976d2, #3d6de2);
+  transition: transform .25s ease, box-shadow .25s ease;
+  animation: rotateBorder 12s linear infinite;
+}
+
+/* máscara para que el gradiente se vea como borde */
+.catalog-card::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 2px;
+  background: inherit;
+  -webkit-mask: 
+    linear-gradient(#000 0 0) content-box, 
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+.catalog-card:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(25, 118, 210, 0.18);
+}
+
+@keyframes rotateBorder {
+  to { --angle: 360deg; }
+}
+
+.catalog-card__inner{
+  position: relative;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border-radius: 14px;
+  height: 100%;
+  overflow: hidden;
+  padding: 10px 10px 2px;
+}
+
+/* Media con efecto zoom suave en hover */
+.catalog-card__media img{
+  transition: transform .35s ease;
+  }
+.catalog-card:hover .catalog-card__media img{
+  transform: scale(1.05);
+}
+
+/* Tipografías: más oscuras y legibles */
+.catalog-card__title{
+  color:#2a55c7; /* más oscuro que #3d6de2 */
+  font-weight: 800;
+  letter-spacing: .2px;
+  margin-bottom: .2rem;
+  font-size: clamp(1.6rem, 2.5vw, 1.8rem);
+}
+.catalog-card__desc{
+  color:#2f2f2f; /* más oscuro */
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1.2rem;
+}
+
+.catalog-card__header{ padding: 4px 6px 6px; }
+.catalog-card__divider{ height:1px; background: rgba(61,109,226,.15); margin: 6px 8px 0; }
+.catalog-card__meta{ padding: 6px 6px 10px; }
+
+/* Badges de tipo y cobertura */
+.catalog-card__badges{
+  display:flex;
+  gap:.5rem;
+  flex-wrap: wrap;
+  margin-top:.5rem;
+}
+.badge{
+  display:inline-block;
+  padding: .25rem .5rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+  border: 1px solid transparent;
+}
+.badge--type{
+  color:#1976d2;
+  background: #e8f2ff;
+  border-color: #cfe5ff;
+}
+.badge--cov{
+  color:#2e7d32;
+  background:#e8f5e9;
+  border-color:#cdebd1;
+}
+
+
 /* Ajustes por breakpoint (opcional para anclar cantidad de columnas) */
 @media (min-width: 640px){
   .catalog{ grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }

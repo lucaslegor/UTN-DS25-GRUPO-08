@@ -101,7 +101,7 @@ export const getProductById = async(id: number): Promise<Product | null> => {
   return mapProducto(product);
 }
 
-export const createProduct = async(productData: CreateProductRequest & { imagenUrl?: string }): Promise<Product> => {
+export const createProduct = async(productData: CreateProductRequest & { imagenUrl?: string; imagenPublicId?: string }): Promise<Product> => {
   const product = await prisma.producto.create({
     data: {
       titulo: productData.titulo,
@@ -110,12 +110,13 @@ export const createProduct = async(productData: CreateProductRequest & { imagenU
       tipo: tipoSeguroToPrisma(productData.tipo),
       isActive: productData.isActive,
       imagenUrl: productData.imagenUrl,
+      imagenPublicId: (productData as any).imagenPublicId,
     }
   })
   return mapProducto(product);
 }
 
-export const updateProduct = async (id: number, productData: UpdateProductRequest & { imagenUrl?: string }): Promise<Product | null> => {
+export const updateProduct = async (id: number, productData: UpdateProductRequest & { imagenUrl?: string; imagenPublicId?: string }): Promise<Product | null> => {
   const dataSinFiltro = {
     titulo:      productData.titulo !== undefined ? productData.titulo : undefined,
     descripcion: productData.descripcion !== undefined ? productData.descripcion : undefined,
@@ -123,6 +124,7 @@ export const updateProduct = async (id: number, productData: UpdateProductReques
     isActive:    productData.isActive !== undefined ? productData.isActive : undefined,
     tipo:        productData.tipo !== undefined ? { set: tipoSeguroToPrisma(productData.tipo)! } : undefined,
     imagenUrl:   productData.imagenUrl !== undefined ? productData.imagenUrl : undefined,
+    imagenPublicId: (productData as any).imagenPublicId !== undefined ? (productData as any).imagenPublicId : undefined,
   };
 
   const data = Object.fromEntries(

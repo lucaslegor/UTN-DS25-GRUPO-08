@@ -38,6 +38,7 @@ model Producto {
   isActive       Boolean
   createdAt      DateTime        @default(now())
   imagenUrl      String?
+  imagenPublicId String?
   itemsSolicitud SolicitudItem[]
 }
 
@@ -45,6 +46,7 @@ model Poliza {
   id          Int          @id @default(autoincrement())
   idSolicitud Int          @unique
   archivoUrl  String
+  archivoPublicId String?
   estado      EstadoPoliza @default(PENDIENTE)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt

@@ -103,7 +103,7 @@ export async function verificarOwnershipSolicitud(idSolicitud: number, idUsuario
   return !!solicitud;
 }
 
-export async function createPoliza(idSolicitud: number, data: { archivoUrl: string }) {
+export async function createPoliza(idSolicitud: number, data: { archivoUrl: string; archivoPublicId?: string }) {
   const solicitud = await prisma2.solicitud.findUnique({
     where: { id: idSolicitud },
     include: { 
@@ -123,6 +123,7 @@ export async function createPoliza(idSolicitud: number, data: { archivoUrl: stri
     data: {
       idSolicitud,
       archivoUrl: data.archivoUrl,
+      archivoPublicId: data.archivoPublicId,
       estado: 'CARGADA',
     },
   });

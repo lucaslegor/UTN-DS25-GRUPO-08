@@ -61,19 +61,40 @@ export async function obtenerSolicitudPorId(id: number) {
 }
 
 export async function crearSolicitud(idUsuario: number, datos: any) {
+  // Mapear los items recibidos ({ productId, cantidad }) a la estructura
+  // requerida por Prisma para SolicitudItem ({ idProducto, titulo, cantidad })
+  const itemsToCreate = await Promise.all(
+    (datos.items || []).map(async (item: { productId: number; cantidad: number }) => {
+      const producto = await prisma.producto.findUnique({
+        where: { id: item.productId },
+        select: { titulo: true },
+      });
+
+      if (!producto) {
+        throw new Error(`Producto no encontrado: ${item.productId}`);
+      }
+
+      return {
+        idProducto: item.productId,
+        titulo: producto.titulo,
+        cantidad: item.cantidad,
+      };
+    })
+  );
+
   const solicitud = await prisma.solicitud.create({
     data: {
       idUsuario,
       estado: 'CREADA',
       datosPersonales: datos.datosPersonales,
-      items: { create: datos.items },
+      items: { create: itemsToCreate },
     },
-    include: { 
+    include: {
       items: true,
       poliza: true,
-      usuario: { 
-        select: { id: true, mail: true, username: true } 
-      } 
+      usuario: {
+        select: { id: true, mail: true, username: true }
+      }
     },
   });
 
