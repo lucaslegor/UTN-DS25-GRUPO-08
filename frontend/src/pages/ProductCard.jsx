@@ -30,6 +30,12 @@ export default function ProductDetailPage() {
     return auth?.user?.rol === 'ADMINISTRADOR';
   };
 
+  // Verificar si el usuario está logueado
+  const isLogged = () => {
+    const auth = getAuth();
+    return Boolean(auth?.token);
+  };
+
   const [allProducts, setAllProducts] = React.useState([]);
   const [product, setProduct] = React.useState(null);
   const [mainImg, setMainImg] = React.useState("");
@@ -81,6 +87,10 @@ export default function ProductDetailPage() {
   const inSolicitud = isInSolicitud(product.id);
 
   const handleAddToSolicitud = () => {
+    if (!isLogged()) {
+      navigate('/login');
+      return;
+    }
     if (!inSolicitud) {
       addToSolicitud(product);
     }
@@ -209,6 +219,7 @@ export default function ProductDetailPage() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  if (!isLogged()) { navigate('/login'); return; }
                   if (!isInSolicitud(item.id) && !isAdmin()) {
                     addToSolicitud(item);
                   }

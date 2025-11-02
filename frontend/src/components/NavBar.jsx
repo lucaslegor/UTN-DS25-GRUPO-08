@@ -341,7 +341,7 @@ export const NavBar = () => {
                     <ListItemIcon>
                       <Policy fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText>Mis pÃ³lizas</ListItemText>
+                    <ListItemText>Mis polizas</ListItemText>
                   </MenuItem>
                 )}
                 <Divider />
@@ -349,7 +349,7 @@ export const NavBar = () => {
                   <ListItemIcon>
                     <Logout fontSize="small" />
                   </ListItemIcon>
-                  <ListItemText>Cerrar sesiÃ³n</ListItemText>
+                  <ListItemText>Cerrar sesion</ListItemText>
                 </MenuItem>
               </MuiMenu>
             </li>
@@ -359,7 +359,7 @@ export const NavBar = () => {
                 className="session-btn"
                 onClick={() => navigate("/login")}
               >
-                Iniciar sesiÃ³n
+                Iniciar sesion
               </button>
             </li>
           )}

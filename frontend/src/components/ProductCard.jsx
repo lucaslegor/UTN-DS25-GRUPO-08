@@ -19,7 +19,17 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
     return auth?.user?.rol === 'ADMINISTRADOR';
   };
 
+  // Verificar si el usuario está logueado
+  const isLogged = () => {
+    const auth = getAuth();
+    return Boolean(auth?.token);
+  };
+
   const handleAddToSolicitud = () => {
+    if (!isLogged()) {
+      navigate('/login');
+      return;
+    }
     if (!inSolicitud && !isAdmin()) {
       addToSolicitud({ id, title, description, tipo, cobertura, image });
     }
