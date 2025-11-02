@@ -13,6 +13,28 @@ html, body, #root { height: 100%; }
   font-style: normal;
   font-display: swap;
 }
+/* Fallback estático para iOS si el eje wght luce demasiado fino */
+@font-face {
+  font-family: 'InterStatic';
+  src: url('/fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'InterStatic';
+  src: url('/fonts/Inter-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'InterStatic';
+  src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 html, body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
   font-weight: 400;
@@ -20,6 +42,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-variation-settings: 'wght' 420; /* 420 rinde similar a 400 pero más legible en iOS */
 }
 
 .app-layout {
@@ -44,8 +67,9 @@ html, body {
 @media (max-width: 768px) {
   html, body, p, span, li, a, input, button, label,
   h1, h2, h3, h4, h5, h6 {
+    font-family: 'InterStatic', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important;
     font-weight: 400 !important;
-    font-variation-settings: 'wght' 400 !important;
+    font-variation-settings: 'wght' 420 !important;
     font-optical-sizing: auto;
   }
   /* Títulos un poco más fuertes para contraste */
@@ -55,8 +79,9 @@ html, body {
 @media (max-width: 560px) {
   html, body, p, span, li, a, input, button, label,
   h1, h2, h3, h4, h5, h6 {
+    font-family: 'InterStatic', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important;
     font-weight: 400 !important;
-    font-variation-settings: 'wght' 400 !important;
+    font-variation-settings: 'wght' 420 !important;
     font-optical-sizing: auto;
   }
   h1, h2 { font-weight: 600 !important; }
