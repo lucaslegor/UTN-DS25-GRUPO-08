@@ -15,6 +15,11 @@ html, body, #root { height: 100%; }
 }
 html, body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+  font-weight: 400;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .app-layout {
@@ -33,4 +38,26 @@ html, body {
   margin-top: auto;              /* se queda pegado abajo */
   flex-shrink: 0;
   width: 100%;
+}
+
+/* Refuerzo de legibilidad en móviles: Inter variable a 400 */
+@media (max-width: 768px) {
+  html, body, p, span, li, a, input, button, label,
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 400 !important;
+    font-variation-settings: 'wght' 400 !important;
+    font-optical-sizing: auto;
+  }
+  /* Títulos un poco más fuertes para contraste */
+  h1, h2 { font-weight: 600 !important; }
+}
+
+@media (max-width: 560px) {
+  html, body, p, span, li, a, input, button, label,
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 400 !important;
+    font-variation-settings: 'wght' 400 !important;
+    font-optical-sizing: auto;
+  }
+  h1, h2 { font-weight: 600 !important; }
 }
