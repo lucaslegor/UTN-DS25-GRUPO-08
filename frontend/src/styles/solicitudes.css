@@ -1,0 +1,37 @@
+/* Scoped overrides for floating labels in SolicitudesPage (MUI Outlined) */
+.sol-form .MuiTextField-root .MuiInputLabel-root { line-height: 1; }
+
+/* Default size (height 56px): center a bit lower than MUI's default */
+.sol-form .MuiInputLabel-outlined:not(.MuiInputLabel-shrink) {
+  transform: translate(14px, 20px) scale(1) !important; /* centrar mejor */
+}
+
+/* Small size (height 40px): center label mejor */
+.sol-form .MuiInputBase-sizeSmall .MuiInputLabel-outlined:not(.MuiInputLabel-shrink) {
+  transform: translate(14px, 12px) scale(1) !important; /* centrar mejor */
+}
+
+/* Shrunk/active label: súbela un poco más y evita que toque el borde */
+.sol-form .MuiInputLabel-outlined.MuiInputLabel-shrink {
+  transform: translate(14px, -12px) scale(0.75) !important; /* súbela un poco más */
+  top: 0 !important;
+  background-color: #fff;
+  padding: 0 4px;
+  z-index: 1;
+}
+
+/* Focus mantiene la misma posición elevada */
+.sol-form .MuiInputLabel-outlined.Mui-focused {
+  transform: translate(14px, -12px) scale(0.75) !important;
+}
+
+/* Para small + focus/shrink */
+.sol-form .MuiInputBase-sizeSmall .MuiInputLabel-outlined.MuiInputLabel-shrink,
+.sol-form .MuiInputBase-sizeSmall .MuiInputLabel-outlined.Mui-focused {
+  transform: translate(14px, -12px) scale(0.75) !important;
+}
+
+/* Evitar que el notch del outline tape el label al levantarlo */
+.sol-form .MuiOutlinedInput-notchedOutline legend {
+  max-width: 0.01px; /* comportamiento por defecto de MUI al shrink */
+}

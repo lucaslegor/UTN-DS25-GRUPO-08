@@ -1,5 +1,5 @@
 /* =========================
-   LOGIN – ESTILOS BASE
+   LOGIN Ã¢â‚¬â€œ ESTILOS BASE
    ========================= */
 
 .principal-container-login {
@@ -92,7 +92,7 @@
   font-size: 16px;
 }
 
-/* Contenedor para el input de contraseña con botón */
+/* Contenedor para el input de contraseÃƒÂ±a con botÃƒÂ³n */
 .password-input-container {
   position: relative;
   display: inline-block;
@@ -100,7 +100,7 @@
 }
 
 .password-input {
-  padding-right: 50px; /* Espacio para el botón */
+  padding-right: 50px; /* Espacio para el botÃƒÂ³n */
 }
 
 .password-toggle-btn {
@@ -185,7 +185,7 @@
   flex-shrink: 0;
 }
 
-/* Estados de validación */
+/* Estados de validaciÃƒÂ³n */
 .input-login.is-error {
   border-color: #d32f2f; /* rojo */
   outline: 2px solid rgba(211, 47, 47, 0.2);
@@ -269,8 +269,8 @@
   height: auto;
 }
 
-/* ===== Fix crítico: si el botón tiene margin-top inline negativo, lo pisamos */
-.form-inicio-login > button[aria-label="Volver atrás"] {
+/* ===== Fix crÃƒÂ­tico: si el botÃƒÂ³n tiene margin-top inline negativo, lo pisamos */
+.form-inicio-login > button[aria-label="Volver atrÃƒÂ¡s"] {
   margin-top: 0 !important;
 }
 
@@ -292,7 +292,7 @@
   }
 }
 
-/* Tablet (≤ 992px): reducir alturas fijas y permitir scroll */
+/* Tablet (Ã¢â€°Â¤ 992px): reducir alturas fijas y permitir scroll */
 @media (max-width: 992px) {
   .principal-container-login {
     height: auto;
@@ -323,13 +323,13 @@
   }
 }
 
-/* Mobile (≤ 768px): apilar tarjetas, inputs al 100% */
+/* Mobile (Ã¢â€°Â¤ 768px): apilar tarjetas, inputs al 100% */
 @media (max-width: 768px) {
   .content-wrapper-login {
     flex-direction: column;
     align-items: stretch;
-    gap: 16px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 12px;
   }
 
   .form-inicio-login,
@@ -348,14 +348,14 @@
     order: 2;
   }
 
-  .form-inicio-login > button[aria-label="Volver atrás"] {
+  .form-inicio-login > button[aria-label="Volver atrÃƒÂ¡s"] {
     align-self: flex-start;
     margin-bottom: 12px;
   }
 
   .input-login {
     width: 100%;
-    padding: 16px;
+    padding: 14px;
     font-size: 15px;
   }
 
@@ -372,48 +372,26 @@
   }
 }
 
-/* Phones pequeños (≤ 560px) */
+/* Phones pequeÃƒÂ±os (Ã¢â€°Â¤ 560px) */
 @media (max-width: 560px) {
   .form-inicio-login,
-  .container-login {
-    padding: 20px;
-  }
+  .container-login { padding: 18px; }
 
-  .form-inicio-login h3 {
-    font-size: 26px;
-  }
-  .input-login {
-    padding: 14px;
-    font-size: 14.5px;
-  }
-  .submit-button-login {
-    font-size: 15.5px;
-    padding: 12px;
-  }
+  .form-inicio-login h3 { font-size: 22px; margin: 2px 0 8px; }
+  .input-login { padding: 12px; font-size: 14px; }
+  .submit-button-login { font-size: 15px; padding: 10px 12px; }
 
-  .container-login img {
-    width: 200px;
-  }
-  .container-login h2 {
-    font-size: 1.3em;
-  }
+  .container-login img { width: 180px; }
+  .container-login h2 { font-size: 1.3em; }
 }
 
-/* Muy estrechos (≤ 380px) */
+/* Muy estrechos (Ã¢â€°Â¤ 380px) */
 @media (max-width: 380px) {
   .form-inicio-login,
-  .container-login {
-    padding: 16px;
-    border-radius: 12px;
-  }
+  .container-login { padding: 14px; border-radius: 12px; }
 
-  .form-inicio-login h3 {
-    font-size: 24px;
-  }
-  .submit-button-login {
-    font-size: 15px;
-    padding: 11px;
-  }
+  .form-inicio-login h3 { font-size: 20px; }
+  .submit-button-login { font-size: 14.5px; padding: 10px; }
 }
 
 /* Alturas muy bajas en desktop/tablet */
@@ -429,3 +407,50 @@
     min-height: 520px;
   }
 }
+
+/* Compactaci�n fuerte para m�viles: que quepa en una pantalla */
+@media (max-width: 480px) {
+  /* Ocultar cabezal/branding azul completamente */
+  .container-login { display: none !important; }
+
+  .principal-container-login { height: 100dvh; }
+  .content-wrapper-login {
+    height: 100dvh;
+    margin-top: 0;
+    padding: 10px 12px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .form-inicio-login {
+    width: 100%;
+    max-width: 420px;
+    padding: 14px;
+    border-radius: 12px;
+    gap: 8px;
+  }
+  .back-btn-login { margin-bottom: 6px; padding: 0; }
+  .form-grupo-login { margin-bottom: 10px; }
+  .form-grupo-login label { margin-bottom: 4px; font-weight: 600; font-size: 0.95rem; }
+  .input-login { padding: 10px 12px; font-size: 15px; }
+  .password-input-container .password-toggle-btn { right: 10px; }
+  .submit-button-login { margin-top: 6px; padding: 10px 12px; font-size: 15px; }
+  .divider { margin: 8px 0; }
+  .google-login-button { padding: 10px 12px; font-size: 15px; }
+  .form-inicio-login p { margin: 6px 0; }
+  .container-register { margin-top: 8px !important; gap: 8px; }
+  .container-register span { font-size: 0.95rem; }
+}
+/* "Volver al inicio" como chip atractivo */
+.home-chip{
+  display:inline-flex; align-items:center; gap:8px;
+  border:1px solid #c7d2fe; color:#1e43c0; background:#fff;
+  border-radius:999px; padding:6px 10px; font-weight:650; font-size:14px;
+  box-shadow:0 1px 2px rgba(0,0,0,.06);
+  transition: all .15s ease;
+}
+.home-chip:hover{ background:#eef2ff; border-color:#9db1ff; transform: translateY(-1px); }
+.home-chip:active{ transform: translateY(0); }
+
+@media (max-width:480px){ .home-chip{ margin-bottom:6px; padding:6px 10px; } }

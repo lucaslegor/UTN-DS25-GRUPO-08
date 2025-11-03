@@ -34,6 +34,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAuth } from '../services/api';
 import Swal from 'sweetalert2';
 import * as yup from 'yup';
+import '../styles/solicitudes.css';
 
 // Esquema de validación con Yup
 const validationSchema = yup.object({
@@ -649,7 +650,7 @@ const SolicitudesPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }} className="sol-form">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" color="primary">
           {solicitudItem ? 'Completar Formulario de Solicitud' : 'Mis Solicitudes'}
