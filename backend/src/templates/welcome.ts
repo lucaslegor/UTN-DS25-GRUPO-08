@@ -1,7 +1,7 @@
 import { EMAIL_CONFIG } from '../config/email.config';
 
 export function renderWelcomeTemplate(nombre: string) {
-  const urls = EMAIL_CONFIG.getUrls();
+ 
   
   return `
   <div style="font-family: Arial, sans-serif; background-color:#f4f6fb; padding:40px 0; text-align:center;">
@@ -20,7 +20,7 @@ export function renderWelcomeTemplate(nombre: string) {
         </p>
 
         <div style="text-align:center; margin:32px 0;">
-          <a href="${urls}"
+          <a href="https://utn-ds-25-grupo-08.vercel.app/"
             style="background-color:#3d6de2; color:#ffffff; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:bold;">
             Ir a mi cuenta
           </a>
