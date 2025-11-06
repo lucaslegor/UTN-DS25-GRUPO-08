@@ -5,7 +5,7 @@ import { renderResetPasswordTemplate } from '../templates/resetPassword';
 import { renderSolicitudClienteTemplate } from '../templates/solicitudCliente';
 import { renderSolicitudEquipoTemplate } from '../templates/solicitudEquipo';
 import { renderPolizaCargadaTemplate } from '../templates/polizaCargada';
-
+import { renderContactoMapsTemplate } from '../templates/contactoMaps';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM || 'Maps Seguros <onboarding@resend.dev>';
 const EQUIPO_MAIL = process.env.EQUIPO_MAIL || 'equipo@mapsseguros.com';
@@ -100,5 +100,19 @@ export async function enviarNotificacionPolizaCargada(
   } catch (error) {
     console.error('Error enviando notificación de póliza:', error);
     // No lanzamos el error para no bloquear el flujo
+  }
+}
+
+// ========== Contacto desde formulario público ==========
+export async function enviarContacto(nombre: string, email: string, mensaje: string) {
+  try {
+    await enviarEmail({
+      to: EQUIPO_MAIL, // llega al equipo interno
+      subject: `Nuevo mensaje de contacto - ${nombre}`,
+      html: renderContactoMapsTemplate(nombre, email, mensaje),
+    });
+  } catch (error) {
+    console.error('Error enviando correo de contacto:', error);
+    // No lanzamos para no interrumpir el flujo
   }
 }

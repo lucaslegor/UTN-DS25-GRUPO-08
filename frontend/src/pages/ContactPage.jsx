@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import emailjs from "@emailjs/browser";
 import "../styles/contact.css";
 import {
   Shield,
@@ -15,26 +14,38 @@ import {
 export const Contact = () => {
   const form = useRef();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    emailjs
-      .sendForm(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,   // ⚙️ ID del servicio (desde .env)
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,  // ⚙️ ID del template (desde .env)
-        form.current,                              // ⚙️ referencia al formulario
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY    // ⚙️ clave pública (desde .env)
-      )
-      .then(
-        () => {
-          alert("✅ Mensaje enviado con éxito!");
-          form.current.reset();
+    const formData = new FormData(form.current);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      // 👉 Llamada al backend (ajustá la URL según tu entorno)
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/email/contacto`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        (error) => {
-          console.error("Error enviando el correo:", error);
-          alert("❌ Hubo un error al enviar el mensaje. Intentalo nuevamente.");
-        }
-      );
+        body: JSON.stringify({
+          nombre: data.user_name,
+          email: data.user_email,
+          mensaje: data.message,
+        }),
+      });
+
+      if (response.ok) {
+        alert("✅ Mensaje enviado con éxito!");
+        form.current.reset();
+      } else {
+        const errorData = await response.json();
+        console.error("Error del servidor:", errorData);
+        alert("❌ No se pudo enviar el mensaje. Intentalo más tarde.");
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+      alert("⚠️ Hubo un problema al conectar con el servidor.");
+    }
   };
 
   return (
@@ -151,10 +162,7 @@ export const Contact = () => {
             </button>
           </form>
         </div>
-
       </div>
     </section>
   );
 };
-
-

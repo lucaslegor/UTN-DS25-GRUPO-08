@@ -38,7 +38,7 @@ export function renderSolicitudEquipoTemplate(nombreCliente: string, idSolicitud
         </p>
 
         <div style="text-align:center; margin:30px 0;">
-          <a href="https://utn-ds-25-grupo-08.vercel.app/admin/solicitudes"
+          <a href="https://utn-ds-25-grupo-08.vercel.app/"
             style="background-color:#3d6de2; color:#fff; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:bold;">
             Revisar solicitud
           </a>
