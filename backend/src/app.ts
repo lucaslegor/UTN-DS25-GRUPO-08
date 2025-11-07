@@ -6,6 +6,7 @@ import usuariosRoutes from './routes/usuario.routes'
 import { solicitudesRoutes } from "./routes/solicitudes.routes";
 import { polizaRoutes } from "./routes/poliza.routes";
 import { productoRoutes } from "./routes/producto.routes";
+import { emailRoutes } from "./routes/email.routes";
 import authRoutes from './routes/auth.routes'
 import express from "express";
 import path from 'path';
@@ -47,6 +48,7 @@ app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/solicitudes", solicitudesRoutes);
 app.use("/api/polizas", polizaRoutes);
 app.use("/api/productos", productoRoutes);
+app.use("/api/email", emailRoutes);
 
 
 app.use(handleError);

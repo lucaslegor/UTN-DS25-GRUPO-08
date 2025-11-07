@@ -214,21 +214,6 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
               </Link>
-              <button
-                className="pd-related-btn"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!isLogged()) { navigate('/login'); return; }
-                  if (!isInSolicitud(item.id) && !isAdmin()) {
-                    addToSolicitud(item);
-                  }
-                }}
-                disabled={isInSolicitud(item.id) || isAdmin()}
-                title={isAdmin() ? "Los administradores no pueden hacer solicitudes" : ""}
-              >
-                {isAdmin() ? "🔒" : (isInSolicitud(item.id) ? "✓ Agregado" : "📋 Agregar")}
-              </button>
             </div>
           ))}
         </div>
