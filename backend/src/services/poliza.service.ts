@@ -152,9 +152,15 @@ export async function createPoliza(idSolicitud: number, data: { archivoUrl: stri
 
 export async function updatePoliza(id: number, data: any) {
   try {
+    // Asegurar que updatedAt se actualice si no está en los datos
+    const updateData = {
+      ...data,
+      updatedAt: data.updatedAt || new Date()
+    };
+    
     const updated = await prisma2.poliza.update({
       where: { id },
-      data,
+      data: updateData,
       include: {
         solicitud: {
           include: {
@@ -169,6 +175,15 @@ export async function updatePoliza(id: number, data: any) {
         }
       }
     });
+    
+    // Log para debugging
+    console.log('Póliza actualizada en servicio:', {
+      id: updated.id,
+      archivoUrl: updated.archivoUrl,
+      updatedAt: updated.updatedAt,
+      archivoPublicId: updated.archivoPublicId
+    });
+    
     return updated;
   } catch (error: any) {
     if (error?.code === 'P2025') {
