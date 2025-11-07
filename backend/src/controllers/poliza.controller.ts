@@ -72,7 +72,8 @@ export async function createPoliza(req: Request<{ idSolicitud: string }>, res: R
     let archivoPublicId: string | undefined;
     const file = (req as any).file as Express.Multer.File | undefined;
     if (file) {
-      const { url, publicId } = await uploadLocalFile(file.path, 'polizas', 'auto');
+      // Pasar el mimetype para detectar correctamente el tipo de archivo (PDF vs imagen)
+      const { url, publicId } = await uploadLocalFile(file.path, 'polizas', 'auto', file.mimetype);
       archivoUrl = url;
       archivoPublicId = publicId;
       fs.unlink(file.path, () => {});
@@ -104,7 +105,8 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
       prevPublicId = prev?.archivoPublicId || undefined;
     } catch {}
     if (file) {
-      const { url, publicId } = await uploadLocalFile(file.path, 'polizas', 'auto');
+      // Pasar el mimetype para detectar correctamente el tipo de archivo (PDF vs imagen)
+      const { url, publicId } = await uploadLocalFile(file.path, 'polizas', 'auto', file.mimetype);
       payload.archivoUrl = url;
       payload.archivoPublicId = publicId;
       fs.unlink(file.path, () => {});
@@ -114,7 +116,19 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
       return res.status(400).json({ message: 'Debe adjuntar un archivo o datos para actualizar' });
     }
 
+    // Asegurar que updatedAt se actualice explícitamente
+    payload.updatedAt = new Date();
+
     const updated = await polizaService.updatePoliza(id, payload);
+    
+    // Log para debugging
+    console.log('Póliza actualizada en backend:', {
+      id: updated.id,
+      archivoUrl: updated.archivoUrl,
+      updatedAt: updated.updatedAt,
+      archivoPublicId: updated.archivoPublicId
+    });
+    
     res.json({ poliza: updated, message: "Póliza actualizada exitosamente" });
     if (payload.archivoPublicId && prevPublicId && payload.archivoPublicId !== prevPublicId) {
       try { await deleteByPublicId(prevPublicId); } catch {}

@@ -275,9 +275,28 @@ async function loadProducts() {
   };
 
   // Función para ver el contenido de la póliza
-  const handleViewPoliza = (polizaUrl) => {
+  const handleViewPoliza = (polizaUrl, updatedAt = null) => {
     if (polizaUrl) {
-      window.open(polizaUrl, '_blank');
+      console.log('Ver póliza - URL original:', polizaUrl);
+      console.log('Ver póliza - updatedAt:', updatedAt);
+      
+      // Evitar caché del navegador cuando se reemplaza la póliza
+      const version = updatedAt ? new Date(updatedAt).getTime() : Date.now();
+      const url = polizaUrl.includes('?') ? `${polizaUrl}&v=${version}` : `${polizaUrl}?v=${version}`;
+      
+      console.log('Ver póliza - URL final:', url);
+      
+      // Intentar abrir la URL
+      const newWindow = window.open(url, '_blank');
+      
+      // Si la ventana se cierra inmediatamente o hay un error, puede ser un problema de Cloudinary
+      if (!newWindow || newWindow.closed) {
+        console.error('Error: No se pudo abrir la ventana. Puede ser un problema con la URL de Cloudinary.');
+        alert('Error al abrir la póliza. Por favor, verifica que la URL sea válida.');
+      }
+    } else {
+      console.error('Error: No hay URL de póliza disponible');
+      alert('No hay URL de póliza disponible');
     }
   };
 
@@ -328,6 +347,15 @@ async function loadProducts() {
 
       const result = await res.json();
       console.log('Póliza reemplazada exitosamente:', result);
+      console.log('Nueva póliza completa:', JSON.stringify(result.poliza, null, 2));
+      
+      // Verificar que la nueva URL sea diferente de la anterior
+      const solicitudAnterior = solicitudes.find(s => s.id == replacingPolizaId);
+      if (solicitudAnterior?.poliza) {
+        console.log('URL anterior:', solicitudAnterior.poliza.archivoUrl);
+        console.log('URL nueva:', result.poliza.archivoUrl);
+        console.log('¿URLs son diferentes?', solicitudAnterior.poliza.archivoUrl !== result.poliza.archivoUrl);
+      }
 
       // Actualizar el estado de la solicitud a POLIZA_CARGADA después de reemplazar póliza
       await apiFetch(`/solicitudes/${replacingPolizaId}`, {
@@ -337,16 +365,42 @@ async function loadProducts() {
         }
       });
       
-      // Recargar solicitudes
-      await loadSolicitudes();
+      // Actualizar inmediatamente el estado de solicitudes con la nueva URL de la póliza
+      setSolicitudes(prevSolicitudes => {
+        return prevSolicitudes.map(s => {
+          if (s.id == replacingPolizaId && s.poliza) {
+            return {
+              ...s,
+              poliza: {
+                ...s.poliza,
+                archivoUrl: result.poliza.archivoUrl,
+                updatedAt: result.poliza.updatedAt,
+                archivoPublicId: result.poliza.archivoPublicId
+              },
+              estado: 'POLIZA_CARGADA'
+            };
+          }
+          return s;
+        });
+      });
       
       // Actualizar selectedSolicitud si está abierto el modal
       if (selectedSolicitud && selectedSolicitud.id == replacingPolizaId) {
         setSelectedSolicitud(prev => ({
           ...prev,
+          poliza: {
+            ...prev.poliza,
+            archivoUrl: result.poliza.archivoUrl,
+            updatedAt: result.poliza.updatedAt,
+            archivoPublicId: result.poliza.archivoPublicId
+          },
           estado: 'POLIZA_CARGADA'
         }));
+        console.log('Actualizado selectedSolicitud con nueva URL:', result.poliza.archivoUrl);
       }
+      
+      // Recargar solicitudes en segundo plano para sincronizar
+      loadSolicitudes().catch(err => console.error('Error recargando solicitudes:', err));
       
       // Limpiar estado
       setReplacingPolizaId(null);
@@ -535,12 +589,19 @@ Si tienes alguna consulta, no dudes en contactarnos.
       setSelectedSolicitudId('');
       await loadSolicitudes();
       
-      // Actualizar selectedSolicitud si está abierto el modal
+      // Actualizar selectedSolicitud si está abierto el modal con la solicitud completa actualizada
       if (selectedSolicitud && selectedSolicitud.id == selectedSolicitudId) {
-        setSelectedSolicitud(prev => ({
-          ...prev,
-          estado: 'POLIZA_CARGADA'
-        }));
+        // Buscar la solicitud actualizada en la lista
+        const solicitudActualizada = solicitudes.find(s => s.id == selectedSolicitudId);
+        if (solicitudActualizada) {
+          setSelectedSolicitud(solicitudActualizada);
+        } else {
+          // Si no se encuentra, al menos actualizar el estado
+          setSelectedSolicitud(prev => ({
+            ...prev,
+            estado: 'POLIZA_CARGADA'
+          }));
+        }
       }
       
       // Mostrar mensaje de éxito apropiado
@@ -1674,7 +1735,7 @@ async function updateUserRole(userId, newRole) {
                               <Tooltip title="Ver póliza">
                                 <IconButton
                                   className="edit-button"
-                                  onClick={() => handleViewPoliza(s.poliza.archivoUrl)}
+                                  onClick={() => handleViewPoliza(s.poliza.archivoUrl, s.poliza.updatedAt)}
                                   size="small"
                                   style={{ color: '#1976d2' }}
                                 >

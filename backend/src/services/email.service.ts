@@ -106,13 +106,14 @@ export async function enviarNotificacionPolizaCargada(
 // ========== Contacto desde formulario público ==========
 export async function enviarContacto(nombre: string, email: string, mensaje: string) {
   try {
-    await enviarEmail({
+    const result = await enviarEmail({
       to: EQUIPO_MAIL, // llega al equipo interno
       subject: `Nuevo mensaje de contacto - ${nombre}`,
       html: renderContactoMapsTemplate(nombre, email, mensaje),
     });
+    return result;
   } catch (error) {
     console.error('Error enviando correo de contacto:', error);
-    // No lanzamos para no interrumpir el flujo
+    throw error; // Lanzamos el error para que la ruta pueda manejarlo
   }
 }

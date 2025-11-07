@@ -37,9 +37,23 @@ export const createProduct = async(req: Request, res: Response<ProductResponse>,
         let imagenUrl: string | undefined = body?.imagenUrl;
         let imagenPublicId: string | undefined;
         if (file) {
-          const { url, publicId } = await uploadLocalFile(file.path, 'productos', 'image');
-          imagenUrl = url;
-          imagenPublicId = publicId;
+          // Validar que Cloudinary esté configurado
+          if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            fs.unlink(file.path, () => {});
+            return res.status(500).json({ 
+              message: 'Error: Cloudinary no está configurado. Por favor, configura las variables de entorno CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET.' 
+            } as ProductResponse);
+          }
+          try {
+            const { url, publicId } = await uploadLocalFile(file.path, 'productos', 'image');
+            imagenUrl = url;
+            imagenPublicId = publicId;
+          } catch (uploadError: any) {
+            fs.unlink(file.path, () => {});
+            return res.status(500).json({ 
+              message: `Error al subir la imagen: ${uploadError.message || 'Error desconocido'}` 
+            } as ProductResponse);
+          }
           // remove temp local file
           fs.unlink(file.path, () => {});
         }
@@ -71,9 +85,23 @@ export const updateProduct = async(req: Request<{id: string}, ProductResponse, U
           prevPublicId = prev?.imagenPublicId || undefined;
         } catch {}
         if (file) {
-          const { url, publicId } = await uploadLocalFile(file.path, 'productos', 'image');
-          imagenUrl = url;
-          imagenPublicId = publicId;
+          // Validar que Cloudinary esté configurado
+          if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            fs.unlink(file.path, () => {});
+            return res.status(500).json({ 
+              message: 'Error: Cloudinary no está configurado. Por favor, configura las variables de entorno CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET.' 
+            } as ProductResponse);
+          }
+          try {
+            const { url, publicId } = await uploadLocalFile(file.path, 'productos', 'image');
+            imagenUrl = url;
+            imagenPublicId = publicId;
+          } catch (uploadError: any) {
+            fs.unlink(file.path, () => {});
+            return res.status(500).json({ 
+              message: `Error al subir la imagen: ${uploadError.message || 'Error desconocido'}` 
+            } as ProductResponse);
+          }
           fs.unlink(file.path, () => {});
         }
 
