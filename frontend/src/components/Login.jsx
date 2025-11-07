@@ -11,17 +11,17 @@ const Login = () => {
   const loginSchema = yup.object({
     identifier: yup
       .string()
-      .required('IngresÃ¡ tu usuario o email')
-      .test('email-or-username', 'Debe ser email vÃ¡lido o usuario (mÃ­nimo 3)', (value) => {
+      .required('Ingresá tu usuario o email')
+      .test('email-or-username', 'Debe ser email válido o usuario (mínimo 3)', (value) => {
         if (!value) return false;
         if (value.includes('@')) return yup.string().email().isValidSync(value);
         return value.trim().length >= 3;
       }),
     password: yup
       .string()
-      .required('IngresÃ¡ tu contraseÃ±a')
-      .min(8, 'MÃ­nimo 8 caracteres')
-      .matches(/^(?=.*[A-Z])(?=.*[0-9])/, 'Debe contener al menos una mayÃºscula y un nÃºmero'),
+      .required('Ingresá tu contraseña')
+      .min(8, 'Mínimo 8 caracteres')
+      .matches(/^(?=.*[A-Z])(?=.*[0-9])/, 'Debe contener al menos una mayúscula y un número'),
   });
 
   async function validateField(schema, field, value, context = {}) {
@@ -29,7 +29,7 @@ const Login = () => {
       await schema.validateAt(field, { ...context, [field]: value });
       return '';
     } catch (e) {
-      return e.message || 'Valor invÃ¡lido';
+      return e.message || 'Valor inválido';
     }
   }
   // Un solo campo para usuario o email
@@ -52,7 +52,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    // ValidaciÃ³n completa antes de enviar
+      // Validación completa antes de enviar
     try {
       await loginSchema.validate({ identifier, password }, { abortEarly: false });
       setFieldErrors({ identifier: "", password: "" });
@@ -70,7 +70,7 @@ const Login = () => {
     try {
       setLoading(true);
 
-      // Detecta si el usuario escribiÃ³ un email o un username
+      // Detecta si el usuario escribió un email o un username
       const payload = identifier.includes("@")
         ? { mail: identifier.trim().toLowerCase(), password }
         : { username: identifier.trim(), password };
@@ -80,7 +80,7 @@ const Login = () => {
 
       navigate("/");
     } catch (err) {
-      setError(err.message || "Usuario o contraseÃ±a incorrectos");
+      setError(err.message || "Usuario o contraseña incorrectos");
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ const Login = () => {
       
       navigate("/");
     } catch (err) {
-      setError(err.message || "Error al iniciar sesiÃ³n con Google");
+      setError(err.message || "Error al iniciar sesión con Google");
     } finally {
       setGoogleLoading(false);
     }
@@ -209,7 +209,7 @@ const Login = () => {
         {/* Panel derecho (branding) */}
         <div className="container-login">
           <img src="/logomaxi.png" alt="Maps Asesores" width={350} />
-          <h2>Â¡Bienvenido a Maps, tu bienestar es nuestro compromiso!</h2>
+          <h2>¡Bienvenido a Maps, tu bienestar es nuestro compromiso!</h2>
         </div>
       </div>
     </div>
