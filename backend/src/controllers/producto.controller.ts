@@ -40,9 +40,10 @@ export const createProduct = async(req: Request, res: Response<ProductResponse>,
           // Validar que Cloudinary esté configurado
           if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
             fs.unlink(file.path, () => {});
-            return res.status(500).json({ 
+            res.status(500).json({ 
               message: 'Error: Cloudinary no está configurado. Por favor, configura las variables de entorno CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET.' 
             } as ProductResponse);
+            return;
           }
           try {
             const { url, publicId } = await uploadLocalFile(file.path, 'productos', 'image');
@@ -50,9 +51,10 @@ export const createProduct = async(req: Request, res: Response<ProductResponse>,
             imagenPublicId = publicId;
           } catch (uploadError: any) {
             fs.unlink(file.path, () => {});
-            return res.status(500).json({ 
+            res.status(500).json({ 
               message: `Error al subir la imagen: ${uploadError.message || 'Error desconocido'}` 
             } as ProductResponse);
+            return;
           }
           // remove temp local file
           fs.unlink(file.path, () => {});
@@ -88,9 +90,10 @@ export const updateProduct = async(req: Request<{id: string}, ProductResponse, U
           // Validar que Cloudinary esté configurado
           if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
             fs.unlink(file.path, () => {});
-            return res.status(500).json({ 
+            res.status(500).json({ 
               message: 'Error: Cloudinary no está configurado. Por favor, configura las variables de entorno CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET.' 
             } as ProductResponse);
+            return;
           }
           try {
             const { url, publicId } = await uploadLocalFile(file.path, 'productos', 'image');
@@ -98,9 +101,10 @@ export const updateProduct = async(req: Request<{id: string}, ProductResponse, U
             imagenPublicId = publicId;
           } catch (uploadError: any) {
             fs.unlink(file.path, () => {});
-            return res.status(500).json({ 
+            res.status(500).json({ 
               message: `Error al subir la imagen: ${uploadError.message || 'Error desconocido'}` 
             } as ProductResponse);
+            return;
           }
           fs.unlink(file.path, () => {});
         }
