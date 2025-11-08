@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Star,
 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 export const Contact = () => {
   const form = useRef();
@@ -35,16 +36,43 @@ export const Contact = () => {
       });
 
       if (response.ok) {
-        alert("✅ Mensaje enviado con éxito!");
+        Swal.fire({
+          icon: 'success',
+          title: 'Mensaje enviado!',
+          text: 'Tu mensaje ha sido enviado con éxito.',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
         form.current.reset();
       } else {
         const errorData = await response.json();
         console.error("Error del servidor:", errorData);
-        alert("❌ No se pudo enviar el mensaje. Intentalo más tarde.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al enviar mensaje',
+          text: errorData?.message || 'No se pudo enviar el mensaje. Inténtalo más tarde.',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
       }
     } catch (error) {
       console.error("Error de conexión:", error);
-      alert("⚠️ Hubo un problema al conectar con el servidor.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'Hubo un problema al conectar con el servidor. Verifica tu conexión.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
     }
   };
 
