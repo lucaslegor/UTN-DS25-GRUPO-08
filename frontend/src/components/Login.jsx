@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
+import "../styles/login.override.css";
 import { Button } from "@mui/material";
 import { loginApi, loginWithGoogleApi } from "../services/api";
 import { loginWithGoogle } from "../services/googleAuth";
