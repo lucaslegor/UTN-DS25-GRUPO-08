@@ -10,16 +10,12 @@ import { uploadPoliza } from '../middlewares/upload.middleware';
 
 const router = Router();
 
-// Aplicar autenticación a todas las rutas de pólizas
 router.use(authenticate);
 
-// Rutas que requieren solo autenticación (todos los usuarios autenticados)
 router.get('/', polizaController.getAllPolizas);
 router.get('/:id', polizaController.getPolizaById);
 router.post('/:idSolicitud', uploadPoliza.single('file'), polizaController.createPoliza);
 
-// Rutas que requieren rol ADMIN
-// Permitir reemplazo de archivo de póliza vía multipart/form-data en PUT
 router.put(
   '/:id',
   authorize('ADMINISTRADOR'),

@@ -1,19 +1,14 @@
-// Google OAuth service para el frontend (Google Identity Services)
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '97231523973-8e1t3mtomvcg8qvns035tdfdcalem9vt.apps.googleusercontent.com';
 
-// Función para cargar Google Identity Services
 export const loadGoogleAPI = () => {
   return new Promise((resolve, reject) => {
-    // Verificar si ya está cargado
     if (window.google && window.google.accounts) {
       resolve(window.google);
       return;
     }
 
-    // Esperar a que el script se cargue
     const checkGoogle = () => {
       if (window.google && window.google.accounts) {
-        console.log('Google Identity Services cargado correctamente');
         resolve(window.google);
       } else {
         setTimeout(checkGoogle, 100);
@@ -24,10 +19,8 @@ export const loadGoogleAPI = () => {
   });
 };
 
-// Función para hacer login con Google usando Google Identity Services
 export const loginWithGoogle = async () => {
   try {
-    console.log('Iniciando login con Google...');
     await loadGoogleAPI();
     
     if (!window.google || !window.google.accounts) {
@@ -35,7 +28,6 @@ export const loginWithGoogle = async () => {
     }
     
     return new Promise((resolve, reject) => {
-      // Crear overlay de fondo
       const overlay = document.createElement('div');
       overlay.id = 'google-login-overlay';
       overlay.style.cssText = `
@@ -66,7 +58,6 @@ export const loginWithGoogle = async () => {
         animation: slideIn 0.3s ease-out;
       `;
 
-      // Agregar estilos de animación
       const style = document.createElement('style');
       style.textContent = `
         @keyframes slideIn {
@@ -82,7 +73,6 @@ export const loginWithGoogle = async () => {
       `;
       document.head.appendChild(style);
 
-      // Crear contenido del modal
       modal.innerHTML = `
         <h3 style="margin: 0 0 20px 0; color: #333; font-size: 18px;">Iniciar sesión con Google</h3>
         <div id="google-signin-button"></div>
@@ -107,12 +97,9 @@ export const loginWithGoogle = async () => {
       overlay.appendChild(modal);
       document.body.appendChild(overlay);
 
-      // Configurar el callback de Google
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: (response) => {
-          console.log('Token obtenido de Google');
-          // Limpiar el modal
           document.body.removeChild(overlay);
           document.head.removeChild(style);
           resolve(response.credential);
@@ -121,7 +108,6 @@ export const loginWithGoogle = async () => {
         cancel_on_tap_outside: false
       });
 
-      // Renderizar el botón de Google
       setTimeout(() => {
         const buttonContainer = document.getElementById('google-signin-button');
         if (buttonContainer) {
@@ -136,20 +122,17 @@ export const loginWithGoogle = async () => {
         }
       }, 100);
 
-      // Manejar cierre del modal
       const closeModal = () => {
         document.body.removeChild(overlay);
         document.head.removeChild(style);
         reject(new Error('Login con Google cancelado'));
       };
 
-      // Event listeners para cerrar
       document.getElementById('close-google-modal').onclick = closeModal;
       overlay.onclick = (e) => {
         if (e.target === overlay) closeModal();
       };
 
-      // Cerrar con Escape
       const handleEscape = (e) => {
         if (e.key === 'Escape') {
           closeModal();
@@ -158,7 +141,6 @@ export const loginWithGoogle = async () => {
       };
       document.addEventListener('keydown', handleEscape);
 
-      // Limpiar después de 2 minutos
       setTimeout(() => {
         if (document.getElementById('google-login-overlay')) {
           closeModal();
@@ -171,7 +153,6 @@ export const loginWithGoogle = async () => {
   }
 };
 
-// Función para hacer logout de Google
 export const logoutFromGoogle = async () => {
   try {
     await loadGoogleAPI();

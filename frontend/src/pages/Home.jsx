@@ -13,13 +13,10 @@ const Home = () => {
   const [tipoFilter, setTipoFilter] = React.useState("todos");
   const [sortOrder, setSortOrder] = React.useState("alfabetico");
 
-  // Normaliza lo que haya en localStorage
   const normalize = (list) =>
     (list || []).map((p) => ({
       ...p,
-      // aseguro title (AdminPanel guarda name y title iguales)
       title: p.title || p.name || "",
-      // aseguro tipo y cobertura
       tipo: p.tipo || "auto",
       cobertura: p.cobertura || "Cobertura básica",
     }));
@@ -27,7 +24,6 @@ const Home = () => {
   React.useEffect(() => {
     let mounted = true;
     setLoading(true);
-    // Preferimos API; si falla, fallback a localStorage/seed
     apiFetch('/productos')
       .then((data) => {
         const list = Array.isArray(data?.products) ? data.products : (data?.productos || []);
@@ -60,17 +56,14 @@ const Home = () => {
     return () => { mounted = false; };
   }, []);
 
-  // Función para obtener tipos únicos de productos
   const getUniqueTypes = () => {
     const types = [...new Set(products.map(p => p.tipo).filter(Boolean))];
     return types.sort();
   };
 
-  // Función de filtrado y ordenamiento
   const getFilteredAndSortedProducts = () => {
     let filtered = products;
 
-    // Filtro por búsqueda
     if (search.trim()) {
       filtered = filtered.filter(
         (p) =>
@@ -79,12 +72,10 @@ const Home = () => {
       );
     }
 
-    // Filtro por tipo
     if (tipoFilter !== "todos") {
       filtered = filtered.filter(p => p.tipo === tipoFilter);
     }
 
-    // Ordenamiento
     if (sortOrder === "alfabetico") {
       filtered = [...filtered].sort((a, b) => 
         (a.title || "").localeCompare(b.title || "")

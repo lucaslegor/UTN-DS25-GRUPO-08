@@ -53,7 +53,6 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
-    // Validación completa
     try {
       await registerSchema.validate({ username, mail: email, password, confirmPassword }, { abortEarly: false });
       setFieldErrors({ username: "", mail: "", password: "", confirmPassword: "" });

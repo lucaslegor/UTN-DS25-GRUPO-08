@@ -110,7 +110,6 @@ const AdminPanel = () => {
 
   const navigate = useNavigate();
 
-  // Protege la ruta
   useEffect(() => {
     const raw = localStorage.getItem('auth');
     try {
@@ -119,7 +118,6 @@ const AdminPanel = () => {
         navigate('/login');
         return;
       }
-      // Verificar que sea administrador
       if (auth?.user?.rol !== 'ADMINISTRADOR') {
         navigate('/');
         return;
@@ -129,28 +127,24 @@ const AdminPanel = () => {
     }
   }, [navigate]);
 
-  // Carga productos desde API
   useEffect(() => {
     if (activeTab === 'products') {
       loadProducts();
     }
   }, [activeTab]);
 
-  // Cargar usuarios al entrar en pestaña "users"
   useEffect(() => {
     if (activeTab === 'users') {
       loadUsers();
     }
   }, [activeTab]);
 
-  // Cargar solicitudes para asignar pólizas
   useEffect(() => {
     if (activeTab === 'polizas') {
       loadSolicitudes();
     }
   }, [activeTab]);
 
-  /** ======= Helpers API ======= */
   const authHeaders = () => {
     const headers = { 'Content-Type': 'application/json' };
     const raw = localStorage.getItem('auth');
@@ -158,18 +152,15 @@ const AdminPanel = () => {
       const auth = raw ? JSON.parse(raw) : null;
       if (auth?.token) headers.Authorization = `Bearer ${auth.token}`;
     } catch {
-      // Si hay error parseando, no agregar token
     }
     return headers;
   };
-
-  /** ======= API Productos ======= */
 
 async function loadProducts() {
   setProductsLoading(true);
   setProductsError('');
   try {
-    const data = await apiFetch('/productos');   // <-- usa apiFetch
+    const data = await apiFetch('/productos');
     setProducts(data.products || []);
   } catch (err) {
     console.error(err);
@@ -214,33 +205,15 @@ async function loadProducts() {
     } catch (err) {
       console.error(err);
       throw err;
-    }
   }
+}
 
-  /** ======= API Polizas/Solicitudes ======= */
   async function loadSolicitudes() {
     setSolicitudesLoading(true);
     setSolicitudesError('');
     try {
-      console.log('Cargando solicitudes para administrador...');
       const data = await apiFetch(`/solicitudes`);
-      console.log('Respuesta de la API:', data);
       const arr = Array.isArray(data?.data) ? data.data : [];
-      console.log('Solicitudes cargadas:', arr);
-      console.log('Cantidad de solicitudes:', arr.length);
-      
-      // Log detallado de cada solicitud
-      arr.forEach((solicitud, index) => {
-        console.log(`Solicitud ${index + 1}:`, {
-          id: solicitud.id,
-          idUsuario: solicitud.idUsuario,
-          estado: solicitud.estado,
-          usuario: solicitud.usuario,
-          items: solicitud.items,
-          createdAt: solicitud.createdAt
-        });
-      });
-      
       setSolicitudes(arr);
     } catch (err) {
       console.error('Error cargando solicitudes:', err);
@@ -251,7 +224,6 @@ async function loadProducts() {
     }
   }
 
-  // Función para filtrar solicitudes
   const filteredSolicitudes = solicitudes.filter(s => {
     if (!solicitudSearchTerm) return true;
     const searchLower = solicitudSearchTerm.toLowerCase();
@@ -260,7 +232,6 @@ async function loadProducts() {
     return username.includes(searchLower) || solicitudId.includes(searchLower);
   });
 
-  // Función para obtener el texto de la solicitud seleccionada
   const getSelectedSolicitudText = () => {
     if (!selectedSolicitudId) return '';
     const solicitud = solicitudes.find(s => s.id == selectedSolicitudId);
@@ -268,28 +239,18 @@ async function loadProducts() {
     return `#${solicitud.id} - ${solicitud.usuario?.username || `user ${solicitud.idUsuario}`} - ${solicitud.estado} ${solicitud.poliza ? '(YA TIENE PÓLIZA)' : '(SIN PÓLIZA)'}`;
   };
 
-  // Función para ver detalles de la solicitud
   const handleViewDetails = (solicitud) => {
     setSelectedSolicitud(solicitud);
     setDetailsModalOpen(true);
   };
 
-  // Función para ver el contenido de la póliza
   const handleViewPoliza = (polizaUrl, updatedAt = null) => {
     if (polizaUrl) {
-      console.log('Ver póliza - URL original:', polizaUrl);
-      console.log('Ver póliza - updatedAt:', updatedAt);
-      
-      // Evitar caché del navegador cuando se reemplaza la póliza
       const version = updatedAt ? new Date(updatedAt).getTime() : Date.now();
       const url = polizaUrl.includes('?') ? `${polizaUrl}&v=${version}` : `${polizaUrl}?v=${version}`;
       
-      console.log('Ver póliza - URL final:', url);
-      
-      // Intentar abrir la URL
       const newWindow = window.open(url, '_blank');
       
-      // Si la ventana se cierra inmediatamente o hay un error, puede ser un problema de Cloudinary
       if (!newWindow || newWindow.closed) {
         console.error('Error: No se pudo abrir la ventana. Puede ser un problema con la URL de Cloudinary.');
         alert('Error al abrir la póliza. Por favor, verifica que la URL sea válida.');
@@ -300,33 +261,23 @@ async function loadProducts() {
     }
   };
 
-  // Función para reemplazar póliza
   const handleReplacePoliza = async (e) => {
     e.preventDefault();
     if (!replacingPolizaId || !replaceFile) return;
 
     try {
-      // Buscar la solicitud para obtener el ID de la póliza
       const solicitud = solicitudes.find(s => s.id == replacingPolizaId);
       if (!solicitud?.poliza?.id) {
         throw new Error('No se encontró la póliza a reemplazar');
       }
 
-      console.log('Reemplazando póliza ID:', solicitud.poliza.id);
-      console.log('Archivo seleccionado:', replaceFile.name);
-
-      // Usar fetch directo para FormData con manejo manual de tokens
       const formData = new FormData();
       formData.append('file', replaceFile);
       
-      // Obtener token fresco
       const currentAuth = getAuth();
       if (!currentAuth?.token) {
         throw new Error('No hay token de autenticación');
       }
-      
-      console.log('Token presente:', !!currentAuth?.token);
-      console.log('Usuario rol:', currentAuth?.user?.rol);
       
       const res = await fetch(`${API_BASE}/polizas/${solicitud.poliza.id}`, {
         method: 'PUT',
@@ -337,8 +288,6 @@ async function loadProducts() {
         credentials: 'include',
       });
 
-      console.log('Respuesta del servidor:', res.status, res.statusText);
-
       if (!res.ok) {
         const errorData = await res.json();
         console.error('Error del servidor:', errorData);
@@ -346,18 +295,7 @@ async function loadProducts() {
       }
 
       const result = await res.json();
-      console.log('Póliza reemplazada exitosamente:', result);
-      console.log('Nueva póliza completa:', JSON.stringify(result.poliza, null, 2));
       
-      // Verificar que la nueva URL sea diferente de la anterior
-      const solicitudAnterior = solicitudes.find(s => s.id == replacingPolizaId);
-      if (solicitudAnterior?.poliza) {
-        console.log('URL anterior:', solicitudAnterior.poliza.archivoUrl);
-        console.log('URL nueva:', result.poliza.archivoUrl);
-        console.log('¿URLs son diferentes?', solicitudAnterior.poliza.archivoUrl !== result.poliza.archivoUrl);
-      }
-
-      // Actualizar el estado de la solicitud a POLIZA_CARGADA después de reemplazar póliza
       await apiFetch(`/solicitudes/${replacingPolizaId}`, {
         method: 'PUT',
         body: { 
@@ -365,7 +303,6 @@ async function loadProducts() {
         }
       });
       
-      // Actualizar inmediatamente el estado de solicitudes con la nueva URL de la póliza
       setSolicitudes(prevSolicitudes => {
         return prevSolicitudes.map(s => {
           if (s.id == replacingPolizaId && s.poliza) {
@@ -384,7 +321,6 @@ async function loadProducts() {
         });
       });
       
-      // Actualizar selectedSolicitud si está abierto el modal
       if (selectedSolicitud && selectedSolicitud.id == replacingPolizaId) {
         setSelectedSolicitud(prev => ({
           ...prev,
@@ -396,17 +332,13 @@ async function loadProducts() {
           },
           estado: 'POLIZA_CARGADA'
         }));
-        console.log('Actualizado selectedSolicitud con nueva URL:', result.poliza.archivoUrl);
       }
       
-      // Recargar solicitudes en segundo plano para sincronizar
       loadSolicitudes().catch(err => console.error('Error recargando solicitudes:', err));
       
-      // Limpiar estado
       setReplacingPolizaId(null);
       setReplaceFile(null);
       
-      // Mostrar mensaje de éxito
       const successMessage = document.createElement('div');
       successMessage.textContent = '✅ Póliza reemplazada exitosamente';
       successMessage.style.cssText = `
@@ -428,11 +360,9 @@ async function loadProducts() {
     }
   };
 
-  // Función para aprobar solicitud
   const handleApproveSolicitud = async (solicitudId) => {
     setIsUpdating(true);
     try {
-      // Nota automática de aprobación
       const notaAprobacion = `¡Excelente noticia! Tu solicitud de seguro ha sido APROBADA. 
 
 IMPORTANTE: Aunque tu solicitud fue aprobada, tu póliza aún no está activa. Para completar el proceso:
@@ -453,10 +383,8 @@ Si tienes alguna consulta, no dudes en contactarnos.
         }
       });
       
-      // Recargar solicitudes
       await loadSolicitudes();
       
-      // Actualizar selectedSolicitud si está abierto el modal
       if (selectedSolicitud && selectedSolicitud.id === solicitudId) {
         setSelectedSolicitud(prev => ({
           ...prev,
@@ -465,7 +393,6 @@ Si tienes alguna consulta, no dudes en contactarnos.
         }));
       }
       
-      // Mostrar mensaje de éxito
       const successMessage = document.createElement('div');
       successMessage.textContent = '✅ Solicitud aprobada exitosamente con nota informativa';
       successMessage.style.cssText = `
@@ -489,7 +416,6 @@ Si tienes alguna consulta, no dudes en contactarnos.
     }
   };
 
-  // Función para rechazar solicitud
   const handleRejectSolicitud = async (solicitudId) => {
     if (!rejectionNote.trim()) {
       alert('Por favor, ingresa una nota de rechazo');
@@ -506,10 +432,8 @@ Si tienes alguna consulta, no dudes en contactarnos.
         }
       });
       
-      // Recargar solicitudes
       await loadSolicitudes();
       
-      // Actualizar selectedSolicitud si está abierto el modal
       if (selectedSolicitud && selectedSolicitud.id === solicitudId) {
         setSelectedSolicitud(prev => ({
           ...prev,
@@ -518,11 +442,9 @@ Si tienes alguna consulta, no dudes en contactarnos.
         }));
       }
       
-      // Cerrar modal y limpiar nota
       setDetailsModalOpen(false);
       setRejectionNote('');
       
-      // Mostrar mensaje de éxito
       const successMessage = document.createElement('div');
       successMessage.textContent = '✅ Solicitud rechazada exitosamente';
       successMessage.style.cssText = `
@@ -552,17 +474,14 @@ Si tienes alguna consulta, no dudes en contactarnos.
     try {
       if (!assignFile) throw new Error('Seleccione un archivo');
       
-      // Verificar si la solicitud ya tiene póliza para mostrar mensaje apropiado
       const solicitudSeleccionada = solicitudes.find(s => s.id == selectedSolicitudId);
       
-      // Validar que la solicitud esté aprobada (solo para nuevas asignaciones, no para reemplazos)
       if (solicitudSeleccionada?.estado !== 'APROBADA' && !solicitudSeleccionada?.poliza) {
         throw new Error('Solo se pueden asignar pólizas a solicitudes aprobadas');
       }
       
       const esReemplazo = solicitudSeleccionada && solicitudSeleccionada.poliza;
       
-      // Mostrar mensaje de carga
       const loadingMessage = document.createElement('div');
       loadingMessage.textContent = esReemplazo ? 'Reemplazando póliza...' : 'Asignando póliza...';
       loadingMessage.style.cssText = `
@@ -574,7 +493,6 @@ Si tienes alguna consulta, no dudes en contactarnos.
       
       await uploadPolizaFileApi(Number(selectedSolicitudId), assignFile);
       
-      // Actualizar el estado de la solicitud a POLIZA_CARGADA después de asignar póliza
       await apiFetch(`/solicitudes/${selectedSolicitudId}`, {
         method: 'PUT',
         body: { 
@@ -582,21 +500,17 @@ Si tienes alguna consulta, no dudes en contactarnos.
         }
       });
       
-      // Remover mensaje de carga
       document.body.removeChild(loadingMessage);
       
       setAssignFile(null);
       setSelectedSolicitudId('');
       await loadSolicitudes();
       
-      // Actualizar selectedSolicitud si está abierto el modal con la solicitud completa actualizada
       if (selectedSolicitud && selectedSolicitud.id == selectedSolicitudId) {
-        // Buscar la solicitud actualizada en la lista
         const solicitudActualizada = solicitudes.find(s => s.id == selectedSolicitudId);
         if (solicitudActualizada) {
           setSelectedSolicitud(solicitudActualizada);
         } else {
-          // Si no se encuentra, al menos actualizar el estado
           setSelectedSolicitud(prev => ({
             ...prev,
             estado: 'POLIZA_CARGADA'
@@ -604,7 +518,6 @@ Si tienes alguna consulta, no dudes en contactarnos.
         }
       }
       
-      // Mostrar mensaje de éxito apropiado
       const successMessage = document.createElement('div');
       successMessage.textContent = esReemplazo ? '✅ Póliza reemplazada exitosamente' : '✅ Póliza asignada exitosamente';
       successMessage.style.cssText = `
@@ -614,7 +527,6 @@ Si tienes alguna consulta, no dudes en contactarnos.
       `;
       document.body.appendChild(successMessage);
       
-      // Remover mensaje después de 3 segundos
       setTimeout(() => {
         if (document.body.contains(successMessage)) {
           document.body.removeChild(successMessage);
@@ -622,11 +534,9 @@ Si tienes alguna consulta, no dudes en contactarnos.
       }, 3000);
       
     } catch (err) {
-      // Remover mensaje de carga si existe
       const loadingMessage = document.querySelector('div[style*="background: #1976d2"]');
       if (loadingMessage) document.body.removeChild(loadingMessage);
       
-      // Mostrar mensaje de error
       const errorMessage = document.createElement('div');
       errorMessage.textContent = '❌ Error al asignar póliza: ' + (err?.message || 'Error desconocido');
       errorMessage.style.cssText = `
@@ -636,7 +546,6 @@ Si tienes alguna consulta, no dudes en contactarnos.
       `;
       document.body.appendChild(errorMessage);
       
-      // Remover mensaje después de 5 segundos
       setTimeout(() => {
         if (document.body.contains(errorMessage)) {
           document.body.removeChild(errorMessage);
@@ -690,12 +599,10 @@ async function updateUserRole(userId, newRole) {
   }
 }
 
-  /** ======= Handlers Productos ======= */
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
     setProduct((prev) => ({ ...prev, [name]: value }));
     
-    // Validar el campo en tiempo real después de un pequeño delay
     setTimeout(() => {
       validateField(name, value);
     }, 500);
@@ -711,7 +618,6 @@ async function updateUserRole(userId, newRole) {
       setPreviewUrl(dataUrl);
       setImageFile(file);
       
-      // Validar la imagen después de cargarla
       setTimeout(() => {
         validateField('image', file);
       }, 100);
@@ -734,9 +640,7 @@ async function updateUserRole(userId, newRole) {
     setImageFile(null);
   };
 
-  // Función para validar un campo específico
   const validateField = async (fieldName, value) => {
-    // No validar el campo de imagen con Yup
     if (fieldName === 'image') {
       return;
     }
@@ -748,14 +652,12 @@ async function updateUserRole(userId, newRole) {
         editingId: editingId
       }, { context: { editingId } });
       
-      // Si la validación es exitosa, eliminar el error del campo
       setValidationErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[fieldName];
         return newErrors;
       });
     } catch (error) {
-      // Si hay error, agregarlo al estado
       setValidationErrors(prev => ({
         ...prev,
         [fieldName]: error.message
@@ -763,7 +665,6 @@ async function updateUserRole(userId, newRole) {
     }
   };
 
-  // Función para validar todo el formulario
   const validateForm = async () => {
     setIsValidating(true);
     try {
@@ -794,7 +695,6 @@ async function updateUserRole(userId, newRole) {
     e.preventDefault();
     setMessage('');
     
-    // Validar el formulario completo antes de enviar
     const isValid = await validateForm();
     if (!isValid) {
       setMessage('Por favor, corrige los errores en el formulario');
@@ -811,13 +711,9 @@ async function updateUserRole(userId, newRole) {
         tipo: product.tipo?.toLowerCase() || product.tipo,
         isActive: product.isActive,
       };
-      
-      console.log('Datos que se van a enviar:', productData);
-      console.log('Estado del producto:', product);
 
       let updatedProduct;
       if (editingId) {
-        // Si se está editando y hay una nueva imagen, usar FormData
         if (imageFile) {
           const form = new FormData();
           Object.entries(productData).forEach(([k, v]) => form.append(k, String(v)));
@@ -833,12 +729,10 @@ async function updateUserRole(userId, newRole) {
           if (!res.ok) throw new Error(data?.message || 'Error actualizando producto');
           updatedProduct = data.product;
         } else {
-          // Si no hay nueva imagen, enviar solo los datos (mantener imagen existente)
           updatedProduct = await updateProduct(editingId, productData);
         }
         setMessage('Producto actualizado exitosamente');
       } else {
-        // multipart si hay imagen
         if (imageFile) {
           const form = new FormData();
           Object.entries(productData).forEach(([k, v]) => form.append(k, String(v)));
@@ -859,7 +753,6 @@ async function updateUserRole(userId, newRole) {
         setMessage('Producto agregado exitosamente');
       }
 
-      // Recargar la lista de productos
       await loadProducts();
       resetForm();
       setActiveTab('products');
@@ -888,7 +781,6 @@ async function updateUserRole(userId, newRole) {
   };
 
   const handleDelete = async (id) => {
-    // Mostrar confirmación con SweetAlert2
     const result = await Swal.fire({
       title: '¿Estás seguro?',
       text: 'No podrás revertir esta acción',
@@ -905,7 +797,6 @@ async function updateUserRole(userId, newRole) {
     try {
       await deleteProduct(id);
       
-      // Mostrar mensaje de éxito
       Swal.fire({
         title: '¡Eliminado!',
         text: 'El producto ha sido eliminado exitosamente',
@@ -914,12 +805,10 @@ async function updateUserRole(userId, newRole) {
         showConfirmButton: false
       });
       
-      // Recargar la lista de productos
       await loadProducts();
     } catch (err) {
       console.error(err);
       
-      // Verificar si el error es por solicitudes relacionadas
       if (err.message && err.message.includes('solicitudes')) {
         Swal.fire({
           title: 'No se puede eliminar',
@@ -967,7 +856,6 @@ async function updateUserRole(userId, newRole) {
           </div>
         </div>
 
-        {/* ===== Tabs ===== */}
         <div className="admin-tabs">
           <button
             className={`tab-button ${activeTab === 'form' ? 'active' : ''}`}
@@ -1002,7 +890,6 @@ async function updateUserRole(userId, newRole) {
           </button>
         </div>
 
-        {/* ======= Form Producto ======= */}
         {activeTab === 'form' && (
           <div className="admin-container form-container">
             <div className="form-header">
@@ -1315,7 +1202,6 @@ async function updateUserRole(userId, newRole) {
           </div>
         )}
 
-        {/* ======= Tabla Productos ======= */}
         {activeTab === 'products' && (
           <div className="admin-container products-container">
             <div className="products-header">
@@ -1425,7 +1311,6 @@ async function updateUserRole(userId, newRole) {
           </div>
         )}
 
-        {/* ======= Usuarios (API) ======= */}
         {activeTab === 'users' && (
           <div className="admin-container users-container">
             <div className="products-header">
@@ -1484,7 +1369,6 @@ async function updateUserRole(userId, newRole) {
                                 await updateUserRole(u.idUsuario || u.id, newRole);
                                 await loadUsers();
                                 
-                                // Mostrar mensaje de éxito
                                 const successMessage = document.createElement('div');
                                 successMessage.textContent = `✅ Rol de ${u.username} actualizado a ${newRole}`;
                                 successMessage.style.cssText = `
@@ -1501,7 +1385,6 @@ async function updateUserRole(userId, newRole) {
                                 }, 3000);
                               } catch (e) {
                                 alert('No se pudo cambiar el rol: ' + (e?.message || 'Error desconocido'));
-                                // Recargar para restaurar el estado original
                                 await loadUsers();
                               }
                             }
@@ -1542,7 +1425,6 @@ async function updateUserRole(userId, newRole) {
           </div>
         )}
 
-        {/* ======= Asignar Pólizas ======= */}
         {activeTab === 'polizas' && (
           <div className="admin-container form-container">
             <div className="form-header">
@@ -1573,7 +1455,6 @@ async function updateUserRole(userId, newRole) {
                         loadSolicitudes();
                       }}
                       onBlur={() => {
-                        // Delay para permitir hacer clic en las opciones
                         setTimeout(() => setIsSelectOpen(false), 200);
                       }}
                       placeholder="Escribe para buscar solicitudes..."
@@ -1797,7 +1678,6 @@ async function updateUserRole(userId, newRole) {
           </div>
         )}
 
-        {/* Modal para reemplazar póliza */}
         {replacingPolizaId && (
           <div className="modal-overlay" style={{
             position: 'fixed',
@@ -1893,7 +1773,6 @@ async function updateUserRole(userId, newRole) {
           </div>
         )}
 
-        {/* Modal de detalles de solicitud */}
         {detailsModalOpen && selectedSolicitud && (
           <div className="modal-overlay" style={{
             position: 'fixed',

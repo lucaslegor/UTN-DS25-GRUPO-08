@@ -4,9 +4,6 @@ import { useSolicitudes } from "../context/SolicitudesContext";
 import { getAuth } from "../services/api";
 import "../styles/productDetail.css";
 
-// Seed solo por si el storage está vacío (sin precios - sistema de solicitudes)
-
-// Normaliza lo que venga del storage (sin precios - sistema de solicitudes)
 const normalize = (list) =>
   (list || []).map((p) => ({
     ...p,
@@ -24,13 +21,11 @@ export default function ProductDetailPage() {
   const numericId = Number(id);
   const { addToSolicitud, isInSolicitud } = useSolicitudes();
   
-  // Verificar si el usuario es administrador
   const isAdmin = () => {
     const auth = getAuth();
     return auth?.user?.rol === 'ADMINISTRADOR';
   };
 
-  // Verificar si el usuario está logueado
   const isLogged = () => {
     const auth = getAuth();
     return Boolean(auth?.token);
@@ -40,14 +35,12 @@ export default function ProductDetailPage() {
   const [product, setProduct] = React.useState(null);
   const [mainImg, setMainImg] = React.useState("");
 
-  // Carga de productos desde localStorage (con seed si está vacío)
   React.useEffect(() => {
     const stored = localStorage.getItem("products");
     if (stored) {
       const parsed = normalize(JSON.parse(stored));
       setAllProducts(parsed);
       if (parsed.length === 0) {
-        // Si por alguna razón está vacío, usar array vacío
         setAllProducts([]);
         localStorage.setItem("products", JSON.stringify([]));
       }
@@ -57,14 +50,12 @@ export default function ProductDetailPage() {
     }
   }, []);
 
-  // Cuando cambia la lista o el id de la URL, selecciona el producto adecuado
   React.useEffect(() => {
     if (!allProducts.length) return;
     const found = allProducts.find((p) => Number(p.id) === numericId) || null;
     setProduct(found);
   }, [allProducts, numericId]);
 
-  // Actualiza imagen principal al cambiar el producto
   React.useEffect(() => {
     if (!product) return;
     setMainImg(product.image || "");
@@ -78,12 +69,10 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Relacionados: otros productos distintos al actual (toma hasta 4)
   const related = allProducts
     .filter((p) => Number(p.id) !== Number(product.id))
     .slice(0, 4);
 
-  // Info solicitud
   const inSolicitud = isInSolicitud(product.id);
 
   const handleAddToSolicitud = () => {

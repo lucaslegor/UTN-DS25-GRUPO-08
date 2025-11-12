@@ -20,13 +20,11 @@ function App() {
     <SolicitudesProvider>
       <Router>
         <Routes>
-          {/* Ruta /login y /register sin Layout */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Resto de rutas con Layout */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="nosotros" element={<AboutUs />} />
@@ -39,7 +37,6 @@ function App() {
           </Route>
         </Routes>
         
-        {/* Botón flotante de WhatsApp */}
         <WhatsAppFloat />
       </Router>
     </SolicitudesProvider>

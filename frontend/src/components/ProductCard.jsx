@@ -13,13 +13,11 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
   const navigate = useNavigate();
   const inSolicitud = isInSolicitud(id);
 
-  // Verificar si el usuario es administrador
   const isAdmin = () => {
     const auth = getAuth();
     return auth?.user?.rol === 'ADMINISTRADOR';
   };
 
-  // Verificar si el usuario está logueado
   const isLogged = () => {
     const auth = getAuth();
     return Boolean(auth?.token);

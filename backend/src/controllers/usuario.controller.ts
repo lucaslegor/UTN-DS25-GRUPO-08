@@ -4,7 +4,6 @@ import { crearUsuarioSchema, loginSchema, actualizarUsuarioSchema } from "../val
 import type { UsuarioPublic } from "../types/usuarios.types";
 import prisma from "../config/prisma";
 
-// GET /api/usuarios
 export const getUsuarios = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const usuarios: UsuarioPublic[] = await listarUsuarios();
@@ -14,7 +13,6 @@ export const getUsuarios = async (_req: Request, res: Response, next: NextFuncti
   }
 };
 
-// GET /api/usuarios/:username
 export const getUsuario = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const u = await obtenerUsuarioPorUsername(req.params.username);
@@ -25,7 +23,6 @@ export const getUsuario = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-// POST /api/usuarios
 export const postUsuario = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = crearUsuarioSchema.parse(req.body);
@@ -36,7 +33,6 @@ export const postUsuario = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-// PUT /api/usuarios/:username
 export const putUsuario = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = actualizarUsuarioSchema.parse(req.body);
@@ -53,7 +49,6 @@ export const putUsuario = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-// DELETE /api/usuarios/:username
 export const deleteUsuario = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const ok = await eliminarUsuario(req.params.username);

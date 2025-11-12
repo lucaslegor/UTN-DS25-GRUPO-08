@@ -1,6 +1,3 @@
-// ==========================================
-// backend/src/services/poliza.service.ts
-// ==========================================
 import { PrismaClient as PrismaClient2 } from '@prisma/client';
 import { enviarNotificacionPolizaCargada } from './email.service';
 
@@ -128,13 +125,11 @@ export async function createPoliza(idSolicitud: number, data: { archivoUrl: stri
     },
   });
 
-  // Actualizar estado de la solicitud
   await prisma2.solicitud.update({
     where: { id: idSolicitud },
     data: { estado: 'POLIZA_CARGADA' }
   });
 
-  // Enviar notificación
   if (solicitud.usuario?.mail && solicitud.usuario?.username) {
     try {
       await enviarNotificacionPolizaCargada(
@@ -152,7 +147,6 @@ export async function createPoliza(idSolicitud: number, data: { archivoUrl: stri
 
 export async function updatePoliza(id: number, data: any) {
   try {
-    // Asegurar que updatedAt se actualice si no está en los datos
     const updateData = {
       ...data,
       updatedAt: data.updatedAt || new Date()
@@ -174,14 +168,6 @@ export async function updatePoliza(id: number, data: any) {
           }
         }
       }
-    });
-    
-    // Log para debugging
-    console.log('Póliza actualizada en servicio:', {
-      id: updated.id,
-      archivoUrl: updated.archivoUrl,
-      updatedAt: updated.updatedAt,
-      archivoPublicId: updated.archivoPublicId
     });
     
     return updated;
@@ -208,7 +194,6 @@ export async function deletePoliza(id: number) {
   }
 }
 
-// Función legacy - mantener por compatibilidad
 export async function cargarPoliza(idSolicitud: number, archivoUrl: string) {
   return await createPoliza(idSolicitud, { archivoUrl });
 }

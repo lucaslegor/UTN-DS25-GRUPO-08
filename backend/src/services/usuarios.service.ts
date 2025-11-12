@@ -38,12 +38,10 @@ export async function crearUsuario(
     },
   });
 
-  // Enviar email de bienvenida
   try {
     await enviarBienvenida(username, mail.toLowerCase());
   } catch (error) {
     console.error('Error enviando email de bienvenida:', error);
-    // No lanzamos error para no interrumpir el registro
   }
 
   return toUsuarioPublic(mapDbToUsuario(created));

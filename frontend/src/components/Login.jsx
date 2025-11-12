@@ -33,8 +33,7 @@ const Login = () => {
       return e.message || 'Valor inválido';
     }
   }
-  // Un solo campo para usuario o email
-  const [identifier, setIdentifier] = useState(""); // username o email
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -53,7 +52,6 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-      // Validación completa antes de enviar
     try {
       await loginSchema.validate({ identifier, password }, { abortEarly: false });
       setFieldErrors({ identifier: "", password: "" });
@@ -71,12 +69,10 @@ const Login = () => {
     try {
       setLoading(true);
 
-      // Detecta si el usuario escribió un email o un username
       const payload = identifier.includes("@")
         ? { mail: identifier.trim().toLowerCase(), password }
         : { username: identifier.trim(), password };
 
-      // Llama a la API de login (tu helper)
       const res = await loginApi(payload);
 
       navigate("/");

@@ -37,7 +37,6 @@ export const createProduct = async(req: Request, res: Response<ProductResponse>,
         let imagenUrl: string | undefined = body?.imagenUrl;
         let imagenPublicId: string | undefined;
         if (file) {
-          // Validar que Cloudinary esté configurado
           if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
             fs.unlink(file.path, () => {});
             res.status(500).json({ 
@@ -56,7 +55,6 @@ export const createProduct = async(req: Request, res: Response<ProductResponse>,
             } as ProductResponse);
             return;
           }
-          // remove temp local file
           fs.unlink(file.path, () => {});
         }
         const product = await productService.createProduct({
@@ -80,14 +78,12 @@ export const updateProduct = async(req: Request<{id: string}, ProductResponse, U
         const file = (req as any).file as Express.Multer.File | undefined;
         let imagenUrl: string | undefined = body?.imagenUrl;
         let imagenPublicId: string | undefined;
-        // Si vamos a reemplazar imagen, eliminar la anterior si existía
         let prevPublicId: string | undefined;
         try {
           const prev = await prisma.producto.findUnique({ where: { id: Number(req.params.id) }, select: { imagenPublicId: true } });
           prevPublicId = prev?.imagenPublicId || undefined;
         } catch {}
         if (file) {
-          // Validar que Cloudinary esté configurado
           if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
             fs.unlink(file.path, () => {});
             res.status(500).json({ 
@@ -119,7 +115,6 @@ export const updateProduct = async(req: Request<{id: string}, ProductResponse, U
           imagenPublicId,
         };
         
-        // Filtrar campos undefined
         const filteredData = Object.fromEntries(
           Object.entries(updateData).filter(([_, v]) => v !== undefined)
         );
@@ -131,7 +126,6 @@ export const updateProduct = async(req: Request<{id: string}, ProductResponse, U
         return;
         }
 
-        // Borrar imagen anterior en Cloudinary si fue reemplazada
         if (imagenPublicId && prevPublicId && prevPublicId !== imagenPublicId) {
           try { await deleteByPublicId(prevPublicId); } catch {}
         }

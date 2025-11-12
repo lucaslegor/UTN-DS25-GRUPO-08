@@ -5,7 +5,6 @@ import "../styles/UserProfile.css";
 async function apiGetUser(username) {
   if (!username) return null;
   try {
-    // Usar el endpoint /auth/user que devuelve la información del usuario actual
     const data = await apiFetch(`/auth/user`);
     return data?.user || data || null;
   } catch (error) {
@@ -17,7 +16,6 @@ async function apiGetUser(username) {
 async function apiUpdateUser(currentUsername, payload) {
   if (!currentUsername) throw new Error("No hay usuario actual");
   try {
-    // Usar el endpoint /auth/user para actualizar el perfil propio
     const data = await apiFetch(`/auth/user`, {
       method: "PUT",
       body: payload,
@@ -28,32 +26,26 @@ async function apiUpdateUser(currentUsername, payload) {
   }
 }
 
-/* ===== Secciones ===== */
 const SECTIONS = [
   { id: "cuenta", label: "Cuenta de usuario", icon: "bi-shield-lock" },
 ];
 
 export default function UserProfile() {
   const [active, setActive] = useState("cuenta");
-  const [editing, setEditing] = useState(null); // 'cuenta' | null
+  const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  // Usuario actual (para PUT /:username y para key localStorage)
   const [currentUsername, setCurrentUsername] = useState("");
 
-  // Estado principal
   const [user, setUser] = useState({
-    // Cuenta
     username: "",
     email: "",
     profileImage: "",
   });
 
-  // Borrador de edición
   const [draft, setDraft] = useState(user);
 
-  // Helpers para foto de perfil
   const profileImageKey = (u) => `profileImage:${u || ""}`;
   const loadProfileImage = (u) => {
     try {
@@ -74,7 +66,6 @@ export default function UserProfile() {
     }
   };
 
-  // Carga inicial desde localStorage.auth y (opcional) GET /usuarios/:username
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -91,14 +82,12 @@ export default function UserProfile() {
           next.email = localMail;
         }
 
-        // Si tengo username, intento refrescar contra el backend
         if (localUsername) {
           const remote = await apiGetUser(localUsername);
           if (remote) {
             next.username = remote.username || next.username;
             next.email = remote.mail || next.email;
           }
-          // cargar foto de perfil local para ese username
           const profileImage = loadProfileImage(next.username);
           if (profileImage) {
             next.profileImage = profileImage;
@@ -109,7 +98,6 @@ export default function UserProfile() {
         setUser(next);
         setDraft(next);
 
-        // sincroniza localStorage.auth.user si faltaba el mail
         if (auth?.user) {
           const merged = { ...auth.user, username: next.username, mail: next.email, profileImage: next.profileImage };
           localStorage.setItem("auth", JSON.stringify({ ...auth, user: merged }));
@@ -122,7 +110,6 @@ export default function UserProfile() {
     })();
   }, []);
 
-  // Listener para cambios en localStorage (para actualizar la foto en tiempo real)
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'auth' && e.newValue) {
@@ -165,16 +152,13 @@ export default function UserProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Limpiar mensajes anteriores
     setMsg('');
     
-    // Validar tipo de archivo
     if (!file.type.startsWith('image/')) {
       setMsg('Por favor selecciona un archivo de imagen válido (JPG, PNG, GIF, etc.)');
       return;
     }
     
-    // Validar tamaño (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setMsg('La imagen no puede ser mayor a 5MB');
       return;
@@ -196,9 +180,7 @@ export default function UserProfile() {
     setLoading(true);
     setMsg("");
     try {
-      // === CUENTA (backend) ===
       const payload = {};
-      // cambios de username/mail
       if (draft.username !== user.username) {
         if (!draft.username?.trim()) throw new Error("El usuario no puede estar vacío");
         payload.username = draft.username.trim();
@@ -208,7 +190,6 @@ export default function UserProfile() {
         payload.mail = draft.email.trim().toLowerCase();
       }
 
-      // Guardar foto de perfil localmente
       if (draft.profileImage !== user.profileImage) {
         saveProfileImage(currentUsername || draft.username, draft.profileImage);
       }
@@ -229,7 +210,6 @@ export default function UserProfile() {
       const newUsername = updated.username ?? payload.username ?? user.username;
       const newEmail = updated.mail ?? payload.mail ?? user.email;
 
-      // Migrar foto de perfil local si cambió el username
       if (newUsername && (currentUsername || user.username) && newUsername !== (currentUsername || user.username)) {
         migrateProfileImageKey(currentUsername || user.username, newUsername);
       }
@@ -244,13 +224,11 @@ export default function UserProfile() {
       setDraft(next);
       setCurrentUsername(newUsername);
 
-      // actualiza localStorage.auth.user
       const auth = getAuth();
       if (auth?.user) {
         const merged = { ...auth.user, username: newUsername, mail: newEmail, profileImage: draft.profileImage };
         localStorage.setItem("auth", JSON.stringify({ ...auth, user: merged }));
         
-        // Disparar evento personalizado para notificar cambios
         window.dispatchEvent(new CustomEvent('profileImageChanged', { 
           detail: { profileImage: draft.profileImage, username: newUsername } 
         }));
@@ -292,7 +270,6 @@ export default function UserProfile() {
       <div className="profile-content">
         {msg && <div className="profile-msg">{msg}</div>}
 
-        {/* ===== CUENTA (BACKEND) ===== */}
         {active === "cuenta" && (
           <div className="panel">
             <div className="panel-header">
@@ -320,7 +297,6 @@ export default function UserProfile() {
                 saveSection("cuenta");
               }}
             >
-              {/* Foto de perfil */}
               <div className="profile-image-section">
                 <label>
                   <span>Foto de perfil</span>
@@ -394,7 +370,6 @@ export default function UserProfile() {
                 </label>
               </div>
 
-              {/* Enlace para cambiar contraseña */}
               <div className="password-section">
                 <label>
                   <span>Contraseña</span>

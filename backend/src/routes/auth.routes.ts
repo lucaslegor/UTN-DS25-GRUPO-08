@@ -1,5 +1,4 @@
 import { Router } from "express";
-// Removed nodemailer import - now using Resend service
 import {
   login,
   refreshAccessToken,
@@ -17,11 +16,9 @@ import {
 } from "../validations/auth.validation";
 import { authenticate } from "../middlewares/auth.middleware";
 import prisma from "../config/prisma";
-// Removed mailer import - now using Resend service
 
 const router = Router();
 
-// POST /api/auth/login
 router.post("/login", async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -32,10 +29,9 @@ router.post("/login", async (req, res) => {
   try {
     const { user, token, refreshToken } = await login(parsed.data);
 
-    // Cookie httpOnly con refresh
     res.cookie("rt", refreshToken, {
       httpOnly: true,
-      secure: false, // true en prod con HTTPS
+      secure: false,
       sameSite: "lax",
       path: "/api/auth",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
@@ -58,13 +54,11 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// POST /api/auth/refresh
 router.post("/refresh", (req, res) => {
   const rt = req.cookies?.rt as string | undefined;
   if (!rt) return res.status(401).json({ message: "No refresh token" });
   try {
     const { token, refreshToken } = refreshAccessToken(rt);
-    // Rotación simple del refresh
     res.cookie("rt", refreshToken, {
       httpOnly: true,
       secure: false,
@@ -80,13 +74,11 @@ router.post("/refresh", (req, res) => {
   }
 });
 
-// POST /api/auth/logout
 router.post("/logout", (_req, res) => {
   res.clearCookie("rt", { path: "/api/auth" });
   return res.json({ ok: true });
 });
 
-// GET /api/auth/user (quién soy)
 router.get("/user", authenticate, async (req, res) => {
   const u = await prisma.usuario.findUnique({ where: { id: req.user!.id } });
   if (!u) return res.status(404).json({ message: "Usuario no encontrado" });
@@ -145,7 +137,6 @@ router.put("/user", authenticate, async (req, res) => {
   }
 });
 
-// POST /api/auth/forgot (solicitar reset)
 router.post("/forgot", async (req, res) => {
   const parsed = forgotPasswordSchema.safeParse({
     mail: req.body?.mail,
@@ -164,12 +155,9 @@ router.post("/forgot", async (req, res) => {
 
     const { resetToken, resetUrl } = await forgotPassword(mail, origin);
 
-    // No revelamos si el mail existe o no
     if (!resetToken || !resetUrl) {
       return res.json({ ok: true });
     }
-
-    // El email se envía automáticamente desde el servicio auth.service.ts
 
     return res.json({ ok: true });
   } catch (err: any) {
@@ -180,7 +168,6 @@ router.post("/forgot", async (req, res) => {
   }
 });
 
-// POST /api/auth/reset (actualizar contraseña con token)
 router.post("/reset", async (req, res) => {
   const parsed = resetPasswordSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -198,7 +185,6 @@ router.post("/reset", async (req, res) => {
   }
 });
 
-// POST /api/auth/google (login con Google)
 router.post("/google", async (req, res) => {
   try {
     const { token } = req.body;
@@ -207,20 +193,17 @@ router.post("/google", async (req, res) => {
       return res.status(400).json({ message: "Token de Google requerido" });
     }
 
-    // Verificar token de Google
     const googleUser = await verifyGoogleToken(token);
     
     if (!googleUser.verified_email) {
       return res.status(400).json({ message: "Email no verificado por Google" });
     }
 
-    // Buscar o crear usuario
     const { user, token: accessToken, refreshToken } = await findOrCreateGoogleUser(googleUser);
 
-    // Cookie httpOnly con refresh
     res.cookie("rt", refreshToken, {
       httpOnly: true,
-      secure: false, // true en prod con HTTPS
+      secure: false,
       sameSite: "lax",
       path: "/api/auth",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
