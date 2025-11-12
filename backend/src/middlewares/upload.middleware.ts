@@ -6,7 +6,6 @@ const uploadsRoot = path.resolve(process.cwd(), 'uploads');
 const polizasDir = path.join(uploadsRoot, 'polizas');
 const productosDir = path.join(uploadsRoot, 'productos');
 
-// Ensure directories exist at runtime
 for (const dir of [uploadsRoot, polizasDir, productosDir]) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -28,15 +27,13 @@ const storage = multer.diskStorage({
 export const uploadPoliza = multer({
   storage,
   fileFilter: (_req: unknown, file: any, cb: (error: Error | null, acceptFile?: boolean) => void) => {
-    // Accept PDFs and common image types just in case
     const ok = /pdf|png|jpg|jpeg/.test((file.mimetype || '').toLowerCase());
     if (ok) return cb(null, true);
     cb(new Error('Tipo de archivo no permitido'));
   },
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-// Separate storage for product images
 const storageProductos = multer.diskStorage({
   destination: (_req: unknown, _file: any, cb: (error: Error | null, destination: string) => void) => {
     cb(null, productosDir);

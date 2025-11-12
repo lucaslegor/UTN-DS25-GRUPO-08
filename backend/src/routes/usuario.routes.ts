@@ -3,11 +3,12 @@ import prisma from "../config/prisma";
 import { crearUsuarioSchema } from "../validations/usuarios.validation";
 import bcrypt from "bcryptjs";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { validateRecaptcha } from "../middlewares/recaptcha.middleware";
 
 const usuariosRoutes = Router();
 
 // POST /api/usuarios (registro)
-usuariosRoutes.post("/", async (req, res) => {
+usuariosRoutes.post("/", validateRecaptcha, async (req, res) => {
   const parsed = crearUsuarioSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({

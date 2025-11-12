@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { enviarContacto } from "../services/email.service";
+import { validateRecaptcha } from "../middlewares/recaptcha.middleware";
 
 const router = Router();
 
 // POST /api/email/contacto - Enviar mensaje desde formulario de contacto público
-router.post("/contacto", async (req, res) => {
+router.post("/contacto", validateRecaptcha, async (req, res) => {
   try {
     const { nombre, email, mensaje } = req.body;
 

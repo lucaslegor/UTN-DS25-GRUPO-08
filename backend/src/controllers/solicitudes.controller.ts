@@ -9,31 +9,19 @@ export async function obtenerSolicitudes(
 ) {
   try {
     const userId = (req as any).user?.id;
-    const role = (req as any).user?.role; // Cambiado de 'rol' a 'role'
-    
-    console.log('=== OBTENER SOLICITUDES ===');
-    console.log('obtenerSolicitudes: userId:', userId, 'role:', role);
-    console.log('obtenerSolicitudes: user object completo:', (req as any).user);
+    const role = (req as any).user?.role;
     
     if (!userId) {
-      console.log('obtenerSolicitudes: ERROR - Usuario no autenticado');
       return res.status(401).json({ message: "Usuario no autenticado" });
     }
 
     let solicitudes;
     if (role === 'ADMINISTRADOR') {
-      // Los administradores ven todas las solicitudes
-      console.log('obtenerSolicitudes: Cargando todas las solicitudes para administrador');
       solicitudes = await solicitudesService.getAllSolicitudes();
     } else {
-      // Los usuarios ven solo sus solicitudes
-      console.log('obtenerSolicitudes: Cargando solicitudes para usuario:', userId);
       solicitudes = await solicitudesService.obtenerSolicitudesPorUsuario(userId);
-      console.log('obtenerSolicitudes: Solicitudes del usuario:', solicitudes);
     }
     
-    console.log('obtenerSolicitudes: Solicitudes encontradas:', solicitudes.length);
-    console.log('obtenerSolicitudes: Primera solicitud:', solicitudes[0]);
     res.json({ success: true, data: solicitudes });
   } catch (error) {
     console.error('obtenerSolicitudes: Error:', error);
@@ -85,7 +73,7 @@ export async function obtenerSolicitudPorId(
         createdAt: solicitud.poliza.createdAt,
         updatedAt: solicitud.poliza.updatedAt,
       },
-      datosPersonales: solicitud.datosPersonales as any, // Cast para manejar JsonValue
+      datosPersonales: solicitud.datosPersonales as any,
       notaRechazo: solicitud.notaRechazo || undefined,
     } as any;
 
@@ -108,7 +96,6 @@ export async function crearSolicitud(
 
     const solicitud = await solicitudesService.crearSolicitud(idUsuario, req.body);
     
-    // Adaptar el tipo para que coincida con la interfaz Solicitud
     const solicitudFixed = {
       ...solicitud,
       poliza: solicitud.poliza === null ? undefined : {
@@ -118,7 +105,7 @@ export async function crearSolicitud(
         createdAt: solicitud.poliza.createdAt,
         updatedAt: solicitud.poliza.updatedAt,
       },
-      datosPersonales: solicitud.datosPersonales as any, // Cast para manejar JsonValue
+      datosPersonales: solicitud.datosPersonales as any,
       notaRechazo: solicitud.notaRechazo || undefined,
     } as any;
     
@@ -154,7 +141,7 @@ export async function actualizarSolicitud(
         createdAt: solicitud.poliza.createdAt,
         updatedAt: solicitud.poliza.updatedAt,
       },
-      datosPersonales: solicitud.datosPersonales as any, // Cast para manejar JsonValue
+      datosPersonales: solicitud.datosPersonales as any,
       notaRechazo: solicitud.notaRechazo || undefined,
     } as any;
 

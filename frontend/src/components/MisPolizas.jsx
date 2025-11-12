@@ -89,12 +89,8 @@ const MisPolizas = () => {
     setError(null);
     listPolizasApi()
       .then((data) => {
-        console.log('Datos recibidos de listPolizasApi:', data);
         const arr = Array.isArray(data?.polizas) ? data.polizas : [];
-        console.log('Array de pólizas:', arr);
-        // Normalizamos fechas si vienen como string
         const normalized = arr.map((p) => {
-          console.log('Estructura de póliza:', p);
           return {
             ...p,
             createdAt: p.createdAt,

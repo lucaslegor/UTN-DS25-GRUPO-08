@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import "../styles/contact.css";
 import {
   Shield,
@@ -11,18 +11,26 @@ import {
   Star,
 } from "lucide-react";
 import Swal from 'sweetalert2';
+import ReCaptcha from "../components/ReCaptcha";
 
 export const Contact = () => {
   const form = useRef();
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const [recaptchaError, setRecaptchaError] = useState("");
+  const recaptchaRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!recaptchaToken) {
+      setRecaptchaError("Por favor, completa el reCAPTCHA");
+      return;
+    }
 
     const formData = new FormData(form.current);
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // 👉 Llamada al backend (ajustá la URL según tu entorno)
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/email/contacto`, {
         method: "POST",
         headers: {
@@ -32,6 +40,7 @@ export const Contact = () => {
           nombre: data.user_name,
           email: data.user_email,
           mensaje: data.message,
+          recaptchaToken,
         }),
       });
 
@@ -47,6 +56,10 @@ export const Contact = () => {
           timerProgressBar: true,
         });
         form.current.reset();
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
+        setRecaptchaToken("");
       } else {
         const errorData = await response.json();
         console.error("Error del servidor:", errorData);
@@ -60,6 +73,10 @@ export const Contact = () => {
           timer: 3000,
           timerProgressBar: true,
         });
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
+        setRecaptchaToken("");
       }
     } catch (error) {
       console.error("Error de conexión:", error);
@@ -73,6 +90,10 @@ export const Contact = () => {
         timer: 3000,
         timerProgressBar: true,
       });
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
+      setRecaptchaToken("");
     }
   };
 
@@ -185,7 +206,26 @@ export const Contact = () => {
               ></textarea>
             </div>
 
-            <button type="submit" className="contact-button">
+            <div style={{ marginTop: '15px', marginBottom: '10px' }}>
+              <ReCaptcha
+                ref={recaptchaRef}
+                onVerify={(token) => {
+                  setRecaptchaToken(token);
+                  setRecaptchaError("");
+                }}
+                onExpire={() => {
+                  setRecaptchaToken("");
+                  setRecaptchaError("reCAPTCHA expiró. Por favor, verifica nuevamente.");
+                }}
+                onError={() => {
+                  setRecaptchaToken("");
+                  setRecaptchaError("Error al cargar reCAPTCHA. Por favor, recarga la página.");
+                }}
+              />
+              {recaptchaError && <small style={{ color: '#f44336', display: 'block', marginTop: '5px' }}>{recaptchaError}</small>}
+            </div>
+
+            <button type="submit" className="contact-button" disabled={!recaptchaToken}>
               Enviar Mensaje
             </button>
           </form>

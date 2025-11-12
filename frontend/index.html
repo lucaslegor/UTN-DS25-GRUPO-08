@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="./public/MaxiColor.png" href="/public/MaxiColor.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://www.gstatic.com; frame-src 'self' https://accounts.google.com; connect-src 'self' https://accounts.google.com http://localhost:3000 http://localhost:3001 https://utn-ds25-grupo-08-wuql.onrender.com https://*.vercel.app;">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://www.gstatic.com https://www.google.com; frame-src 'self' https://accounts.google.com https://www.google.com; connect-src 'self' https://accounts.google.com https://www.google.com http://localhost:3000 http://localhost:3001 https://utn-ds25-grupo-08-wuql.onrender.com https://*.vercel.app;">
      <title>MAPS ASESORES - GRUPO 08</title>
     <!-- Inter autohospedada (se quita Google Fonts para evitar conflictos de peso) -->
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +16,8 @@
 </style>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Google reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
   </head>
   <body>
     <div id="root"></div>

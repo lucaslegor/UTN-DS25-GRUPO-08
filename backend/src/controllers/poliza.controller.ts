@@ -4,17 +4,14 @@ import fs from 'fs';
 import { uploadLocalFile, deleteByPublicId } from '../services/cloudinary.service';
 import prisma from "../config/prisma";
 
-// GET /api/polizas
 export async function getAllPolizas(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id, role } = req.user!; // Ya está autenticado por el middleware
+    const { id, role } = req.user!;
     
     let polizas;
     if (role === 'ADMINISTRADOR') {
-      // Admin puede ver todas las pólizas
       polizas = await polizaService.getAllPolizas();
     } else {
-      // Usuario normal solo ve sus pólizas (filtradas por usuario)
       polizas = await polizaService.getPolizasByUsuario(id);
     }
     
@@ -24,7 +21,6 @@ export async function getAllPolizas(req: Request, res: Response, next: NextFunct
   }
 }
 
-// GET /api/polizas/:id
 export async function getPolizaById(req: Request<{ id: string }>, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
@@ -35,10 +31,8 @@ export async function getPolizaById(req: Request<{ id: string }>, res: Response,
 
     let poliza;
     if (esAdmin) {
-      // Admin puede ver cualquier póliza
       poliza = await polizaService.getPolizaById(id);
     } else {
-      // Usuario normal solo puede ver sus propias pólizas
       poliza = await polizaService.getPolizaByIdConOwnership(id, userId);
     }
 
@@ -50,7 +44,6 @@ export async function getPolizaById(req: Request<{ id: string }>, res: Response,
   }
 }
 
-// POST /api/polizas/:idSolicitud
 export async function createPoliza(req: Request<{ idSolicitud: string }>, res: Response, next: NextFunction) {
   try {
     const idSolicitud = Number(req.params.idSolicitud);
@@ -59,7 +52,6 @@ export async function createPoliza(req: Request<{ idSolicitud: string }>, res: R
     const { id: userId, role } = req.user!;
     const esAdmin = role === 'ADMINISTRADOR';
 
-    // Verificar que la solicitud pertenece al usuario (si no es admin)
     if (!esAdmin) {
       const solicitudExiste = await polizaService.verificarOwnershipSolicitud(idSolicitud, userId);
       if (!solicitudExiste) {
@@ -67,12 +59,10 @@ export async function createPoliza(req: Request<{ idSolicitud: string }>, res: R
       }
     }
 
-    // Si vino archivo subido, subimos a Cloudinary y usamos secure_url
     let archivoUrl = (req.body as any)?.archivoUrl as string | undefined;
     let archivoPublicId: string | undefined;
     const file = (req as any).file as Express.Multer.File | undefined;
     if (file) {
-      // Pasar el mimetype para detectar correctamente el tipo de archivo (PDF vs imagen)
       const { url, publicId } = await uploadLocalFile(file.path, 'polizas', 'auto', file.mimetype);
       archivoUrl = url;
       archivoPublicId = publicId;
@@ -89,14 +79,11 @@ export async function createPoliza(req: Request<{ idSolicitud: string }>, res: R
   }
 }
 
-// PUT /api/polizas/:id
 export async function updatePoliza(req: Request<{ id: string }>, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: "ID inválido" });
 
-    // La autorización ya se maneja en las rutas con authorize('ADMIN')
-    // Construir payload desde multipart/form-data si hay archivo
     let payload: any = { ...(req.body as any) };
     const file = (req as any).file as Express.Multer.File | undefined;
     let prevPublicId: string | undefined;
@@ -105,7 +92,6 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
       prevPublicId = prev?.archivoPublicId || undefined;
     } catch {}
     if (file) {
-      // Pasar el mimetype para detectar correctamente el tipo de archivo (PDF vs imagen)
       const { url, publicId } = await uploadLocalFile(file.path, 'polizas', 'auto', file.mimetype);
       payload.archivoUrl = url;
       payload.archivoPublicId = publicId;
@@ -116,18 +102,9 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
       return res.status(400).json({ message: 'Debe adjuntar un archivo o datos para actualizar' });
     }
 
-    // Asegurar que updatedAt se actualice explícitamente
     payload.updatedAt = new Date();
 
     const updated = await polizaService.updatePoliza(id, payload);
-    
-    // Log para debugging
-    console.log('Póliza actualizada en backend:', {
-      id: updated.id,
-      archivoUrl: updated.archivoUrl,
-      updatedAt: updated.updatedAt,
-      archivoPublicId: updated.archivoPublicId
-    });
     
     res.json({ poliza: updated, message: "Póliza actualizada exitosamente" });
     if (payload.archivoPublicId && prevPublicId && payload.archivoPublicId !== prevPublicId) {
@@ -138,14 +115,11 @@ export async function updatePoliza(req: Request<{ id: string }>, res: Response, 
   }
 }
 
-// DELETE /api/polizas/:id
 export async function deletePoliza(req: Request<{ id: string }>, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: "ID inválido" });
 
-    // La autorización ya se maneja en las rutas con authorize('ADMIN')
-    // Solo los administradores pueden llegar hasta aquí
     let prevPublicId: string | undefined;
     try {
       const prev = await prisma.poliza.findUnique({ where: { id }, select: { archivoPublicId: true } });

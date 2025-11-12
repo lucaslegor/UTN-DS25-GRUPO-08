@@ -32,7 +32,6 @@ export const NavBar = () => {
   const location = useLocation();
   const searchWrapRef = useRef(null);
 
-  // === Auth desde localStorage.auth ===
   useEffect(() => {
     const raw = localStorage.getItem("auth");
     try {
@@ -41,13 +40,11 @@ export const NavBar = () => {
       setIsLogin(logged);
       setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
       
-      // Cargar foto de perfil desde localStorage especÃ­fico del usuario
       let profileImage = auth?.user?.profileImage || "";
       if (logged && auth?.user?.username && !profileImage) {
         const userProfileImage = localStorage.getItem(`profileImage:${auth.user.username}`);
         if (userProfileImage) {
           profileImage = userProfileImage;
-          // Actualizar auth con la foto encontrada
           const updatedAuth = {
             ...auth,
             user: { ...auth.user, profileImage: userProfileImage }
@@ -64,7 +61,6 @@ export const NavBar = () => {
     }
   }, [location.pathname]);
 
-  // === Listener para cambios en la foto de perfil ===
   useEffect(() => {
     const handleProfileImageChange = (e) => {
       if (e.detail?.profileImage !== undefined) {
@@ -117,7 +113,6 @@ export const NavBar = () => {
       )
     : [];
 
-  // Cerrar resultados al click fuera
   useEffect(() => {
     const onClickOutside = (e) => {
       if (!searchWrapRef.current) return;
@@ -145,7 +140,6 @@ export const NavBar = () => {
         </h1>
       </Link>
 
-      {/* BUSCADOR + RESULTADOS (custom, sin MUI) */}
       <div className="search" ref={searchWrapRef}>
         <div
           className={`sb ${showResults ? "open" : ""}`}
@@ -233,7 +227,6 @@ export const NavBar = () => {
         )}
       </div>
 
-      {/* HAMBURGUESA */}
       <button
         className="menu-toggle"
         onClick={() => setMenuOpen(!menuOpen)}
@@ -251,11 +244,9 @@ export const NavBar = () => {
         <MenuIcon fontSize="medium" sx={{ color: "#fff" }} />
       </button>
 
-      {/* LINKS */}
       <nav 
         className={`nav-links ${menuOpen ? "open" : ""}`}
         onClick={(e) => {
-          // Cerrar menúº al hacer clic en el overlay (no en el panel)
           if (e.target === e.currentTarget) {
             setMenuOpen(false);
           }

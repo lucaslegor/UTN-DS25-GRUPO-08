@@ -1,7 +1,3 @@
-
-// ==========================================
-// backend/src/services/solicitudes.service.ts
-// ==========================================
 import { PrismaClient } from '@prisma/client';
 import { enviarNotificacionSolicitud } from './email.service';
 import { EstadoSolicitud } from '../types/solicitudes.types';
@@ -61,8 +57,6 @@ export async function obtenerSolicitudPorId(id: number) {
 }
 
 export async function crearSolicitud(idUsuario: number, datos: any) {
-  // Mapear los items recibidos ({ productId, cantidad }) a la estructura
-  // requerida por Prisma para SolicitudItem ({ idProducto, titulo, cantidad })
   const itemsToCreate = await Promise.all(
     (datos.items || []).map(async (item: { productId: number; cantidad: number }) => {
       const producto = await prisma.producto.findUnique({
@@ -98,7 +92,6 @@ export async function crearSolicitud(idUsuario: number, datos: any) {
     },
   });
 
-  // Notificamos al cliente y al equipo
   if (solicitud.usuario?.mail && solicitud.usuario?.username) {
     try {
       await enviarNotificacionSolicitud(
@@ -109,7 +102,6 @@ export async function crearSolicitud(idUsuario: number, datos: any) {
       );
     } catch (error) {
       console.error('Error enviando email de notificación:', error);
-      // No lanzamos el error para no bloquear la creación de la solicitud
     }
   }
 
@@ -143,7 +135,6 @@ export async function actualizarSolicitud(idSolicitud: number, datos: any) {
     },
   });
 
-  // Notificamos solo si cambió el estado
   if (datos.estado && updatedSolicitud.usuario?.mail && updatedSolicitud.usuario?.username) {
     try {
       await enviarNotificacionSolicitud(

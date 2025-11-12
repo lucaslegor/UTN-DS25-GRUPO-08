@@ -1,17 +1,6 @@
-// services/api.js
 const RAW_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
 const API_URL = `${RAW_BASE}/api`;
 
-// Debug: mostrar la URL que se está usando
-console.log('🔧 API Configuration:', {
-  VITE_API_URL: import.meta.env.VITE_API_URL,
-  RAW_BASE: RAW_BASE,
-  API_URL: API_URL
-});
-
-/* =========================
-   Auth helpers (localStorage)
-   ========================= */
 export function getAuth() {
   const raw = localStorage.getItem('auth');
   try { return raw ? JSON.parse(raw) : null; } catch { return null; }
@@ -22,7 +11,6 @@ export function saveAuth(auth) {
 export function clearAuth() {
   localStorage.removeItem('auth');
 }
-// Actualiza sólo el token en localStorage, preservando user
 function setAuthToken(token) {
   const auth = getAuth() || {};
   const next = { ...auth, token };
@@ -30,7 +18,6 @@ function setAuthToken(token) {
   return next;
 }
 
-// (opcional) headers ya con Authorization para usos puntuales
 export function authHeaders(extra = {}) {
   const auth = getAuth();
   const h = { 'Content-Type': 'application/json', ...extra };
@@ -38,9 +25,6 @@ export function authHeaders(extra = {}) {
   return h;
 }
 
-/* =========================================
-   Refresh preventivo y retry anti-401/403
-   ========================================= */
 let refreshInFlight = null;
 
 function getTokenExpMs(token) {
@@ -56,7 +40,7 @@ function getTokenExpMs(token) {
 async function refreshAccessToken() {
   const res = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
-    credentials: 'include', // envía cookie httpOnly del refresh
+    credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data?.token) {
@@ -65,7 +49,6 @@ async function refreshAccessToken() {
     throw new Error(msg);
   }
   
-  // Mantener la foto de perfil existente al refrescar el token
   const currentAuth = getAuth();
   if (currentAuth?.user?.profileImage && data?.user) {
     data.user.profileImage = currentAuth.user.profileImage;
@@ -91,26 +74,15 @@ async function ensureFreshToken() {
   await refreshInFlight;
 }
 
-/* =========================
-   apiFetch con refresh
-   ========================= */
 export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry = false } = {}) {
-  console.log(`apiFetch: ${method} ${path}`);
-  
-  // 1) Refresh preventivo si hay token
   const auth = getAuth();
-  console.log('apiFetch: Auth inicial:', auth ? 'Token presente' : 'Sin token');
   
   if (auth?.token) {
-    console.log('apiFetch: Verificando si token necesita refresh...');
     await ensureFreshToken();
   }
 
-  // 2) Obtener auth actualizado después del refresh
   const freshAuth = getAuth();
-  console.log('apiFetch: Auth después de refresh:', freshAuth ? 'Token presente' : 'Sin token');
   
-  // Armar headers con token actualizado
   const h = { 'Content-Type': 'application/json', ...headers };
   if (freshAuth?.token) h.Authorization = `Bearer ${freshAuth.token}`;
 
@@ -119,23 +91,18 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
       method,
       headers: h,
       body: body ? JSON.stringify(body) : undefined,
-      credentials: 'include', // importante para cookies httpOnly
+      credentials: 'include',
     });
 
   let res = await doReq();
-  console.log(`apiFetch: Respuesta ${res.status} para ${path}`);
 
-  // 3) Si aún hay error 401/403, intentar refresh reactivo una vez más
   if (freshAuth?.token && (res.status === 401 || res.status === 403) && !_retry) {
-    console.log('apiFetch: Token aún expirado, intentando refresh reactivo...');
     try {
       await refreshAccessToken();
       const finalAuth = getAuth();
       if (finalAuth?.token) h.Authorization = `Bearer ${finalAuth.token}`;
       res = await doReq();
-      console.log(`apiFetch: Respuesta después de refresh reactivo ${res.status} para ${path}`);
     } catch (e) {
-      console.log('apiFetch: Error en refresh reactivo, limpiando auth');
       clearAuth();
       throw e;
     }
@@ -144,26 +111,18 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = data?.error || data?.message || `HTTP ${res.status}`;
-    console.log(`apiFetch: Error ${res.status}: ${msg}`);
     throw new Error(msg);
   }
   return data;
 }
 
-/* ==============
-   AUTH endpoints
-   ============== */
-
-// Login: el backend devuelve { token, user } y setea cookie httpOnly (refresh)
-export async function loginApi({ username, mail, password }) {
-  // tu backend acepta username o mail; enviamos el que tengas
-  const payload = mail ? { mail, password } : { username, password };
+export async function loginApi({ username, mail, password, recaptchaToken }) {
+  const payload = mail ? { mail, password, recaptchaToken } : { username, password, recaptchaToken };
   const data = await apiFetch('/auth/login', {
     method: 'POST',
     body: payload,
   });
   
-  // Cargar foto de perfil desde localStorage específico del usuario
   if (data?.user?.username) {
     const userProfileImage = localStorage.getItem(`profileImage:${data.user.username}`);
     if (userProfileImage) {
@@ -171,19 +130,16 @@ export async function loginApi({ username, mail, password }) {
     }
   }
   
-  // guardamos token + user (el refresh queda en cookie httpOnly)
   saveAuth(data);
   return data;
 }
 
-// Login con Google
 export async function loginWithGoogleApi(token) {
   const data = await apiFetch('/auth/google', {
     method: 'POST',
     body: { token },
   });
   
-  // Cargar foto de perfil desde localStorage específico del usuario
   if (data?.user?.username) {
     const userProfileImage = localStorage.getItem(`profileImage:${data.user.username}`);
     if (userProfileImage) {
@@ -191,25 +147,21 @@ export async function loginWithGoogleApi(token) {
     }
   }
   
-  // guardamos token + user (el refresh queda en cookie httpOnly)
   saveAuth(data);
   return data;
 }
 
-// Registro (rol opcional; server default = USUARIO/USUARIO)
-export async function registerApi({ username, mail, password, rol }) {
+export async function registerApi({ username, mail, password, rol, recaptchaToken }) {
   return apiFetch('/usuarios', {
     method: 'POST',
-    body: { username, mail, password, rol },
+    body: { username, mail, password, rol, recaptchaToken },
   });
 }
 
-// Quién soy (protegido). Si el token expira, apiFetch hará refresh y reintentará.
 export async function getMeApi() {
   return apiFetch('/auth/user', { method: 'GET' });
 }
 
-// Logout: limpia cookie httpOnly en backend y localStorage en frontend
 export async function logoutApi() {
   try {
     await fetch(`${API_URL}/auth/logout`, {
@@ -220,8 +172,6 @@ export async function logoutApi() {
     clearAuth();
   }
 }
-
-// === Password reset ===
 
 export async function resetPasswordApi({ token, newPassword }) {
   return apiFetch('/auth/reset', {
@@ -237,12 +187,7 @@ export async function forgotPasswordApi(mail) {
   });
 }
 
-/* ==============
-   POLIZAS endpoints
-   ============== */
-
 export async function listPolizasApi() {
-  // Devuelve { polizas, total }
   return apiFetch('/polizas', { method: 'GET' });
 }
 
@@ -257,12 +202,7 @@ export async function createPolizaForSolicitudApi(idSolicitud, { archivoUrl }) {
   });
 }
 
-/* ==============
-   SOLICITUDES endpoints
-   ============== */
-
 export async function listSolicitudesApi() {
-  // Admin: lista todos; Usuario: el backend actual lista todos también, ajustar si cambia
   return apiFetch('/solicitudes', { method: 'GET' });
 }
 
@@ -270,7 +210,6 @@ export async function getSolicitudApi(id) {
   return apiFetch(`/solicitudes/${id}`, { method: 'GET' });
 }
 
-// Multipart upload for poliza files
 export async function uploadPolizaFileApi(idSolicitud, file) {
   const auth = getAuth();
   const form = new FormData();
