@@ -15,11 +15,12 @@ import {
   resetPasswordSchema,
 } from "../validations/auth.validation";
 import { authenticate } from "../middlewares/auth.middleware";
+import { validateRecaptcha } from "../middlewares/recaptcha.middleware";
 import prisma from "../config/prisma";
 
 const router = Router();
 
-router.post("/login", async (req, res) => {
+router.post("/login", validateRecaptcha, async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
     return res

@@ -116,8 +116,8 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
   return data;
 }
 
-export async function loginApi({ username, mail, password }) {
-  const payload = mail ? { mail, password } : { username, password };
+export async function loginApi({ username, mail, password, recaptchaToken }) {
+  const payload = mail ? { mail, password, recaptchaToken } : { username, password, recaptchaToken };
   const data = await apiFetch('/auth/login', {
     method: 'POST',
     body: payload,
@@ -151,10 +151,10 @@ export async function loginWithGoogleApi(token) {
   return data;
 }
 
-export async function registerApi({ username, mail, password, rol }) {
+export async function registerApi({ username, mail, password, rol, recaptchaToken }) {
   return apiFetch('/usuarios', {
     method: 'POST',
-    body: { username, mail, password, rol },
+    body: { username, mail, password, rol, recaptchaToken },
   });
 }
 

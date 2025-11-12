@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
@@ -6,6 +6,7 @@ import "../styles/login.override.css";
 import { Button } from "@mui/material";
 import { loginApi, loginWithGoogleApi } from "../services/api";
 import { loginWithGoogle } from "../services/googleAuth";
+import ReCaptcha from "./ReCaptcha";
 import * as yup from "yup";
 
 const Login = () => {
@@ -40,6 +41,9 @@ const Login = () => {
   const [fieldErrors, setFieldErrors] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const [recaptchaError, setRecaptchaError] = useState("");
+  const recaptchaRef = useRef(null);
   const navigate = useNavigate();
 
   async function onFieldChange(name, value) {
@@ -52,6 +56,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setRecaptchaError("");
+    
+    if (!recaptchaToken) {
+      setRecaptchaError("Por favor, completa el reCAPTCHA");
+      return;
+    }
+
     try {
       await loginSchema.validate({ identifier, password }, { abortEarly: false });
       setFieldErrors({ identifier: "", password: "" });
@@ -70,14 +81,18 @@ const Login = () => {
       setLoading(true);
 
       const payload = identifier.includes("@")
-        ? { mail: identifier.trim().toLowerCase(), password }
-        : { username: identifier.trim(), password };
+        ? { mail: identifier.trim().toLowerCase(), password, recaptchaToken }
+        : { username: identifier.trim(), password, recaptchaToken };
 
       const res = await loginApi(payload);
 
       navigate("/");
     } catch (err) {
       setError(err.message || "Usuario o contraseña incorrectos");
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
+      setRecaptchaToken("");
     } finally {
       setLoading(false);
     }
@@ -159,11 +174,40 @@ const Login = () => {
               {fieldErrors.password && <small className="error-message">{fieldErrors.password}</small>}
             </div>
 
+            <div className="form-grupo-login">
+              <ReCaptcha
+                ref={recaptchaRef}
+                onVerify={(token) => {
+                  setRecaptchaToken(token);
+                  setRecaptchaError("");
+                }}
+                onExpire={() => {
+                  setRecaptchaToken("");
+                  setRecaptchaError("reCAPTCHA expiró. Por favor, verifica nuevamente.");
+                }}
+                onError={() => {
+                  setRecaptchaToken("");
+                  setRecaptchaError("Error al cargar reCAPTCHA. Por favor, recarga la página.");
+                }}
+              />
+              {recaptchaError && <small className="error-message">{recaptchaError}</small>}
+            </div>
+
             {error && <p className="error-message">{error}</p>}
 
-            <button className="submit-button-login" type="submit" disabled={loading}>
+            <button 
+              className="submit-button-login" 
+              type="submit" 
+              disabled={loading || !recaptchaToken}
+              title={!recaptchaToken ? "Por favor, completa el reCAPTCHA primero" : ""}
+            >
               {loading ? "Ingresando..." : "Ingresar"}
             </button>
+            {!recaptchaToken && (
+              <small style={{ display: 'block', marginTop: '8px', color: '#666', fontSize: '12px' }}>
+                ⚠️ Debes marcar el checkbox de reCAPTCHA para continuar
+              </small>
+            )}
 
             <div className="divider">
               <span>o</span>

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
 import { Button } from "@mui/material";
 import { registerApi} from "../services/api";
+import ReCaptcha from "./ReCaptcha";
 import * as yup from "yup";
 
 const Register = () => {
@@ -16,6 +17,9 @@ const Register = () => {
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ username: "", mail: "", password: "", confirmPassword: "" });
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const [recaptchaError, setRecaptchaError] = useState("");
+  const recaptchaRef = useRef(null);
   const registerSchema = yup.object({
     username: yup.string().required('Ingresá un usuario').min(3, 'Mínimo 3 caracteres'),
     mail: yup.string().required('Ingresá un email').email('Email inválido'),
@@ -52,6 +56,12 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setRecaptchaError("");
+
+    if (!recaptchaToken) {
+      setRecaptchaError("Por favor, completa el reCAPTCHA");
+      return;
+    }
 
     try {
       await registerSchema.validate({ username, mail: email, password, confirmPassword }, { abortEarly: false });
@@ -69,10 +79,14 @@ const Register = () => {
 
     try {
       setLoading(true);
-      await registerApi({ username, mail: email, password });
+      await registerApi({ username, mail: email, password, recaptchaToken });
       navigate("/login");
     } catch (err) {
       setError(err.message || "Error al registrarse");
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
+      setRecaptchaToken("");
     } finally {
       setLoading(false);
     }
@@ -166,16 +180,41 @@ const Register = () => {
               {fieldErrors.confirmPassword && <small className="error-message">{fieldErrors.confirmPassword}</small>}
             </div>
 
+            <div className="form-grupo-login">
+              <ReCaptcha
+                ref={recaptchaRef}
+                onVerify={(token) => {
+                  setRecaptchaToken(token);
+                  setRecaptchaError("");
+                }}
+                onExpire={() => {
+                  setRecaptchaToken("");
+                  setRecaptchaError("reCAPTCHA expiró. Por favor, verifica nuevamente.");
+                }}
+                onError={() => {
+                  setRecaptchaToken("");
+                  setRecaptchaError("Error al cargar reCAPTCHA. Por favor, recarga la página.");
+                }}
+              />
+              {recaptchaError && <small className="error-message">{recaptchaError}</small>}
+            </div>
+
             {error && <p className="error-message">{error}</p>}
             <button
               className="submit-button-login"
               type="submit"
-              disabled={loading}
+              disabled={loading || !recaptchaToken}
               aria-busy={loading}
               style={{ marginBottom: 24, opacity: loading ? 0.8 : 1 }}
+              title={!recaptchaToken ? "Por favor, completa el reCAPTCHA primero" : ""}
             >
               {loading ? "Creando cuenta..." : "Registrarse"}
             </button>
+            {!recaptchaToken && (
+              <small style={{ display: 'block', marginTop: '8px', color: '#666', fontSize: '12px', marginBottom: '16px' }}>
+                ⚠️ Debes marcar el checkbox de reCAPTCHA para continuar
+              </small>
+            )}
           </form>
 
           <Button
