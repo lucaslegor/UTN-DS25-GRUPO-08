@@ -1044,3 +1044,18 @@
   color: #fff;
   text-align: center;
 }
+
+.recaptcha-isolated-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60px;
+  margin-bottom: 8px;
+}
+
+.recaptcha-isolated-wrapper > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

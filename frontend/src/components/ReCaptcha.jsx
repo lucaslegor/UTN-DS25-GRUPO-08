@@ -141,7 +141,11 @@ export const ReCaptcha = forwardRef(({ onVerify, onExpire, onError }, ref) => {
     );
   }
 
-  return <div ref={recaptchaRef} style={{ marginTop: '10px' }} />;
+  return (
+    <div className="recaptcha-isolated-wrapper">
+      <div ref={recaptchaRef} />
+    </div>
+  );
 });
 
 ReCaptcha.displayName = 'ReCaptcha';
