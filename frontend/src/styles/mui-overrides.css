@@ -1,5 +1,19 @@
 /* === Overrides globales para Material UI con Inter === */
 
+/* Configuración de SweetAlert2 para z-index alto */
+.swal2-container {
+  z-index: 10000 !important;
+}
+
+.swal2-popup {
+  z-index: 10001 !important;
+}
+
+.swal2-backdrop-show {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
 /* Asegurar que todos los componentes de MUI usen Inter */
 .MuiTypography-root,
 .MuiButton-root,

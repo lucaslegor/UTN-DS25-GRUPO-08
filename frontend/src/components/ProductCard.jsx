@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSolicitudes } from '../context/SolicitudesContext';
-import { Card, Button, CardContent, IconButton, AspectRatio, Typography } from '@mui/joy';
+import { Card, Button, CardContent, IconButton, Typography, Box } from '@mui/material';
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import LockIcon from '@mui/icons-material/Lock';
@@ -42,7 +42,7 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
     <Card sx={{ 
       width: 320, 
       backgroundColor: 'white', 
-      borderColor: '#e0e7ff',
+      border: '1px solid #e0e7ff',
       boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
       borderRadius: '12px',
       overflow: 'hidden',
@@ -53,7 +53,16 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
       }
     }}>
       {/* Imagen */}
-      <AspectRatio minHeight="160px" maxHeight="180px">
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          minHeight: '160px',
+          maxHeight: '180px',
+          overflow: 'hidden',
+          aspectRatio: '16/9'
+        }}
+      >
         <img
           src={image}
           loading="lazy"
@@ -64,25 +73,26 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
             objectFit: 'cover'
           }}
         />
-      </AspectRatio>
+      </Box>
 
       {/* Contenido */}
       <CardContent sx={{ p: 2.5 }}>
         {/* Título y descripción */}
-        <div sx={{ mb: 2 }}>
+        <Box sx={{ mb: 2 }}>
           <Typography 
-            level="title-md" 
+            variant="h6"
             sx={{ 
               color: '#1e293b',
               fontWeight: 600,
               mb: 0.5,
-              lineHeight: 1.3
+              lineHeight: 1.3,
+              fontSize: '1.1rem'
             }}
           >
             {title}
           </Typography>
           <Typography 
-            level="body-sm" 
+            variant="body2"
             sx={{ 
               color: '#64748b',
               lineHeight: 1.4,
@@ -94,13 +104,13 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
           >
             {description}
           </Typography>
-        </div>
+        </Box>
 
         {/* Tipo y cobertura compactos */}
-        <div sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography 
-              level="body-xs" 
+              variant="caption"
               sx={{ 
                 color: '#64748b',
                 fontWeight: 500,
@@ -110,6 +120,7 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
               Tipo:
             </Typography>
             <Typography 
+              variant="caption"
               sx={{ 
                 fontSize: '0.75rem',
                 fontWeight: 600,
@@ -122,11 +133,11 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
             >
               {tipo?.toUpperCase()}
             </Typography>
-          </div>
+          </Box>
           
-          <div sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
             <Typography 
-              level="body-xs" 
+              variant="caption"
               sx={{ 
                 color: '#64748b',
                 fontWeight: 500,
@@ -137,6 +148,7 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
               Cobertura:
             </Typography>
             <Typography 
+              variant="caption"
               sx={{ 
                 fontSize: '0.75rem',
                 color: '#059669',
@@ -150,18 +162,18 @@ const ProductCard = ({ id, title, description, tipo, cobertura, image }) => {
             >
               {cobertura}
             </Typography>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Botón */}
         <Button
-          variant={isAdmin() ? "outlined" : (inSolicitud ? "soft" : "solid")}
-          color={isAdmin() ? "neutral" : (inSolicitud ? "success" : "primary")}
-          startDecorator={isAdmin() ? <LockIcon /> : (inSolicitud ? <VisibilityIcon /> : <BookmarkAddIcon />)}
+          variant={isAdmin() ? "outlined" : (inSolicitud ? "contained" : "contained")}
+          color={isAdmin() ? "inherit" : (inSolicitud ? "success" : "primary")}
+          startIcon={isAdmin() ? <LockIcon /> : (inSolicitud ? <VisibilityIcon /> : <BookmarkAddIcon />)}
           onClick={isAdmin() ? undefined : (inSolicitud ? handleViewSolicitudes : handleAddToSolicitud)}
           disabled={isAdmin()}
           fullWidth
-          size="sm"
+          size="small"
           sx={{
             fontWeight: 600,
             borderRadius: '8px',

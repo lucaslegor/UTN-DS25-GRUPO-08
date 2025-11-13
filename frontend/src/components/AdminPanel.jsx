@@ -18,7 +18,7 @@ import {
 import { IconButton, Tooltip, Chip } from '@mui/material';
 import { apiFetch, uploadPolizaFileApi, getAuth } from '../services/api';
 import * as yup from 'yup';
-import Swal from 'sweetalert2';
+import Swal from '../config/sweetalert2';
 
 /** ========= Config API ========= */
 const RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -139,6 +139,18 @@ const AdminPanel = () => {
       loadUsers();
     }
   }, [activeTab]);
+
+  // Prevenir scroll del body cuando hay modales abiertos
+  useEffect(() => {
+    if (detailsModalOpen || replacingPolizaId) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [detailsModalOpen, replacingPolizaId]);
 
   useEffect(() => {
     if (activeTab === 'polizas') {
@@ -1673,25 +1685,16 @@ async function updateUserRole(userId, newRole) {
         )}
 
         {replacingPolizaId && (
-          <div className="modal-overlay" style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <div className="modal-content" style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '24px',
-              maxWidth: '500px',
-              width: '90%'
-            }}>
+          <div 
+            className="modal-overlay"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setReplacingPolizaId(null);
+                setReplaceFile(null);
+              }
+            }}
+          >
+            <div className="modal-content">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2>🔄 Reemplazar Póliza</h2>
                 <button
@@ -1768,27 +1771,15 @@ async function updateUserRole(userId, newRole) {
         )}
 
         {detailsModalOpen && selectedSolicitud && (
-          <div className="modal-overlay" style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <div className="modal-content" style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '24px',
-              maxWidth: '600px',
-              width: '90%',
-              maxHeight: '80vh',
-              overflowY: 'auto'
-            }}>
+          <div 
+            className="modal-overlay"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setDetailsModalOpen(false);
+              }
+            }}
+          >
+            <div className="modal-content">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2>Detalles de la Solicitud #{selectedSolicitud.id}</h2>
                 <button

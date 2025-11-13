@@ -32,7 +32,7 @@ import {
 import { useSolicitudes } from '../context/SolicitudesContext';
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from '../services/api';
-import Swal from 'sweetalert2';
+import Swal from '../config/sweetalert2';
 import * as yup from 'yup';
 import '../styles/solicitudes.css';
 

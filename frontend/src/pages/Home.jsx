@@ -2,8 +2,7 @@ import React from "react";
 import { apiFetch } from "../services/api";
 import { Link } from "react-router-dom";
 import "../styles/styles.css";
-import { Box, Typography, CircularProgress } from '@mui/material';
-import { Card, CardContent, AspectRatio } from '@mui/joy';
+import { Box, Typography, CircularProgress, Card, CardContent } from '@mui/material';
 
 
 const Home = () => {
@@ -220,21 +219,36 @@ const Home = () => {
                           {product.description}
                         </Typography>
                       </div>
-                      <AspectRatio minHeight="120px" maxHeight="200px" className="catalog-card__media">
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          width: '100%',
+                          minHeight: '120px',
+                          maxHeight: '200px',
+                          overflow: 'hidden',
+                          aspectRatio: '16/9'
+                        }}
+                        className="catalog-card__media"
+                      >
                         <img
                           src={product.image}
                           loading="lazy"
                           alt={product.title || 'Imagen'}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
                         />
-                      </AspectRatio>
+                      </Box>
                       <div className="catalog-card__divider" />
-                      <CardContent orientation="vertical">
+                      <CardContent>
                         <div className="catalog-card__meta">
-                          <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666', fontSize: '0.9rem' }}>Tipo:</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', fontSize: '0.9rem' }}>Tipo:</Typography>
                           <Typography sx={{ fontSize: '1.05rem', fontWeight: '700', color:'#1976d2', mb: 1 }}>
                             {product.tipo?.toUpperCase()}
                           </Typography>
-                          <Typography level="body-xs" sx={{ fontWeight: 'bold', color: '#666', fontSize: '0.9rem' }}>Cobertura:</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', fontSize: '0.9rem' }}>Cobertura:</Typography>
                           <Typography sx={{ fontSize: '0.95rem', color:'#2e7d32' }}>
                             {product.cobertura}
                           </Typography>

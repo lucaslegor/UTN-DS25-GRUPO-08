@@ -10,7 +10,7 @@ import {
   CheckCircle,
   Star,
 } from "lucide-react";
-import Swal from 'sweetalert2';
+import Swal from '../config/sweetalert2';
 import ReCaptcha from "../components/ReCaptcha";
 
 export const Contact = () => {
