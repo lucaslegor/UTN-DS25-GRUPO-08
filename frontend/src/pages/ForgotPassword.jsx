@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { forgotPasswordApi } from "../services/api";
 import * as yup from "yup";
+import "../styles/login.css";
 
 const APP_URL = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/$/, "");
 
@@ -64,35 +65,76 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="principal-container-login">
-      <div className="content-wrapper-login">
-        <div className="form-inicio-login">
+    <div className="auth-split-container">
+      {/* Panel izquierdo - Branding */}
+      <div className="auth-branding-panel">
+        <div className="auth-branding-content">
+          <div className="auth-logo-container">
+            <img src="/MaxiColor.png" alt="MAPS ASESORES" className="auth-logo" />
+          </div>
+          <h1 className="auth-brand-title">MAPS ASESORES</h1>
+          <p className="auth-brand-subtitle">Tu bienestar es nuestro compromiso</p>
+        </div>
+      </div>
 
-          <h3>¿Olvidaste tu contraseña?</h3>
-          <p>Ingresá tu email y te enviaremos un enlace para restablecerla.</p>
+      {/* Panel derecho - Formulario */}
+      <div className="auth-form-panel">
+        <div className="auth-form-card">
+          <h2 className="auth-page-title">¿Olvidaste tu contraseña?</h2>
+          <p className="auth-page-description">
+            Ingresá tu email y te enviaremos un enlace para restablecerla.
+          </p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-grupo-login">
-              <label htmlFor="email">Email:</label>
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="auth-form-group">
+              <label htmlFor="email">Correo electrónico</label>
               <input
-                className="input-login"
                 type="email"
                 id="email"
                 value={mail}
                 onChange={(e) => onFieldChange(e.target.value)}
                 placeholder="tu@email.com"
                 required
+                aria-invalid={!!fieldErrors.mail}
+                className={`auth-input ${fieldErrors.mail ? 'is-error' : (mail ? 'is-valid' : '')}`}
               />
-              {fieldErrors.mail && <small className="error-message">{fieldErrors.mail}</small>}
+              {fieldErrors.mail && <small className="auth-error-message">{fieldErrors.mail}</small>}
             </div>
 
-            <button className="submit-button-login" type="submit" disabled={loading}>
+            {msg && (
+              <div className="auth-success-message">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '8px' }}>
+                  <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M7 10L9 12L13 8" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {msg}
+              </div>
+            )}
+
+            {err && (
+              <div className="auth-error-message auth-error-general">
+                {err}
+              </div>
+            )}
+
+            <button 
+              className="auth-submit-button" 
+              type="submit" 
+              disabled={loading}
+            >
               {loading ? "Enviando..." : "Enviar enlace"}
             </button>
-          </form>
 
-          {msg && <p style={{ marginTop: 10, color: "#1e43c0" }}>{msg}</p>}
-          {err && <p style={{ marginTop: 10, color: "crimson" }}>{err}</p>}
+            <div className="auth-switch-account">
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="auth-link-button"
+              >
+                ← Volver a iniciar sesión
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

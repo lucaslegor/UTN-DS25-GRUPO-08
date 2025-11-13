@@ -1,4 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import { CssVarsProvider as JoyThemeProvider } from '@mui/joy/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import ProductCardPage from './pages/ProductCard';
@@ -17,29 +20,33 @@ import { SolicitudesProvider } from './context/SolicitudesContext';
 
 function App() {
   return (
-    <SolicitudesProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+    <>
+     <CssBaseline />
+        <SolicitudesProvider>
+          <Router>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="nosotros" element={<AboutUs />} />
-            <Route path="solicitudes" element={<SolicitudesPage />} />
-            <Route path="productcard/:id" element={<ProductCardPage />} />
-            <Route path="userProfile" element={<UserProfile/>} />
-            <Route path="adminPanel" element={<AdminPanel/>} />
-            <Route path="contacto" element={<Contact/>} />
-            <Route path="misPolizas" element={<MisPolizasPage/>} />
-          </Route>
-        </Routes>
-        
-        <WhatsAppFloat />
-      </Router>
-    </SolicitudesProvider>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="nosotros" element={<AboutUs />} />
+                <Route path="solicitudes" element={<SolicitudesPage />} />
+                <Route path="productcard/:id" element={<ProductCardPage />} />
+                <Route path="userProfile" element={<UserProfile/>} />
+                <Route path="adminPanel" element={<AdminPanel/>} />
+                <Route path="contacto" element={<Contact/>} />
+                <Route path="misPolizas" element={<MisPolizasPage/>} />
+              </Route>
+            </Routes>
+            
+            <WhatsAppFloat />
+          </Router>
+        </SolicitudesProvider>
+    </>
+       
   );
 }
 

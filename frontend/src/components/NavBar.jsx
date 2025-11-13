@@ -1,5 +1,4 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
-import logo from "../assets/images/MaxiColor.png";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, X } from "lucide-react";
 import { AccountCircle, Menu as MenuIcon } from "@mui/icons-material";
@@ -135,7 +134,7 @@ export const NavBar = () => {
     <header className="navbar" id="main-navbar">
       <Link className="brand" to="/" style={{ textDecoration: "none" }}>
         <h1 className="title">
-          <img src={logo} alt="Maps Asesores" width={70} />
+          <img src="/MaxiColor.png" alt="Maps Asesores" width={70} />
           <span className="title-text">MAPS ASESORES</span>
         </h1>
       </Link>

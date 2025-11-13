@@ -1,7 +1,699 @@
 /* =========================
-   LOGIN Ã¢â‚¬â€œ ESTILOS BASE
+   AUTH SPLIT SCREEN DESIGN
    ========================= */
 
+/* Contenedor principal - Split Screen */
+.auth-split-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Panel izquierdo - Branding */
+.auth-branding-panel {
+  flex: 1;
+  background: linear-gradient(135deg, #1e43c0 0%, #1530a0 50%, #0f1f6b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-branding-panel::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: pulse 8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.auth-branding-content {
+  text-align: center;
+  color: #ffffff;
+  z-index: 1;
+  position: relative;
+}
+
+.auth-logo-container {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-logo {
+  max-width: 280px;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+}
+
+.auth-brand-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  position: relative;
+  bottom: 2em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-brand-subtitle {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin: 0;
+  opacity: 0.95;
+  position: relative;
+  bottom: 4em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Panel derecho - Formulario */
+.auth-form-panel {
+  flex: 1;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+/* Logo móvil (oculto en desktop) */
+.auth-mobile-logo {
+  display: none;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 0 20px;
+}
+
+.auth-mobile-logo-img {
+  max-width: 180px;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.1));
+}
+
+.auth-form-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 48px;
+  width: 100%;
+  max-width: 480px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabs */
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-tab:hover {
+  color: #1e43c0;
+  background: #f3f4f6;
+}
+
+.auth-tab.active {
+  color: #1e43c0;
+  border-bottom-color: #1e43c0;
+  font-weight: 600;
+}
+
+/* Formulario */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #1e43c0;
+  box-shadow: 0 0 0 3px rgba(30, 67, 192, 0.1);
+}
+
+.auth-input::placeholder {
+  color: #9ca3af;
+}
+
+.auth-input.is-valid {
+  border-color: #10b981;
+}
+
+.auth-input.is-error {
+  border-color: #ef4444;
+}
+
+/* Password container */
+.auth-password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-password-input {
+  padding-right: 120px;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-password-toggle:hover {
+  background: #f3f4f6;
+  color: #1e43c0;
+}
+
+.auth-password-toggle span {
+  font-size: 0.75rem;
+}
+
+/* Error messages */
+.auth-error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 4px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-error-general {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0;
+}
+
+/* Submit button */
+.auth-submit-button {
+  width: 100%;
+  padding: 14px 24px;
+  background: #1e43c0;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-submit-button:hover:not(:disabled) {
+  background: #1530a0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 67, 192, 0.3);
+}
+
+.auth-submit-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.auth-submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Forgot password */
+.auth-forgot-password {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.auth-link-button {
+  background: none;
+  border: none;
+  color: #1e43c0;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.875rem;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-link-button:hover {
+  color: #1530a0;
+}
+
+/* Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 24px 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.auth-divider span {
+  padding: 0 16px;
+}
+
+/* Google button */
+.auth-google-button {
+  width: 100%;
+  padding: 12px 24px;
+  background: #ffffff;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-google-button:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.auth-google-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-google-icon {
+  flex-shrink: 0;
+}
+
+/* Switch account */
+.auth-switch-account {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+   ========================= */
+
+/* Tablet y pantallas medianas (hasta 1024px) */
+@media (max-width: 1024px) {
+  /* Contenedor principal se convierte en columna */
+  .auth-split-container {
+    flex-direction: column;
+  }
+
+  /* Ocultar panel izquierdo completamente */
+  .auth-branding-panel {
+    display: none !important;
+  }
+
+  /* Mostrar logo móvil */
+  .auth-mobile-logo {
+    display: block;
+  }
+
+  /* Formulario ocupa todo el ancho */
+  .auth-form-panel {
+    flex: 1;
+    width: 100%;
+    padding: 24px 20px;
+    background: linear-gradient(135deg, #1e43c0 0%, #1530a0 50%, #0f1f6b 100%);
+    justify-content: flex-start;
+    padding-top: 40px;
+    min-height: 100vh;
+  }
+
+  .auth-form-card {
+    max-width: 100%;
+    width: 100%;
+    padding: 32px 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .auth-mobile-logo-img {
+    max-width: 200px;
+  }
+}
+
+/* Tablets pequeños (hasta 768px) */
+@media (max-width: 768px) {
+  .auth-form-panel {
+    padding: 20px 16px;
+    padding-top: 32px;
+  }
+
+  .auth-mobile-logo {
+    margin-bottom: 24px;
+  }
+
+  .auth-mobile-logo-img {
+    max-width: 160px;
+  }
+
+  .auth-form-card {
+    padding: 28px 20px;
+    border-radius: 12px;
+  }
+
+  .auth-tabs {
+    margin-bottom: 24px;
+  }
+
+  .auth-tab {
+    padding: 10px 16px;
+    font-size: 0.9375rem;
+  }
+
+  .auth-form {
+    gap: 18px;
+  }
+
+  .auth-page-title {
+    font-size: 1.5rem;
+  }
+
+  .auth-page-description {
+    font-size: 0.875rem;
+    margin-bottom: 24px;
+  }
+}
+
+/* Mobile (hasta 600px) */
+@media (max-width: 600px) {
+  .auth-form-panel {
+    padding: 16px 12px;
+    padding-top: 24px;
+  }
+
+  .auth-mobile-logo {
+    margin-bottom: 20px;
+    padding: 0 12px;
+  }
+
+  .auth-mobile-logo-img {
+    max-width: 140px;
+  }
+
+  .auth-form-card {
+    padding: 24px 16px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  .auth-tabs {
+    margin-bottom: 20px;
+  }
+
+  .auth-tab {
+    padding: 10px 12px;
+    font-size: 0.875rem;
+  }
+
+  .auth-form {
+    gap: 16px;
+  }
+
+  .auth-form-group label {
+    font-size: 0.8125rem;
+  }
+
+  .auth-input {
+    padding: 12px 14px;
+    font-size: 0.9375rem;
+  }
+
+  .auth-password-input {
+    padding-right: 90px;
+  }
+
+  .auth-password-toggle {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    right: 4px;
+  }
+
+  .auth-password-toggle span {
+    font-size: 0.6875rem;
+    display: none; /* Ocultar texto en mobile, solo mostrar icono */
+  }
+
+  .auth-submit-button,
+  .auth-google-button {
+    padding: 14px 20px;
+    font-size: 0.9375rem;
+  }
+
+  .auth-page-title {
+    font-size: 1.375rem;
+    margin-bottom: 8px;
+  }
+
+  .auth-page-description {
+    font-size: 0.8125rem;
+    margin-bottom: 20px;
+  }
+
+  .auth-divider {
+    margin: 20px 0;
+  }
+
+  .auth-switch-account {
+    margin-top: 20px;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Mobile pequeño (hasta 480px) */
+@media (max-width: 480px) {
+  .auth-form-panel {
+    padding: 12px 8px;
+    padding-top: 20px;
+  }
+
+  .auth-mobile-logo {
+    margin-bottom: 16px;
+    padding: 0 8px;
+  }
+
+  .auth-mobile-logo-img {
+    max-width: 120px;
+  }
+
+  .auth-form-card {
+    padding: 20px 14px;
+    border-radius: 10px;
+  }
+
+  .auth-tabs {
+    margin-bottom: 18px;
+  }
+
+  .auth-tab {
+    padding: 8px 10px;
+    font-size: 0.8125rem;
+  }
+
+  .auth-form {
+    gap: 14px;
+  }
+
+  .auth-form-group label {
+    font-size: 0.75rem;
+  }
+
+  .auth-input {
+    padding: 10px 12px;
+    font-size: 0.875rem;
+  }
+
+  .auth-password-input {
+    padding-right: 80px;
+  }
+
+  .auth-password-toggle {
+    padding: 5px 6px;
+    font-size: 0.6875rem;
+  }
+
+  .auth-submit-button,
+  .auth-google-button {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+  }
+
+  .auth-page-title {
+    font-size: 1.25rem;
+  }
+
+  .auth-page-description {
+    font-size: 0.75rem;
+    margin-bottom: 18px;
+  }
+
+  .auth-error-message {
+    font-size: 0.8125rem;
+  }
+
+  .auth-success-message {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .auth-link-button {
+    font-size: 0.8125rem;
+  }
+
+  .auth-switch-account {
+    font-size: 0.75rem;
+    margin-top: 16px;
+  }
+}
+
+/* Título y descripción de página */
+.auth-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 12px 0;
+  text-align: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.auth-page-description {
+  font-size: 0.9375rem;
+  color: #6b7280;
+  margin: 0 0 32px 0;
+  text-align: center;
+  line-height: 1.6;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mensaje de éxito */
+.auth-success-message {
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 0 0 16px 0;
+  color: #065f46;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Estilos legacy para compatibilidad (si hay otros componentes que los usan) */
 .principal-container-login {
   background-color: #3d6de2;
   color: #000;
@@ -14,9 +706,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: calc(
-    100vh - 50px
-  ); /* Altura de la pantalla menos el padding superior */
+  height: calc(100vh - 50px);
   text-align: left;
   padding: 0;
   margin-top: 20px;
@@ -34,11 +724,6 @@
   align-items: center;
   z-index: 101;
   border-radius: 15px;
-}
-
-.logo-login {
-  height: 150px;
-  width: auto;
 }
 
 .container-login {
@@ -60,397 +745,3 @@
   color: #fff;
   text-align: center;
 }
-
-.container-login h2 {
-  color: #fff;
-  font-size: 2em;
-}
-
-.form-inicio-login h3 {
-  font-size: 30px;
-  text-align: center;
-  color: #000;
-}
-
-.form-grupo-login {
-  margin-bottom: 20px;
-  width: 100%;
-}
-
-.form-grupo-login label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: #333;
-}
-
-.input-login {
-  width: 500px;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
-}
-
-/* Contenedor para el input de contraseÃƒÂ±a con botÃƒÂ³n */
-.password-input-container {
-  position: relative;
-  display: inline-block;
-  width: 100%;
-}
-
-.password-input {
-  padding-right: 50px; /* Espacio para el botÃƒÂ³n */
-}
-
-.password-toggle-btn {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease;
-}
-
-.password-toggle-btn:hover {
-  color: #1e43c0;
-}
-
-.password-toggle-btn:focus {
-  outline: 2px solid #1e43c0;
-  outline-offset: 2px;
-  border-radius: 3px;
-}
-
-/* Estilos para Google Login */
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 20px 0;
-  text-align: center;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #ddd;
-}
-
-.divider span {
-  padding: 0 15px;
-  color: #666;
-  font-size: 14px;
-}
-
-.google-login-button {
-  width: 100%;
-  padding: 15px 20px;
-  background: #fff;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  transition: all 0.2s ease;
-  margin-bottom: 20px;
-}
-
-.google-login-button:hover {
-  border-color: #4285F4;
-  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.15);
-  transform: translateY(-1px);
-}
-
-.google-login-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.google-icon {
-  flex-shrink: 0;
-}
-
-/* Estados de validaciÃƒÂ³n */
-.input-login.is-error {
-  border-color: #d32f2f; /* rojo */
-  outline: 2px solid rgba(211, 47, 47, 0.2);
-}
-.input-login.is-valid {
-  border-color: #1e43c0; /* azul del tema */
-  outline: 2px solid rgba(30, 67, 192, 0.18);
-}
-
-.error-message {
-  color: #d32f2f;
-  display: block;
-  margin-top: 6px;
-  text-align: left;
-}
-
-.submit-button-login {
-  width: 100%;
-  padding: 15px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 18px;
-  margin-top: 20px;
-}
-.submit-button-login:hover {
-  background-color: #0056b3;
-}
-
-.form-inicio-login div {
-  text-align: center;
-  margin-top: 20px;
-  width: 100%;
-}
-
-.form-inicio-login div span {
-  margin-bottom: 5px;
-  display: block;
-}
-
-.form-inicio-login div button a {
-  color: #fff;
-  text-decoration: none;
-}
-.form-inicio-login div button a:hover {
-  text-decoration: underline;
-}
-
-.container-register {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-.container-register span {
-  color: #333;
-  font-weight: bold;
-}
-
-.back-btn-login {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-bottom: 1rem;
-  margin-left: 0;
-  align-self: flex-start;
-  display: flex;
-  align-items: center;
-  color: #1e43c0;
-  font-size: 22px;
-  position: relative;
-  z-index: 200;
-}
-
-/* Imagen siempre responsive dentro de la tarjeta azul */
-.container-login img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* ===== Fix crÃƒÂ­tico: si el botÃƒÂ³n tiene margin-top inline negativo, lo pisamos */
-.form-inicio-login > button[aria-label="Volver atrÃƒÂ¡s"] {
-  margin-top: 0 !important;
-}
-
-/* =========================
-   RESPONSIVE OVERRIDES
-   ========================= */
-
-/* Ajustes suaves para pantallas grandes pero bajas de alto */
-@media (min-width: 993px) and (max-height: 820px) {
-  .content-wrapper-login {
-    height: auto;
-    margin-top: 40px;
-    margin-bottom: 40px;
-  }
-  .form-inicio-login,
-  .container-login {
-    height: auto;
-    min-height: 560px;
-  }
-}
-
-/* Tablet (Ã¢â€°Â¤ 992px): reducir alturas fijas y permitir scroll */
-@media (max-width: 992px) {
-  .principal-container-login {
-    height: auto;
-    min-height: 100vh;
-    overflow: auto;
-  }
-
-  .content-wrapper-login {
-    height: auto;
-    padding: 12px;
-    margin-top: 40px;
-    gap: 18px;
-  }
-
-  .form-inicio-login,
-  .container-login {
-    height: auto;
-    padding: 24px;
-  }
-
-  .input-login {
-    width: 100%;
-    max-width: 520px;
-  }
-
-  .container-login h2 {
-    font-size: 1.7em;
-  }
-}
-
-/* Mobile (Ã¢â€°Â¤ 768px): apilar tarjetas, inputs al 100% */
-@media (max-width: 768px) {
-  .content-wrapper-login {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    margin-top: 12px;
-  }
-
-  .form-inicio-login,
-  .container-login {
-    width: 100%;
-    max-width: 620px;
-    margin: 0 auto;
-    border-radius: 14px;
-  }
-
-  /* Orden sugerido: primero tarjeta azul, luego formulario */
-  .container-login {
-    order: 1;
-  }
-  .form-inicio-login {
-    order: 2;
-  }
-
-  .form-inicio-login > button[aria-label="Volver atrÃƒÂ¡s"] {
-    align-self: flex-start;
-    margin-bottom: 12px;
-  }
-
-  .input-login {
-    width: 100%;
-    padding: 14px;
-    font-size: 15px;
-  }
-
-  .submit-button-login {
-    font-size: 16px;
-    padding: 14px;
-  }
-
-  .container-login img {
-    width: 240px;
-  }
-  .container-login h2 {
-    font-size: 1.5em;
-  }
-}
-
-/* Phones pequeÃƒÂ±os (Ã¢â€°Â¤ 560px) */
-@media (max-width: 560px) {
-  .form-inicio-login,
-  .container-login { padding: 18px; }
-
-  .form-inicio-login h3 { font-size: 22px; margin: 2px 0 8px; }
-  .input-login { padding: 12px; font-size: 14px; }
-  .submit-button-login { font-size: 15px; padding: 10px 12px; }
-
-  .container-login img { width: 180px; }
-  .container-login h2 { font-size: 1.3em; }
-}
-
-/* Muy estrechos (Ã¢â€°Â¤ 380px) */
-@media (max-width: 380px) {
-  .form-inicio-login,
-  .container-login { padding: 14px; border-radius: 12px; }
-
-  .form-inicio-login h3 { font-size: 20px; }
-  .submit-button-login { font-size: 14.5px; padding: 10px; }
-}
-
-/* Alturas muy bajas en desktop/tablet */
-@media (max-height: 780px) and (min-width: 769px) {
-  .content-wrapper-login {
-    height: auto;
-    margin-top: 30px;
-    margin-bottom: 30px;
-  }
-  .form-inicio-login,
-  .container-login {
-    height: auto;
-    min-height: 520px;
-  }
-}
-
-/* Compactaci�n fuerte para m�viles: que quepa en una pantalla */
-@media (max-width: 480px) {
-  /* Ocultar cabezal/branding azul completamente */
-  .container-login { display: none !important; }
-
-  .principal-container-login { height: 100dvh; }
-  .content-wrapper-login {
-    height: 100dvh;
-    margin-top: 0;
-    padding: 10px 12px;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .form-inicio-login {
-    width: 100%;
-    max-width: 420px;
-    padding: 14px;
-    border-radius: 12px;
-    gap: 8px;
-  }
-  .back-btn-login { margin-bottom: 6px; padding: 0; }
-  .form-grupo-login { margin-bottom: 10px; }
-  .form-grupo-login label { margin-bottom: 4px; font-weight: 600; font-size: 0.95rem; }
-  .input-login { padding: 10px 12px; font-size: 15px; }
-  .password-input-container .password-toggle-btn { right: 10px; }
-  .submit-button-login { margin-top: 6px; padding: 10px 12px; font-size: 15px; }
-  .divider { margin: 8px 0; }
-  .google-login-button { padding: 10px 12px; font-size: 15px; }
-  .form-inicio-login p { margin: 6px 0; }
-  .container-register { margin-top: 8px !important; gap: 8px; }
-  .container-register span { font-size: 0.95rem; }
-}
-/* "Volver al inicio" como chip atractivo */
-.home-chip{
-  display:inline-flex; align-items:center; gap:8px;
-  border:1px solid #c7d2fe; color:#1e43c0; background:#fff;
-  border-radius:999px; padding:6px 10px; font-weight:650; font-size:14px;
-  box-shadow:0 1px 2px rgba(0,0,0,.06);
-  transition: all .15s ease;
-}
-.home-chip:hover{ background:#eef2ff; border-color:#9db1ff; transform: translateY(-1px); }
-.home-chip:active{ transform: translateY(0); }
-
-@media (max-width:480px){ .home-chip{ margin-bottom:6px; padding:6px 10px; } }

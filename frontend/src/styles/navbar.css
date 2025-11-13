@@ -23,7 +23,7 @@
   align-items: center;
   gap: 10px;
   color: #fff;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 26px;
   margin: 0;
 }
@@ -269,8 +269,13 @@
   #main-navbar .session-btn,
   #main-navbar .MuiMenuItem-root,
   #main-navbar .MuiListItemText-root,
-  #main-navbar .MuiButtonBase-root {
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+  #main-navbar .MuiButtonBase-root,
+  #main-navbar .MuiTypography-root,
+  #main-navbar .MuiButton-root {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
   }
 
   /* orden en mobile */

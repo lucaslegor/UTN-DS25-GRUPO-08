@@ -1,0 +1,128 @@
+/* === Overrides globales para Material UI con Inter === */
+
+/* Asegurar que todos los componentes de MUI usen Inter */
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiInputBase-input,
+.MuiTextField-root,
+.MuiMenuItem-root,
+.MuiListItemText-primary,
+.MuiListItemText-secondary,
+.MuiChip-label,
+.MuiTab-root,
+.MuiCard-root,
+.MuiCardContent-root,
+.MuiDialog-root,
+.MuiDialogTitle-root,
+.MuiDialogContent-root,
+.MuiDialogContentText-root,
+.MuiDialogActions-root,
+.MuiPaper-root,
+.MuiTooltip-tooltip,
+.MuiSnackbar-root,
+.MuiAlert-root,
+.MuiAlert-message,
+.MuiTable-root,
+.MuiTableHead-root,
+.MuiTableBody-root,
+.MuiTableCell-root,
+.MuiTableRow-root,
+.MuiSelect-root,
+.MuiFormLabel-root,
+.MuiFormControlLabel-label,
+.MuiCheckbox-root,
+.MuiRadio-root,
+.MuiSwitch-root,
+.MuiSlider-root,
+.MuiTabs-root,
+.MuiTab-root,
+.MuiAppBar-root,
+.MuiToolbar-root,
+.MuiDrawer-root,
+.MuiList-root,
+.MuiListItem-root,
+.MuiListItemButton-root,
+.MuiListItemIcon-root,
+.MuiListItemText-root,
+.MuiAccordion-root,
+.MuiAccordionSummary-root,
+.MuiAccordionDetails-root,
+.MuiAutocomplete-root,
+.MuiAutocomplete-input,
+.MuiPagination-root,
+.MuiRating-root,
+.MuiSkeleton-root,
+.MuiCircularProgress-root,
+.MuiLinearProgress-root,
+.MuiStepper-root,
+.MuiStepLabel-root,
+.MuiStepContent-root,
+.MuiBreadcrumbs-root,
+.MuiLink-root,
+.MuiAvatar-root,
+.MuiBadge-root,
+.MuiChip-root,
+.MuiFab-root,
+.MuiIconButton-root,
+.MuiToggleButton-root,
+.MuiToggleButtonGroup-root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+/* Prevenir que transformaciones CSS afecten el renderizado de texto */
+* {
+  /* Asegurar que las transformaciones no afecten el renderizado de fuentes */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+/* Para elementos con transform, asegurar que el texto se renderice correctamente */
+[style*="transform"],
+[class*="transform"],
+.transform,
+.scale,
+.rotate {
+  /* Forzar renderizado de texto independiente de transformaciones */
+  will-change: transform;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Específico para botones y elementos interactivos con transform */
+button[style*="transform"],
+button[class*="transform"],
+a[style*="transform"],
+a[class*="transform"] {
+  /* Asegurar que el texto dentro de elementos transformados se renderice bien */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Override específico para evitar que scale() adelgace la fuente en Chrome */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  * {
+    /* Chrome/Edge: prevenir renderizado fino con transformaciones */
+    -webkit-font-feature-settings: normal;
+    font-feature-settings: normal;
+  }
+  
+  /* Asegurar que elementos con scale() mantengan el grosor de fuente */
+  [style*="scale"],
+  [class*="scale"] {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Forzar renderizado de alta calidad */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+

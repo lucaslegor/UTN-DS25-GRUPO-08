@@ -1,21 +1,20 @@
 import React, { useState, useRef } from "react";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
-import { Button } from "@mui/material";
 import { registerApi} from "../services/api";
 import ReCaptcha from "./ReCaptcha";
 import * as yup from "yup";
 
 const Register = () => {
   const [username, setUsername] = useState("");
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ username: "", mail: "", password: "", confirmPassword: "" });
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const [recaptchaError, setRecaptchaError] = useState("");
@@ -93,30 +92,60 @@ const Register = () => {
   };
 
   return (
-    <div className="principal-container-login">
-      <div className="content-wrapper-login">
-        <div className="form-inicio-login">
+    <div className="auth-split-container">
+      {/* Panel izquierdo - Branding (solo desktop) */}
+      <div className="auth-branding-panel">
+        <div className="auth-branding-content">
+          <div className="auth-logo-container">
+            <img src="/MaxiColor.png" alt="MAPS ASESORES" className="auth-logo" />
+          </div>
+          <h1 className="auth-brand-title">MAPS ASESORES</h1>
+          <p className="auth-brand-subtitle">Tu bienestar es nuestro compromiso</p>
+        </div>
+      </div>
 
-          <h3 style={{ marginTop: 0 }}>¡Registrate!</h3>
+      {/* Panel derecho - Formulario */}
+      <div className="auth-form-panel">
+        {/* Logo móvil (solo visible en mobile/tablet) */}
+        <div className="auth-mobile-logo">
+          <img src="/MaxiColor.png" alt="MAPS ASESORES" className="auth-mobile-logo-img" />
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-grupo-login">
-              <label htmlFor="user">Usuario:</label>
+        <div className="auth-form-card">
+          {/* Tabs */}
+          <div className="auth-tabs">
+            <button 
+              className="auth-tab"
+              onClick={() => navigate('/login')}
+            >
+              Inicia sesión
+            </button>
+            <button 
+              className="auth-tab active"
+              onClick={() => navigate('/register')}
+            >
+              Registrarse
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="auth-form-group">
+              <label htmlFor="username">Usuario</label>
               <input
                 type="text"
-                id="user"
+                id="username"
                 value={username}
                 onChange={(e) => onFieldChange('username', e.target.value)}
                 placeholder="Introduce tu usuario"
                 required
                 aria-invalid={!!fieldErrors.username}
-                className={`input-login ${fieldErrors.username ? 'is-error' : (username ? 'is-valid' : '')}`}
+                className={`auth-input ${fieldErrors.username ? 'is-error' : (username ? 'is-valid' : '')}`}
               />
-              {fieldErrors.username && <small className="error-message">{fieldErrors.username}</small>}
+              {fieldErrors.username && <small className="auth-error-message">{fieldErrors.username}</small>}
             </div>
 
-            <div className="form-grupo-login">
-              <label htmlFor="email">Email:</label>
+            <div className="auth-form-group">
+              <label htmlFor="email">Correo electrónico</label>
               <input
                 type="email"
                 id="email"
@@ -125,14 +154,14 @@ const Register = () => {
                 placeholder="Introduce tu email"
                 required
                 aria-invalid={!!fieldErrors.mail}
-                className={`input-login ${fieldErrors.mail ? 'is-error' : (email ? 'is-valid' : '')}`}
+                className={`auth-input ${fieldErrors.mail ? 'is-error' : (email ? 'is-valid' : '')}`}
               />
-              {fieldErrors.mail && <small className="error-message">{fieldErrors.mail}</small>}
+              {fieldErrors.mail && <small className="auth-error-message">{fieldErrors.mail}</small>}
             </div>
 
-            <div className="form-grupo-login">
-              <label htmlFor="password">Contraseña:</label>
-              <div className="password-input-container">
+            <div className="auth-form-group">
+              <label htmlFor="password">Contraseña</label>
+              <div className="auth-password-container">
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
@@ -141,23 +170,24 @@ const Register = () => {
                   placeholder="Introduce tu contraseña"
                   required
                   aria-invalid={!!fieldErrors.password}
-                  className={`input-login password-input ${fieldErrors.password ? 'is-error' : (password ? 'is-valid' : '')}`}
+                  className={`auth-input auth-password-input ${fieldErrors.password ? 'is-error' : (password ? 'is-valid' : '')}`}
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="auth-password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  <span>{showPassword ? "Ocultar" : "Mostrar"}</span>
                 </button>
               </div>
-              {fieldErrors.password && <small className="error-message">{fieldErrors.password}</small>}
+              {fieldErrors.password && <small className="auth-error-message">{fieldErrors.password}</small>}
             </div>
 
-            <div className="form-grupo-login">
-              <label htmlFor="confirmPassword">Confirmar contraseña:</label>
-              <div className="password-input-container">
+            <div className="auth-form-group">
+              <label htmlFor="confirmPassword">Confirmar contraseña</label>
+              <div className="auth-password-container">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
@@ -166,21 +196,22 @@ const Register = () => {
                   placeholder="Repetí tu contraseña"
                   required
                   aria-invalid={!!fieldErrors.confirmPassword}
-                  className={`input-login password-input ${fieldErrors.confirmPassword ? 'is-error' : (confirmPassword ? 'is-valid' : '')}`}
+                  className={`auth-input auth-password-input ${fieldErrors.confirmPassword ? 'is-error' : (confirmPassword ? 'is-valid' : '')}`}
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="auth-password-toggle"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   aria-label={showConfirmPassword ? "Ocultar confirmación de contraseña" : "Mostrar confirmación de contraseña"}
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  <span>{showConfirmPassword ? "Ocultar" : "Mostrar"}</span>
                 </button>
               </div>
-              {fieldErrors.confirmPassword && <small className="error-message">{fieldErrors.confirmPassword}</small>}
+              {fieldErrors.confirmPassword && <small className="auth-error-message">{fieldErrors.confirmPassword}</small>}
             </div>
 
-            <div className="form-grupo-login">
+            <div className="auth-form-group">
               <ReCaptcha
                 ref={recaptchaRef}
                 onVerify={(token) => {
@@ -196,40 +227,32 @@ const Register = () => {
                   setRecaptchaError("Error al cargar reCAPTCHA. Por favor, recarga la página.");
                 }}
               />
-              {recaptchaError && <small className="error-message">{recaptchaError}</small>}
+              {recaptchaError && <small className="auth-error-message">{recaptchaError}</small>}
             </div>
 
-            {error && <p className="error-message">{error}</p>}
+            {error && <div className="auth-error-message auth-error-general">{error}</div>}
+
             <button
-              className="submit-button-login"
+              className="auth-submit-button"
               type="submit"
               disabled={loading || !recaptchaToken}
               aria-busy={loading}
-              style={{ marginBottom: 24, opacity: loading ? 0.8 : 1 }}
               title={!recaptchaToken ? "Por favor, completa el reCAPTCHA primero" : ""}
             >
               {loading ? "Creando cuenta..." : "Registrarse"}
             </button>
-            {!recaptchaToken && (
-              <small style={{ display: 'block', marginTop: '8px', color: '#666', fontSize: '12px', marginBottom: '16px' }}>
-                ⚠️ Debes marcar el checkbox de reCAPTCHA para continuar
-              </small>
-            )}
+
+            <div className="auth-switch-account">
+              <span>¿Ya tienes cuenta? </span>
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="auth-link-button"
+              >
+                Iniciar sesión
+              </button>
+            </div>
           </form>
-
-          <Button
-            variant="outlined"
-            onClick={() => navigate("/login")}
-            disabled={loading} 
-            sx={{ display: "block", mx: "auto", mb: 3 }}
-          >
-            Iniciar sesión
-          </Button>
-        </div>
-
-        <div className="container-login">
-          <img src="/logomaxi.png" alt="Maps Asesores" width={350} />
-          <h2>¡Bienvenido a Maps, tu bienestar es nuestro compromiso!</h2>
         </div>
       </div>
     </div>

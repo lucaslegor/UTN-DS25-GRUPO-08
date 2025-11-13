@@ -1,9 +1,7 @@
 import React, { useState, useRef } from "react";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
-import "../styles/login.override.css";
-import { Button } from "@mui/material";
 import { loginApi, loginWithGoogleApi } from "../services/api";
 import { loginWithGoogle } from "../services/googleAuth";
 import ReCaptcha from "./ReCaptcha";
@@ -115,66 +113,87 @@ const Login = () => {
   };
 
   return (
-    <div className="principal-container-login">
-      <div className="content-wrapper-login">
-        {/* Panel izquierdo (form) */}
-        <div className="form-inicio-login">
-          <button
-            className="home-chip"
-            onClick={() => navigate("/")}
-            aria-label="Volver al inicio"
-            type="button"
-          >
-            <ArrowLeft size={18} />
-            <span>Ir al inicio</span>
-          </button>
+    <div className="auth-split-container">
+      {/* Panel izquierdo - Branding (solo desktop) */}
+      <div className="auth-branding-panel">
+        <div className="auth-branding-content">
+          <div className="auth-logo-container">
+            <img src="/MaxiColor.png" alt="MAPS ASESORES" className="auth-logo" />
+          </div>
+          <h1 className="auth-brand-title">MAPS ASESORES</h1>
+          <p className="auth-brand-subtitle">Tu bienestar es nuestro compromiso</p>
+        </div>
+      </div>
 
-          <h3>Hola, bienvenido!</h3>
+      {/* Panel derecho - Formulario */}
+      <div className="auth-form-panel">
+        {/* Logo móvil (solo visible en mobile/tablet) */}
+        <div className="auth-mobile-logo">
+          <img src="/MaxiColor.png" alt="MAPS ASESORES" className="auth-mobile-logo-img" />
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-grupo-login">
-              <label htmlFor="identifier">Usuario o Email:</label>
+        <div className="auth-form-card">
+          {/* Tabs */}
+          <div className="auth-tabs">
+            <button 
+              className="auth-tab active"
+              onClick={() => navigate('/login')}
+            >
+              Inicia sesión
+            </button>
+            <button 
+              className="auth-tab"
+              onClick={() => navigate('/register')}
+            >
+              Registrarse
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="auth-form-group">
+              <label htmlFor="identifier">Correo electrónico</label>
               <input
                 type="text"
                 id="identifier"
                 name="identifier"
                 value={identifier}
                 onChange={(e) => onFieldChange('identifier', e.target.value)}
-                placeholder="tu-usuario o tu@email.com"
+                placeholder="Ingrese su email o DNI"
                 required
                 aria-invalid={!!fieldErrors.identifier}
-                className={`input-login ${fieldErrors.identifier ? 'is-error' : (identifier ? 'is-valid' : '')}`}
+                className={`auth-input ${fieldErrors.identifier ? 'is-error' : (identifier ? 'is-valid' : '')}`}
               />
-              {fieldErrors.identifier && <small className="error-message">{fieldErrors.identifier}</small>}
+              {fieldErrors.identifier && <small className="auth-error-message">{fieldErrors.identifier}</small>}
             </div>
 
-            <div className="form-grupo-login">
-              <label htmlFor="password">Contraseña:</label>
-              <div className="password-input-container">
+            <div className="auth-form-group">
+              <label htmlFor="password">Contraseña</label>
+              <div className="auth-password-container">
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={password}
                   onChange={(e) => onFieldChange('password', e.target.value)}
-                  placeholder="Introduce tu contraseña"
+                  placeholder="Ingrese su contraseña"
                   required
                   aria-invalid={!!fieldErrors.password}
-                  className={`input-login password-input ${fieldErrors.password ? 'is-error' : (password ? 'is-valid' : '')}`}
+                  className={`auth-input auth-password-input ${fieldErrors.password ? 'is-error' : (password ? 'is-valid' : '')}`}
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="auth-password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  <span>{showPassword ? "Ocultar" : "Mostrar"}</span>
                 </button>
               </div>
-              {fieldErrors.password && <small className="error-message">{fieldErrors.password}</small>}
+              {fieldErrors.password && <small className="auth-error-message">{fieldErrors.password}</small>}
             </div>
 
-            <div className="form-grupo-login">
+            <div className="auth-form-group">
               <ReCaptcha
                 ref={recaptchaRef}
                 onVerify={(token) => {
@@ -190,36 +209,41 @@ const Login = () => {
                   setRecaptchaError("Error al cargar reCAPTCHA. Por favor, recarga la página.");
                 }}
               />
-              {recaptchaError && <small className="error-message">{recaptchaError}</small>}
+              {recaptchaError && <small className="auth-error-message">{recaptchaError}</small>}
             </div>
 
-            {error && <p className="error-message">{error}</p>}
+            {error && <div className="auth-error-message auth-error-general">{error}</div>}
 
             <button 
-              className="submit-button-login" 
+              className="auth-submit-button" 
               type="submit" 
               disabled={loading || !recaptchaToken}
               title={!recaptchaToken ? "Por favor, completa el reCAPTCHA primero" : ""}
             >
               {loading ? "Ingresando..." : "Ingresar"}
             </button>
-            {!recaptchaToken && (
-              <small style={{ display: 'block', marginTop: '8px', color: '#666', fontSize: '12px' }}>
-                ⚠️ Debes marcar el checkbox de reCAPTCHA para continuar
-              </small>
-            )}
 
-            <div className="divider">
+            <div className="auth-forgot-password">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="auth-link-button"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+
+            <div className="auth-divider">
               <span>o</span>
             </div>
 
             <button 
-              className="google-login-button" 
+              className="auth-google-button" 
               type="button" 
               onClick={handleGoogleLogin}
               disabled={googleLoading || loading}
             >
-              <svg className="google-icon" viewBox="0 0 24 24" width="20" height="20">
+              <svg className="auth-google-icon" viewBox="0 0 24 24" width="20" height="20">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -228,29 +252,17 @@ const Login = () => {
               {googleLoading ? "Conectando..." : "Continuar con Google"}
             </button>
 
-            <p style={{ marginTop: 12, textAlign: 'center' }}>
+            <div className="auth-switch-account">
+              <span>¿No tienes cuenta? </span>
               <button
                 type="button"
-                onClick={() => navigate('/forgot-password')}
-                style={{ background: 'none', border: 'none', color: '#1e43c0', cursor: 'pointer', textDecoration: 'underline' }}
+                onClick={() => navigate('/register')}
+                className="auth-link-button"
               >
-                ¿Olvidaste tu contraseña?
+                Registrarse
               </button>
-            </p>
+            </div>
           </form>
-
-          <div className="container-register" style={{ marginTop: 16 }}>
-            <span>¿No tenias cuenta?</span>
-            <Button variant="outlined" onClick={() => navigate("/register")}>
-              Registrarse
-            </Button>
-          </div>
-        </div>
-
-        {/* Panel derecho (branding) */}
-        <div className="container-login">
-          <img src="/logomaxi.png" alt="Maps Asesores" width={350} />
-          <h2>¡Bienvenido a Maps, tu bienestar es nuestro compromiso!</h2>
         </div>
       </div>
     </div>
