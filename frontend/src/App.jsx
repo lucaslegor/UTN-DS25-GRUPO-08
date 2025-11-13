@@ -17,6 +17,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import WhatsAppFloat from './components/WhatsAppFloat';
 import { SolicitudesProvider } from './context/SolicitudesContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -33,12 +34,12 @@ function App() {
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
                 <Route path="nosotros" element={<AboutUs />} />
-                <Route path="solicitudes" element={<SolicitudesPage />} />
+                <Route path="solicitudes" element={<ProtectedRoute><SolicitudesPage /></ProtectedRoute>} />
                 <Route path="productcard/:id" element={<ProductCardPage />} />
-                <Route path="userProfile" element={<UserProfile/>} />
-                <Route path="adminPanel" element={<AdminPanel/>} />
+                <Route path="userProfile" element={<ProtectedRoute><UserProfile/></ProtectedRoute>} />
+                <Route path="adminPanel" element={<ProtectedRoute requireAdmin={true}><AdminPanel/></ProtectedRoute>} />
                 <Route path="contacto" element={<Contact/>} />
-                <Route path="misPolizas" element={<MisPolizasPage/>} />
+                <Route path="misPolizas" element={<ProtectedRoute><MisPolizasPage/></ProtectedRoute>} />
               </Route>
             </Routes>
             

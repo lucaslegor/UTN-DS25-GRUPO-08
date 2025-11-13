@@ -1,41 +1,35 @@
 const RAW_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
 const API_URL = `${RAW_BASE}/api`;
 
+// Solo guardar user, NO token (los tokens ahora están en cookies httpOnly)
 export function getAuth() {
   const raw = localStorage.getItem('auth');
-  try { return raw ? JSON.parse(raw) : null; } catch { return null; }
+  try { 
+    const auth = raw ? JSON.parse(raw) : null;
+    if (auth && auth.token) {
+      // Eliminar token si existe (migración)
+      delete auth.token;
+      saveAuth(auth);
+    }
+    return auth;
+  } catch { return null; }
 }
 export function saveAuth(auth) {
-  localStorage.setItem('auth', JSON.stringify(auth));
+  // Guardar solo user, NO token
+  const { token, ...userData } = auth;
+  localStorage.setItem('auth', JSON.stringify({ user: userData.user || userData }));
 }
 export function clearAuth() {
   localStorage.removeItem('auth');
 }
-function setAuthToken(token) {
-  const auth = getAuth() || {};
-  const next = { ...auth, token };
-  saveAuth(next);
-  return next;
-}
 
 export function authHeaders(extra = {}) {
-  const auth = getAuth();
-  const h = { 'Content-Type': 'application/json', ...extra };
-  if (auth?.token) h.Authorization = `Bearer ${auth.token}`;
-  return h;
+  // El token ahora viene automáticamente en la cookie con credentials: 'include'
+  // NO agregar Authorization header
+  return { 'Content-Type': 'application/json', ...extra };
 }
 
 let refreshInFlight = null;
-
-function getTokenExpMs(token) {
-  try {
-    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(b64));
-    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
-  } catch {
-    return null;
-  }
-}
 
 async function refreshAccessToken() {
   const res = await fetch(`${API_URL}/auth/refresh`, {
@@ -43,64 +37,45 @@ async function refreshAccessToken() {
     credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data?.token) {
+  if (!res.ok) {
     clearAuth();
     const msg = data?.error || data?.message || `HTTP ${res.status}`;
     throw new Error(msg);
   }
   
-  const currentAuth = getAuth();
-  if (currentAuth?.user?.profileImage && data?.user) {
-    data.user.profileImage = currentAuth.user.profileImage;
+  // El token ahora viene en cookie, no en el body
+  // Solo actualizar user si viene en la respuesta
+  if (data?.user) {
+    const currentAuth = getAuth();
+    if (currentAuth?.user?.profileImage) {
+      data.user.profileImage = currentAuth.user.profileImage;
+    }
+    saveAuth({ user: data.user });
   }
   
-  setAuthToken(data.token);
-  return data.token;
-}
-
-async function ensureFreshToken() {
-  const auth = getAuth();
-  if (!auth?.token) return;
-
-  const expMs = getTokenExpMs(auth.token);
-  const now = Date.now();
-  const SKEW = 30_000; // refrescar si faltan < 30s
-
-  if (!expMs || expMs - SKEW > now) return;
-
-  if (!refreshInFlight) {
-    refreshInFlight = refreshAccessToken().finally(() => { refreshInFlight = null; });
-  }
-  await refreshInFlight;
+  return true; // Token está en cookie
 }
 
 export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry = false } = {}) {
-  const auth = getAuth();
-  
-  if (auth?.token) {
-    await ensureFreshToken();
-  }
-
-  const freshAuth = getAuth();
-  
+  // El token viene automáticamente en la cookie con credentials: 'include'
+  // NO agregar Authorization header
   const h = { 'Content-Type': 'application/json', ...headers };
-  if (freshAuth?.token) h.Authorization = `Bearer ${freshAuth.token}`;
 
   const doReq = () =>
     fetch(`${API_URL}${path}`, {
       method,
       headers: h,
       body: body ? JSON.stringify(body) : undefined,
-      credentials: 'include',
+      credentials: 'include', // ✅ Esto envía las cookies automáticamente
     });
 
   let res = await doReq();
 
-  if (freshAuth?.token && (res.status === 401 || res.status === 403) && !_retry) {
+  // Si recibimos 401/403, intentar refrescar el token
+  if ((res.status === 401 || res.status === 403) && !_retry) {
     try {
       await refreshAccessToken();
-      const finalAuth = getAuth();
-      if (finalAuth?.token) h.Authorization = `Bearer ${finalAuth.token}`;
+      // Reintentar la petición (el nuevo token está en cookie)
       res = await doReq();
     } catch (e) {
       clearAuth();
@@ -123,6 +98,8 @@ export async function loginApi({ username, mail, password, recaptchaToken }) {
     body: payload,
   });
   
+  // El token ahora viene en cookie, no en el body
+  // Solo guardar user
   if (data?.user?.username) {
     const userProfileImage = localStorage.getItem(`profileImage:${data.user.username}`);
     if (userProfileImage) {
@@ -130,7 +107,7 @@ export async function loginApi({ username, mail, password, recaptchaToken }) {
     }
   }
   
-  saveAuth(data);
+  saveAuth({ user: data.user });
   return data;
 }
 
@@ -140,6 +117,8 @@ export async function loginWithGoogleApi(token) {
     body: { token },
   });
   
+  // El token ahora viene en cookie, no en el body
+  // Solo guardar user
   if (data?.user?.username) {
     const userProfileImage = localStorage.getItem(`profileImage:${data.user.username}`);
     if (userProfileImage) {
@@ -147,7 +126,7 @@ export async function loginWithGoogleApi(token) {
     }
   }
   
-  saveAuth(data);
+  saveAuth({ user: data.user });
   return data;
 }
 
@@ -211,14 +190,14 @@ export async function getSolicitudApi(id) {
 }
 
 export async function uploadPolizaFileApi(idSolicitud, file) {
-  const auth = getAuth();
+  // El token viene automáticamente en la cookie con credentials: 'include'
+  // NO agregar Authorization header
   const form = new FormData();
   form.append('file', file);
   const res = await fetch(`${API_URL}/polizas/${idSolicitud}`, {
     method: 'POST',
-    headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
     body: form,
-    credentials: 'include',
+    credentials: 'include', // ✅ Esto envía las cookies automáticamente
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
