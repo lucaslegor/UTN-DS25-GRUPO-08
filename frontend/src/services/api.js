@@ -18,9 +18,13 @@ export function saveAuth(auth) {
   // Guardar solo user, NO token
   const { token, ...userData } = auth;
   localStorage.setItem('auth', JSON.stringify({ user: userData.user || userData }));
+  // Disparar evento para actualizar componentes que dependen del estado de auth
+  window.dispatchEvent(new Event('authChanged'));
 }
 export function clearAuth() {
   localStorage.removeItem('auth');
+  // Disparar evento para actualizar componentes que dependen del estado de auth
+  window.dispatchEvent(new Event('authChanged'));
 }
 
 export function authHeaders(extra = {}) {

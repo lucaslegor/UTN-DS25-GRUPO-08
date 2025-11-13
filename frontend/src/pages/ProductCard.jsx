@@ -28,7 +28,8 @@ export default function ProductDetailPage() {
 
   const isLogged = () => {
     const auth = getAuth();
-    return Boolean(auth?.token);
+    // Verificar si existe usuario (el token ahora está en cookies httpOnly)
+    return Boolean(auth?.user);
   };
 
   const [allProducts, setAllProducts] = React.useState([]);

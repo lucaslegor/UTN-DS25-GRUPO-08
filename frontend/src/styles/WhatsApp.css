@@ -1,30 +1,94 @@
-/* WhatsApp Float Button */
+/* ============================================
+   WHATSAPP FLOAT BUTTON - POSITION FIXED
+   Asegurar que esté siempre fijo en viewport
+   ============================================ */
+
+/* Regla específica para botón renderizado directamente en body */
+body > .whatsapp-float {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  /* Forzar que esté relativo al viewport */
+  margin: 0 !important;
+  transform: none !important;
+}
+
+/* Asegurar que ningún contenedor padre interfiera */
+html .whatsapp-float,
+body .whatsapp-float,
+#root .whatsapp-float {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+}
+
 .whatsapp-float {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
+  /* Posicionamiento fijo relativo al viewport */
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  top: auto !important;
+  left: auto !important;
+  
+  /* Dimensiones */
   width: 60px;
   height: 60px;
+  
+  /* Estilos visuales */
   background: #1e43c0; /* Color azul de la navbar */
   border-radius: 50%;
-  display: flex;
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 67, 192, 0.3);
+  
+  /* Layout */
+  display: flex !important;
   align-items: center;
   justify-content: center;
+  
+  /* Interactividad */
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(30, 67, 192, 0.3);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  color: white;
+  pointer-events: auto !important;
+  
+  /* Z-index alto para estar sobre todo */
+  z-index: 9999 !important;
+  
+  /* Reset de márgenes y padding */
+  margin: 0 !important;
+  padding: 0 !important;
+  
+  /* Transiciones */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  
+  /* Asegurar que esté relativo al viewport, no a ningún contenedor */
+  transform: none !important;
+  
+  /* Aislamiento del stacking context */
+  isolation: isolate;
+  
+  /* Contención para mejor rendimiento */
+  contain: layout style paint;
+  
+  /* Asegurar visibilidad */
+  visibility: visible !important;
+  opacity: 1 !important;
+  backface-visibility: visible;
+  
+  /* Asegurar que no esté afectado por overflow de contenedores */
+  overflow: visible !important;
 }
 
 .whatsapp-float:hover {
-  transform: scale(1.1);
+  transform: scale(1.1) !important;
   box-shadow: 0 6px 16px rgba(30, 67, 192, 0.4);
   background: #1a3bb0; /* Color más oscuro al hover */
 }
 
 .whatsapp-float:active {
-  transform: scale(0.95);
+  transform: scale(0.95) !important;
 }
 
 /* Tooltip */
@@ -78,13 +142,13 @@
   animation: pulse 2s infinite;
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 768px) {
   .whatsapp-float {
     width: 55px;
     height: 55px;
-    bottom: 15px;
-    right: 15px;
+    bottom: 24px !important;
+    right: 24px !important;
   }
   
   .whatsapp-tooltip {
@@ -94,17 +158,40 @@
   }
 }
 
+/* Responsive - Mobile */
 @media (max-width: 480px) {
   .whatsapp-float {
     width: 50px;
     height: 50px;
-    bottom: 10px;
-    right: 10px;
+    bottom: 24px !important;
+    right: 24px !important;
   }
   
   .whatsapp-tooltip {
     right: 60px;
     font-size: 12px;
     padding: 5px 8px;
+  }
+}
+
+/* iPhone - Soporte para safe-area (notch y home indicator) */
+@supports (bottom: env(safe-area-inset-bottom)) {
+  .whatsapp-float {
+    bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+    right: calc(24px + env(safe-area-inset-right)) !important;
+  }
+  
+  @media (max-width: 768px) {
+    .whatsapp-float {
+      bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+      right: calc(24px + env(safe-area-inset-right)) !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .whatsapp-float {
+      bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+      right: calc(24px + env(safe-area-inset-right)) !important;
+    }
   }
 }

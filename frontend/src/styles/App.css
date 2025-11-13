@@ -46,12 +46,22 @@ html, body {
   min-height: 100dvh;            /* ocupa toda la pantalla */
   display: flex;
   flex-direction: column;
+  /* Asegurar que no cree stacking context que afecte position: fixed */
+  isolation: auto;
+  transform: none;
+  perspective: none;
+  filter: none;
 }
 
 .app-content {
   flex: 1 0 auto;                /* crece y empuja el footer al fondo */
   padding-top: var(--navH);      /* navbar es fixed: separa el contenido */
   padding-bottom: 24px;          /* aire sobre el footer */
+  /* Asegurar que no cree stacking context que afecte position: fixed */
+  isolation: auto;
+  transform: none;
+  perspective: none;
+  filter: none;
 }
 
 .footer-root {                   /* <footer class="footer-root"> */

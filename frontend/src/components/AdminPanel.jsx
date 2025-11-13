@@ -114,7 +114,8 @@ const AdminPanel = () => {
     const raw = localStorage.getItem('auth');
     try {
       const auth = raw ? JSON.parse(raw) : null;
-      if (!auth?.token) {
+      // Verificar si existe usuario (el token ahora está en cookies httpOnly)
+      if (!auth?.user) {
         navigate('/login');
         return;
       }
@@ -146,14 +147,9 @@ const AdminPanel = () => {
   }, [activeTab]);
 
   const authHeaders = () => {
-    const headers = { 'Content-Type': 'application/json' };
-    const raw = localStorage.getItem('auth');
-    try {
-      const auth = raw ? JSON.parse(raw) : null;
-      if (auth?.token) headers.Authorization = `Bearer ${auth.token}`;
-    } catch {
-    }
-    return headers;
+    // El token ahora viene automáticamente en cookies con credentials: 'include'
+    // NO agregar Authorization header
+    return { 'Content-Type': 'application/json' };
   };
 
 async function loadProducts() {
@@ -718,10 +714,9 @@ async function updateUserRole(userId, newRole) {
           const form = new FormData();
           Object.entries(productData).forEach(([k, v]) => form.append(k, String(v)));
           form.append('image', imageFile);
-          const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+          // El token ahora viene automáticamente en cookies con credentials: 'include'
           const res = await fetch(`${API_BASE}/productos/${editingId}`, {
             method: 'PUT',
-            headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
             body: form,
             credentials: 'include',
           });
@@ -737,10 +732,9 @@ async function updateUserRole(userId, newRole) {
           const form = new FormData();
           Object.entries(productData).forEach(([k, v]) => form.append(k, String(v)));
           form.append('image', imageFile);
-          const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+          // El token ahora viene automáticamente en cookies con credentials: 'include'
           const res = await fetch(`${API_BASE}/productos`, {
             method: 'POST',
-            headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
             body: form,
             credentials: 'include',
           });
