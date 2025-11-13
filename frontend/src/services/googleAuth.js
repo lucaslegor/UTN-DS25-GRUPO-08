@@ -1,8 +1,4 @@
-// Google Client ID debe estar configurado en variables de entorno
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-if (!GOOGLE_CLIENT_ID) {
-  throw new Error('VITE_GOOGLE_CLIENT_ID no está configurado en las variables de entorno');
-}
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '97231523973-8e1t3mtomvcg8qvns035tdfdcalem9vt.apps.googleusercontent.com';
 
 export const loadGoogleAPI = () => {
   return new Promise((resolve, reject) => {
@@ -74,23 +70,13 @@ export const loginWithGoogle = async () => {
             transform: translateY(0) scale(1);
           }
         }
-        .google-login-modal {
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-          padding: 30px;
-          min-width: 350px;
-          max-width: 400px;
-          text-align: center;
-          position: relative;
-          animation: slideIn 0.3s ease-out;
-        }
-        .google-login-modal h3 {
-          margin: 0 0 20px 0;
-          color: #333;
-          font-size: 18px;
-        }
-        .google-login-close-btn {
+      `;
+      document.head.appendChild(style);
+
+      modal.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #333; font-size: 18px;">Iniciar sesión con Google</h3>
+        <div id="google-signin-button"></div>
+        <button id="close-google-modal" style="
           position: absolute;
           top: 10px;
           right: 15px;
@@ -105,30 +91,8 @@ export const loginWithGoogle = async () => {
           display: flex;
           align-items: center;
           justify-content: center;
-        }
-        .google-login-close-btn:hover {
-          color: #333;
-        }
+        ">×</button>
       `;
-      document.head.appendChild(style);
-
-      // Crear elementos de forma segura (sin innerHTML)
-      modal.className = 'google-login-modal';
-
-      const h3 = document.createElement('h3');
-      h3.textContent = 'Iniciar sesión con Google';
-      modal.appendChild(h3);
-
-      const buttonContainer = document.createElement('div');
-      buttonContainer.id = 'google-signin-button';
-      modal.appendChild(buttonContainer);
-
-      const closeBtn = document.createElement('button');
-      closeBtn.id = 'close-google-modal';
-      closeBtn.className = 'google-login-close-btn';
-      closeBtn.textContent = '×';
-      closeBtn.setAttribute('aria-label', 'Cerrar');
-      modal.appendChild(closeBtn);
 
       overlay.appendChild(modal);
       document.body.appendChild(overlay);

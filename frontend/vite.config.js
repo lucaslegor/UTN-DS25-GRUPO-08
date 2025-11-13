@@ -5,8 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     headers: {
-      'Content-Security-Policy': "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://accounts.google.com https://www.gstatic.com https://www.google.com; worker-src 'self' blob:; frame-src 'self' https://accounts.google.com https://www.google.com; connect-src 'self' https://accounts.google.com https://www.google.com http://localhost:3000 http://localhost:3001 https://utn-ds25-grupo-08-wuql.onrender.com https://*.vercel.app;",
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups'
+      'Content-Security-Policy': "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://www.gstatic.com https://www.google.com; frame-src 'self' https://accounts.google.com https://www.google.com; connect-src 'self' https://accounts.google.com https://www.google.com http://localhost:3000 http://localhost:3001 https://utn-ds25-grupo-08-wuql.onrender.com https://*.vercel.app;"
     }
   },
   build: {

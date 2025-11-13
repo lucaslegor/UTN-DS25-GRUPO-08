@@ -104,7 +104,7 @@
   box-sizing: border-box;
 }
 
-/* Logo móvil (oculto en desktop) */
+/* Logo mÃ³vil (oculto en desktop) */
 .auth-mobile-logo {
   display: none;
   width: 100%;
@@ -539,7 +539,7 @@
     font-size: 0.75rem;
   }
 
-  /* ReCAPTCHA más compacto */
+  /* ReCAPTCHA mÃ¡s compacto */
   .auth-form-group > div {
     margin-top: 4px !important;
   }
@@ -683,7 +683,7 @@
     font-size: 0.75rem;
   }
 
-  /* ReCAPTCHA más compacto */
+  /* ReCAPTCHA mÃ¡s compacto */
   .auth-form-group > div {
     margin-top: 4px !important;
   }
@@ -711,7 +711,7 @@
     display: none !important;
   }
 
-  /* Mostrar logo móvil */
+  /* Mostrar logo mÃ³vil */
   .auth-mobile-logo {
     display: block;
   }
@@ -739,7 +739,7 @@
   }
 }
 
-/* Tablets pequeños (hasta 768px) */
+/* Tablets pequeÃ±os (hasta 768px) */
 @media (max-width: 768px) {
   .auth-form-panel {
     padding: 20px 16px;
@@ -867,7 +867,7 @@
   }
 }
 
-/* Mobile pequeño (hasta 480px) */
+/* Mobile pequeÃ±o (hasta 480px) */
 @media (max-width: 480px) {
   .auth-form-panel {
     padding: 12px 8px;
@@ -953,7 +953,7 @@
   }
 }
 
-/* Título y descripción de página */
+/* TÃ­tulo y descripciÃ³n de pÃ¡gina */
 .auth-page-title {
   font-size: 1.75rem;
   font-weight: 700;
@@ -976,7 +976,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Mensaje de éxito */
+/* Mensaje de Ã©xito */
 .auth-success-message {
   background: #d1fae5;
   border: 1px solid #a7f3d0;

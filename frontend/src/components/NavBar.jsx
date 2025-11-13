@@ -35,8 +35,7 @@ export const NavBar = () => {
     const raw = localStorage.getItem("auth");
     try {
       const auth = raw ? JSON.parse(raw) : null;
-      // Verificar si existe usuario (el token ahora está en cookies httpOnly)
-      const logged = !!auth?.user;
+      const logged = !!auth?.token;
       setIsLogin(logged);
       setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
       
@@ -68,49 +67,8 @@ export const NavBar = () => {
       }
     };
 
-    const handleStorageChange = (e) => {
-      // Actualizar estado cuando cambie el localStorage de auth
-      if (e.key === 'auth') {
-        try {
-          const auth = e.newValue ? JSON.parse(e.newValue) : null;
-          const logged = !!auth?.user;
-          setIsLogin(logged);
-          setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
-          setProfileImage(auth?.user?.profileImage || "");
-        } catch {
-          setIsLogin(false);
-          setIsAdmin(false);
-          setProfileImage("");
-        }
-      }
-    };
-
     window.addEventListener('profileImageChanged', handleProfileImageChange);
-    window.addEventListener('storage', handleStorageChange);
-    
-    // También escuchar cambios en el mismo tab usando un evento personalizado
-    const handleAuthChange = () => {
-      const raw = localStorage.getItem("auth");
-      try {
-        const auth = raw ? JSON.parse(raw) : null;
-        const logged = !!auth?.user;
-        setIsLogin(logged);
-        setIsAdmin(auth?.user?.rol === "ADMINISTRADOR");
-        setProfileImage(auth?.user?.profileImage || "");
-      } catch {
-        setIsLogin(false);
-        setIsAdmin(false);
-        setProfileImage("");
-      }
-    };
-    
-    window.addEventListener('authChanged', handleAuthChange);
-    
-    return () => {
-      window.removeEventListener('profileImageChanged', handleProfileImageChange);
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('authChanged', handleAuthChange);
-    };
+    return () => window.removeEventListener('profileImageChanged', handleProfileImageChange);
   }, []);
 
   const handleLogout = async () => {

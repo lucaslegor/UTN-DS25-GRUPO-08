@@ -1,39 +1,41 @@
 const RAW_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
 const API_URL = `${RAW_BASE}/api`;
 
-// Solo guardar user, NO token (los tokens ahora están en cookies httpOnly)
 export function getAuth() {
   const raw = localStorage.getItem('auth');
-  try { 
-    const auth = raw ? JSON.parse(raw) : null;
-    if (auth && auth.token) {
-      // Eliminar token si existe (migración)
-      delete auth.token;
-      saveAuth(auth);
-    }
-    return auth;
-  } catch { return null; }
+  try { return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
 export function saveAuth(auth) {
-  // Guardar solo user, NO token
-  const { token, ...userData } = auth;
-  localStorage.setItem('auth', JSON.stringify({ user: userData.user || userData }));
-  // Disparar evento para actualizar componentes que dependen del estado de auth
-  window.dispatchEvent(new Event('authChanged'));
+  localStorage.setItem('auth', JSON.stringify(auth));
 }
 export function clearAuth() {
   localStorage.removeItem('auth');
-  // Disparar evento para actualizar componentes que dependen del estado de auth
-  window.dispatchEvent(new Event('authChanged'));
+}
+function setAuthToken(token) {
+  const auth = getAuth() || {};
+  const next = { ...auth, token };
+  saveAuth(next);
+  return next;
 }
 
 export function authHeaders(extra = {}) {
-  // El token ahora viene automáticamente en la cookie con credentials: 'include'
-  // NO agregar Authorization header
-  return { 'Content-Type': 'application/json', ...extra };
+  const auth = getAuth();
+  const h = { 'Content-Type': 'application/json', ...extra };
+  if (auth?.token) h.Authorization = `Bearer ${auth.token}`;
+  return h;
 }
 
 let refreshInFlight = null;
+
+function getTokenExpMs(token) {
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(b64));
+    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
 
 async function refreshAccessToken() {
   const res = await fetch(`${API_URL}/auth/refresh`, {
@@ -41,45 +43,64 @@ async function refreshAccessToken() {
     credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
+  if (!res.ok || !data?.token) {
     clearAuth();
     const msg = data?.error || data?.message || `HTTP ${res.status}`;
     throw new Error(msg);
   }
   
-  // El token ahora viene en cookie, no en el body
-  // Solo actualizar user si viene en la respuesta
-  if (data?.user) {
-    const currentAuth = getAuth();
-    if (currentAuth?.user?.profileImage) {
-      data.user.profileImage = currentAuth.user.profileImage;
-    }
-    saveAuth({ user: data.user });
+  const currentAuth = getAuth();
+  if (currentAuth?.user?.profileImage && data?.user) {
+    data.user.profileImage = currentAuth.user.profileImage;
   }
   
-  return true; // Token está en cookie
+  setAuthToken(data.token);
+  return data.token;
+}
+
+async function ensureFreshToken() {
+  const auth = getAuth();
+  if (!auth?.token) return;
+
+  const expMs = getTokenExpMs(auth.token);
+  const now = Date.now();
+  const SKEW = 30_000; // refrescar si faltan < 30s
+
+  if (!expMs || expMs - SKEW > now) return;
+
+  if (!refreshInFlight) {
+    refreshInFlight = refreshAccessToken().finally(() => { refreshInFlight = null; });
+  }
+  await refreshInFlight;
 }
 
 export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry = false } = {}) {
-  // El token viene automáticamente en la cookie con credentials: 'include'
-  // NO agregar Authorization header
+  const auth = getAuth();
+  
+  if (auth?.token) {
+    await ensureFreshToken();
+  }
+
+  const freshAuth = getAuth();
+  
   const h = { 'Content-Type': 'application/json', ...headers };
+  if (freshAuth?.token) h.Authorization = `Bearer ${freshAuth.token}`;
 
   const doReq = () =>
     fetch(`${API_URL}${path}`, {
       method,
       headers: h,
       body: body ? JSON.stringify(body) : undefined,
-      credentials: 'include', // ✅ Esto envía las cookies automáticamente
+      credentials: 'include',
     });
 
   let res = await doReq();
 
-  // Si recibimos 401/403, intentar refrescar el token
-  if ((res.status === 401 || res.status === 403) && !_retry) {
+  if (freshAuth?.token && (res.status === 401 || res.status === 403) && !_retry) {
     try {
       await refreshAccessToken();
-      // Reintentar la petición (el nuevo token está en cookie)
+      const finalAuth = getAuth();
+      if (finalAuth?.token) h.Authorization = `Bearer ${finalAuth.token}`;
       res = await doReq();
     } catch (e) {
       clearAuth();
@@ -102,8 +123,6 @@ export async function loginApi({ username, mail, password, recaptchaToken }) {
     body: payload,
   });
   
-  // El token ahora viene en cookie, no en el body
-  // Solo guardar user
   if (data?.user?.username) {
     const userProfileImage = localStorage.getItem(`profileImage:${data.user.username}`);
     if (userProfileImage) {
@@ -111,7 +130,7 @@ export async function loginApi({ username, mail, password, recaptchaToken }) {
     }
   }
   
-  saveAuth({ user: data.user });
+  saveAuth(data);
   return data;
 }
 
@@ -121,8 +140,6 @@ export async function loginWithGoogleApi(token) {
     body: { token },
   });
   
-  // El token ahora viene en cookie, no en el body
-  // Solo guardar user
   if (data?.user?.username) {
     const userProfileImage = localStorage.getItem(`profileImage:${data.user.username}`);
     if (userProfileImage) {
@@ -130,7 +147,7 @@ export async function loginWithGoogleApi(token) {
     }
   }
   
-  saveAuth({ user: data.user });
+  saveAuth(data);
   return data;
 }
 
@@ -194,14 +211,14 @@ export async function getSolicitudApi(id) {
 }
 
 export async function uploadPolizaFileApi(idSolicitud, file) {
-  // El token viene automáticamente en la cookie con credentials: 'include'
-  // NO agregar Authorization header
+  const auth = getAuth();
   const form = new FormData();
   form.append('file', file);
   const res = await fetch(`${API_URL}/polizas/${idSolicitud}`, {
     method: 'POST',
+    headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
     body: form,
-    credentials: 'include', // ✅ Esto envía las cookies automáticamente
+    credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
