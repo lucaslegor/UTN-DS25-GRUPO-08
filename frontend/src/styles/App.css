@@ -42,23 +42,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  font-variation-settings: 'wght' 450;
-  font-feature-settings: 'liga' 1, 'kern' 1;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-* {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-body, p, span, li, a, input, button, label, div, textarea, select {
-  font-weight: 400;
-  font-variation-settings: 'wght' 450;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-variation-settings: 'wght' 420; /* 420 rinde similar a 400 pero más legible en iOS */
 }
 
 .app-layout {
@@ -79,17 +63,16 @@ body, p, span, li, a, input, button, label, div, textarea, select {
   width: 100%;
 }
 
+/* Refuerzo de legibilidad en móviles: Inter variable a 400 */
 @media (max-width: 768px) {
   html, body, p, span, li, a, input, button, label,
   h1, h2, h3, h4, h5, h6 {
     font-family: 'InterStatic', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important;
     font-weight: 400 !important;
-    font-variation-settings: 'wght' 450 !important;
+    font-variation-settings: 'wght' 420 !important;
     font-optical-sizing: auto;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-    text-rendering: optimizeLegibility !important;
   }
+  /* Títulos un poco más fuertes para contraste */
   h1, h2 { font-weight: 600 !important; }
 }
 
@@ -98,11 +81,8 @@ body, p, span, li, a, input, button, label, div, textarea, select {
   h1, h2, h3, h4, h5, h6 {
     font-family: 'InterStatic', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important;
     font-weight: 400 !important;
-    font-variation-settings: 'wght' 450 !important;
+    font-variation-settings: 'wght' 420 !important;
     font-optical-sizing: auto;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-    text-rendering: optimizeLegibility !important;
   }
   h1, h2 { font-weight: 600 !important; }
 }
