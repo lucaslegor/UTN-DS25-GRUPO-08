@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 import '../styles/adminpanel.css';
 import { useNavigate } from 'react-router-dom';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -23,6 +24,15 @@ import Swal from '../config/sweetalert2';
 /** ========= Config API ========= */
 const RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
 const API_BASE = RAW_BASE.endsWith('/api') ? RAW_BASE : `${RAW_BASE}/api`;
+
+/** Componente Modal Portal para renderizar modales fuera del flujo del documento */
+const ModalPortal = ({ children, isOpen }) => {
+  if (!isOpen) return null;
+  return ReactDOM.createPortal(
+    children,
+    document.body
+  );
+};
 
 /** Normaliza estructura de productos leídos de localStorage */
 const normalizeProducts = (list) =>
@@ -87,6 +97,7 @@ const AdminPanel = () => {
   /** ======= Usuarios (API) ======= */
   const [activeTab, setActiveTab] = useState('form'); // 'form' | 'products' | 'users' | 'polizas'
   const [users, setUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]); // Todos los usuarios cargados
   const [userQuery, setUserQuery] = useState('');
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState('');
@@ -136,20 +147,49 @@ const AdminPanel = () => {
 
   useEffect(() => {
     if (activeTab === 'users') {
-      loadUsers();
+      loadAllUsers();
     }
   }, [activeTab]);
 
-  // Prevenir scroll del body cuando hay modales abiertos
+  // Filtrar usuarios localmente mientras se escribe
+  useEffect(() => {
+    if (allUsers.length === 0) return;
+    
+    if (!userQuery.trim()) {
+      setUsers(allUsers);
+      setUsersError('');
+      return;
+    }
+    
+    const query = userQuery.toLowerCase().trim();
+    const filtered = allUsers.filter(u => {
+      const username = (u.username || '').toLowerCase();
+      const email = (u.mail || '').toLowerCase();
+      const id = String(u.idUsuario || u.id || '');
+      
+      return username.includes(query) || 
+             email.includes(query) || 
+             id.includes(query);
+    });
+    
+    setUsers(filtered);
+    
+    if (filtered.length === 0) {
+      setUsersError(`No se encontraron usuarios que coincidan con "${userQuery}"`);
+    } else {
+      setUsersError('');
+    }
+  }, [userQuery, allUsers]);
+
+  // Hacer scroll hacia arriba cuando se abre un modal para que sea visible
   useEffect(() => {
     if (detailsModalOpen || replacingPolizaId) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      // Scroll suave hacia arriba cuando se abre el modal
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [detailsModalOpen, replacingPolizaId]);
 
   useEffect(() => {
@@ -570,24 +610,23 @@ Si tienes alguna consulta, no dudes en contactarnos.
   return [];
 };
 
-async function loadUsers() {
+async function loadAllUsers() {
   setUsersLoading(true);
   setUsersError('');
   try {
-    const path = userQuery.trim()
-      ? `/usuarios/${encodeURIComponent(userQuery.trim())}`
-      : `/usuarios`;
-
-    const data = await apiFetch(path);    
-    const arr = Array.isArray(data?.usuarios)
-      ? data.usuarios
-      : data?.usuario
-        ? [data.usuario]
-        : [];
+    const data = await apiFetch('/usuarios');    
+    const arr = Array.isArray(data?.usuarios) ? data.usuarios : [];
+    
+    setAllUsers(arr);
     setUsers(arr);
+    
+    if (arr.length === 0) {
+      setUsersError('No hay usuarios registrados');
+    }
   } catch (err) {
     console.error(err);
-    setUsersError('No se pudieron cargar los usuarios');
+    setUsersError('Error al cargar usuarios: ' + (err.message || 'Error desconocido'));
+    setAllUsers([]);
     setUsers([]);
   } finally {
     setUsersLoading(false);
@@ -600,6 +639,16 @@ async function updateUserRole(userId, newRole) {
       method: 'PUT',
       body: { rol: newRole },
     });
+    
+    // Actualizar el usuario en la lista local
+    setAllUsers(prevUsers => 
+      prevUsers.map(u => 
+        (u.idUsuario || u.id) === userId 
+          ? { ...u, rol: newRole }
+          : u
+      )
+    );
+    
     return data;
   } catch (err) {
     console.error(err);
@@ -1327,22 +1376,55 @@ async function updateUserRole(userId, newRole) {
             </div>
 
             <div className="users-toolbar">
-              <div className="users-search-wrap">
+              <div className="users-search-wrap" style={{ flex: 1, maxWidth: '100%' }}>
                 <SearchIcon className="users-search-icon" fontSize="small" />
                 <input
                   className="users-search"
                   type="search"
-                  placeholder="Buscar por username exacto…"
+                  placeholder="Buscar por nombre, email o ID..."
                   value={userQuery}
                   onChange={(e) => setUserQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') loadUsers();
-                  }}
                 />
+                {userQuery && (
+                  <button
+                    onClick={() => setUserQuery('')}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#9ca3af',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      padding: '4px 8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Limpiar búsqueda"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
-              <button className="submit-button" onClick={loadUsers}>
-                Buscar
-              </button>
+              {users.length > 0 && (
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: '#6b7280', 
+                  padding: '8px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span style={{ fontWeight: 600, color: '#1976d2' }}>
+                    {users.length}
+                  </span>
+                  usuario{users.length !== 1 ? 's' : ''} 
+                  {userQuery && ' encontrado' + (users.length !== 1 ? 's' : '')}
+                </div>
+              )}
             </div>
 
             {usersLoading && <div className="message">Cargando usuarios…</div>}
@@ -1373,7 +1455,6 @@ async function updateUserRole(userId, newRole) {
                             if (newRole !== u.rol) {
                               try {
                                 await updateUserRole(u.idUsuario || u.id, newRole);
-                                await loadUsers();
                                 
                                 const successMessage = document.createElement('div');
                                 successMessage.textContent = `✅ Rol de ${u.username} actualizado a ${newRole}`;
@@ -1391,7 +1472,8 @@ async function updateUserRole(userId, newRole) {
                                 }, 3000);
                               } catch (e) {
                                 alert('No se pudo cambiar el rol: ' + (e?.message || 'Error desconocido'));
-                                await loadUsers();
+                                // Recargar todos los usuarios en caso de error
+                                await loadAllUsers();
                               }
                             }
                           }}
@@ -1441,96 +1523,99 @@ async function updateUserRole(userId, newRole) {
             </div>
 
             <form onSubmit={handleAssignPoliza} className="admin-form">
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="solicitud">
-                    <span className="label-icon">📋</span>
-                    Seleccionar Solicitud
-                  </label>
+              {/* Selector de solicitudes con espacio reservado para el dropdown */}
+              <div className="form-group" style={{ marginBottom: isSelectOpen ? '240px' : '24px', transition: 'margin-bottom 0.2s ease' }}>
+                <label htmlFor="solicitud">
+                  <span className="label-icon">📋</span>
+                  Seleccionar Solicitud
+                </label>
+                
+                <div style={{ position: 'relative', zIndex: 100 }}>
+                  <input
+                    type="text"
+                    value={isSelectOpen ? solicitudSearchTerm : getSelectedSolicitudText()}
+                    onChange={(e) => {
+                      setSolicitudSearchTerm(e.target.value);
+                      setIsSelectOpen(true);
+                    }}
+                    onFocus={() => {
+                      setIsSelectOpen(true);
+                      loadSolicitudes();
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setIsSelectOpen(false), 200);
+                    }}
+                    placeholder="Escribe para buscar solicitudes..."
+                    style={{ 
+                      width: '100%',
+                      padding: '12px',
+                      fontSize: '14px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      backgroundColor: 'white',
+                      cursor: 'text'
+                    }}
+                    required
+                  />
                   
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type="text"
-                      value={isSelectOpen ? solicitudSearchTerm : getSelectedSolicitudText()}
-                      onChange={(e) => {
-                        setSolicitudSearchTerm(e.target.value);
-                        setIsSelectOpen(true);
-                      }}
-                      onFocus={() => {
-                        setIsSelectOpen(true);
-                        loadSolicitudes();
-                      }}
-                      onBlur={() => {
-                        setTimeout(() => setIsSelectOpen(false), 200);
-                      }}
-                      placeholder="Escribe para buscar solicitudes..."
-                      style={{ 
-                        width: '100%',
-                        padding: '12px',
-                        fontSize: '14px',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        backgroundColor: 'white',
-                        cursor: 'text'
-                      }}
-                      required
-                    />
-                    
-                    {isSelectOpen && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-                        backgroundColor: 'white',
-                        border: '1px solid #ddd',
-                        borderTop: 'none',
-                        borderRadius: '0 0 4px 4px',
-                        maxHeight: '200px',
-                        overflowY: 'auto',
-                        zIndex: 1000,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                      }}>
-                        {filteredSolicitudes.length === 0 ? (
-                          <div style={{ padding: '12px', color: '#666', textAlign: 'center' }}>
-                            {solicitudesLoading ? 'Cargando solicitudes...' : 'No se encontraron solicitudes'}
+                  {isSelectOpen && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      backgroundColor: 'white',
+                      border: '1px solid #ddd',
+                      borderTop: 'none',
+                      borderRadius: '0 0 4px 4px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      zIndex: 1200,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      marginTop: '-1px'
+                    }}>
+                      {filteredSolicitudes.length === 0 ? (
+                        <div style={{ padding: '12px', color: '#666', textAlign: 'center' }}>
+                          {solicitudesLoading ? 'Cargando solicitudes...' : 'No se encontraron solicitudes'}
+                        </div>
+                      ) : (
+                        filteredSolicitudes.map((s) => (
+                          <div
+                            key={s.id}
+                            onClick={() => {
+                              setSelectedSolicitudId(s.id);
+                              setSolicitudSearchTerm('');
+                              setIsSelectOpen(false);
+                            }}
+                            style={{
+                              padding: '12px',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #f0f0f0',
+                              backgroundColor: selectedSolicitudId == s.id ? '#f5f5f5' : 'white'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = selectedSolicitudId == s.id ? '#f5f5f5' : 'white'}
+                          >
+                            #{s.id} - {s.usuario?.username || `user ${s.idUsuario}`} - {s.estado} 
+                            {s.poliza ? ' (YA TIENE PÓLIZA)' : ' (SIN PÓLIZA)'}
                           </div>
-                        ) : (
-                          filteredSolicitudes.map((s) => (
-                            <div
-                              key={s.id}
-                              onClick={() => {
-                                setSelectedSolicitudId(s.id);
-                                setSolicitudSearchTerm('');
-                                setIsSelectOpen(false);
-                              }}
-                              style={{
-                                padding: '12px',
-                                cursor: 'pointer',
-                                borderBottom: '1px solid #f0f0f0',
-                                backgroundColor: selectedSolicitudId == s.id ? '#f5f5f5' : 'white'
-                              }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = selectedSolicitudId == s.id ? '#f5f5f5' : 'white'}
-                            >
-                              #{s.id} - {s.usuario?.username || `user ${s.idUsuario}`} - {s.estado} 
-                              {s.poliza ? ' (YA TIENE PÓLIZA)' : ' (SIN PÓLIZA)'}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {solicitudesLoading && <div className="message">Cargando solicitudes…</div>}
-                  {solicitudesError && <div className="message error">{solicitudesError}</div>}
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
+                
+                {solicitudesLoading && <div className="message">Cargando solicitudes…</div>}
+                {solicitudesError && <div className="message error">{solicitudesError}</div>}
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="polizaFile">
-                    <span className="label-icon">📎</span>
-                    Archivo de póliza (PDF)
-                  </label>
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label htmlFor="polizaFile">
+                  <span className="label-icon">📎</span>
+                  Archivo de póliza (PDF)
+                </label>
+                
+                <div className="file-input-container">
                   <input
                     type="file"
                     id="polizaFile"
@@ -1539,7 +1624,54 @@ async function updateUserRole(userId, newRole) {
                     onChange={(e) => setAssignFile(e.target.files?.[0] || null)}
                     required
                   />
+                  <div className="file-input-overlay">
+                    <DescriptionIcon style={{ fontSize: '3rem', color: '#9ca3af' }} />
+                    <span style={{ fontSize: '14px', fontWeight: 600 }}>
+                      {assignFile ? assignFile.name : 'Haz clic para seleccionar archivo'}
+                    </span>
+                    <span style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                      PDF o imagen (máx. 10MB)
+                    </span>
+                  </div>
                 </div>
+                
+                {assignFile && (
+                  <div style={{ 
+                    marginTop: '12px', 
+                    padding: '12px', 
+                    backgroundColor: '#f0fdf4', 
+                    border: '1px solid #86efac',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span style={{ color: '#16a34a', fontSize: '20px' }}>✓</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: '#15803d', fontSize: '14px' }}>
+                        Archivo seleccionado
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#166534' }}>
+                        {assignFile.name} ({(assignFile.size / 1024).toFixed(2)} KB)
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAssignFile(null)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#dc2626',
+                        cursor: 'pointer',
+                        fontSize: '18px',
+                        padding: '4px 8px'
+                      }}
+                      title="Eliminar archivo"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
 
 
@@ -1684,7 +1816,7 @@ async function updateUserRole(userId, newRole) {
           </div>
         )}
 
-        {replacingPolizaId && (
+        <ModalPortal isOpen={!!replacingPolizaId}>
           <div 
             className="modal-overlay"
             onClick={(e) => {
@@ -1715,21 +1847,65 @@ async function updateUserRole(userId, newRole) {
 
               <form onSubmit={handleReplacePoliza}>
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                  <label style={{ display: 'block', marginBottom: '12px', fontWeight: 'bold', color: '#374151' }}>
                     Seleccionar nuevo archivo de póliza:
                   </label>
-                  <input
-                    type="file"
-                    accept="application/pdf,image/*"
-                    onChange={(e) => setReplaceFile(e.target.files?.[0] || null)}
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '8px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px'
-                    }}
-                  />
+                  
+                  <div className="file-input-container">
+                    <input
+                      type="file"
+                      accept="application/pdf,image/*"
+                      onChange={(e) => setReplaceFile(e.target.files?.[0] || null)}
+                      required
+                    />
+                    <div className="file-input-overlay">
+                      <DescriptionIcon style={{ fontSize: '3rem', color: '#9ca3af' }} />
+                      <span style={{ fontSize: '14px', fontWeight: 600 }}>
+                        {replaceFile ? replaceFile.name : 'Haz clic para seleccionar archivo'}
+                      </span>
+                      <span style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                        PDF o imagen (máx. 10MB)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {replaceFile && (
+                    <div style={{ 
+                      marginTop: '12px', 
+                      padding: '12px', 
+                      backgroundColor: '#f0fdf4', 
+                      border: '1px solid #86efac',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ color: '#16a34a', fontSize: '20px' }}>✓</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, color: '#15803d', fontSize: '14px' }}>
+                          Archivo seleccionado
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#166534' }}>
+                          {replaceFile.name} ({(replaceFile.size / 1024).toFixed(2)} KB)
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setReplaceFile(null)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#dc2626',
+                          cursor: 'pointer',
+                          fontSize: '18px',
+                          padding: '4px 8px'
+                        }}
+                        title="Eliminar archivo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
@@ -1768,9 +1944,10 @@ async function updateUserRole(userId, newRole) {
               </form>
             </div>
           </div>
-        )}
+        </ModalPortal>
 
-        {detailsModalOpen && selectedSolicitud && (
+        <ModalPortal isOpen={detailsModalOpen && !!selectedSolicitud}>
+          {selectedSolicitud && (
           <div 
             className="modal-overlay"
             onClick={(e) => {
@@ -2067,7 +2244,8 @@ async function updateUserRole(userId, newRole) {
               </div>
             </div>
           </div>
-        )}
+          )}
+        </ModalPortal>
       </main>
     </div>
   );

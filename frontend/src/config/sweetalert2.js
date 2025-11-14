@@ -1,15 +1,19 @@
-// Configuración global de SweetAlert2 para prevenir bugs de z-index
+// Configuración global de SweetAlert2
 import Swal from 'sweetalert2';
 
 // Configurar mixin global para todos los Swal.fire()
 const SwalWithDefaults = Swal.mixin({
-  // Asegurar z-index alto para que aparezca sobre todo
-  zIndex: 10000,
+  // Configurar altura automática
+  heightAuto: false,
   // Backdrop con blur
   backdrop: true,
   // Prevenir que se cierre accidentalmente
   allowOutsideClick: false,
   allowEscapeKey: true,
+  // Clases personalizadas para z-index alto
+  customClass: {
+    container: 'swal2-high-z-index'
+  }
 });
 
 // Función helper que previene scroll del body

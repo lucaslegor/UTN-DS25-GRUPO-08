@@ -5,7 +5,16 @@
   box-sizing: border-box;
 }
 
-/* Estilos para modales personalizados - Prevenir bugs de z-index */
+/* SweetAlert2 z-index personalizado */
+.swal2-high-z-index {
+  z-index: 10000 !important;
+}
+
+.swal2-high-z-index .swal2-popup {
+  z-index: 10001 !important;
+}
+
+/* Estilos para modales personalizados - Centrado en viewport actual con doble scroll */
 .modal-overlay {
   position: fixed !important;
   top: 0 !important;
@@ -16,10 +25,14 @@
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 1300 !important;
+  /* Usar flex para centrado perfecto en el viewport */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  padding: 20px !important;
   animation: fadeIn 0.2s ease-out;
+  /* NO usar overflow en el overlay para que siempre esté fijo al viewport */
+  overflow: hidden !important;
 }
 
 .modal-content {
@@ -28,12 +41,16 @@
   padding: 24px !important;
   max-width: 600px !important;
   width: 90% !important;
-  max-height: 90vh !important;
+  /* El modal tiene su propio scroll interno */
+  max-height: 85vh !important;
   overflow-y: auto !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
   animation: slideUp 0.3s ease-out;
-  position: relative !important;
   z-index: 1301 !important;
+  /* Mantener centrado */
+  position: relative !important;
+  /* Asegurar scroll suave en el modal */
+  -webkit-overflow-scrolling: touch !important;
 }
 
 @keyframes fadeIn {
@@ -56,12 +73,8 @@
   }
 }
 
-/* Prevenir scroll del body cuando hay modales abiertos */
-body.modal-open {
-  overflow: hidden !important;
-  position: fixed !important;
-  width: 100% !important;
-}
+/* Permitir scroll del body incluso cuando hay modales abiertos (doble scroll) */
+/* body.modal-open - Deshabilitado para permitir scroll de la página principal */
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -271,6 +284,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  /* Asegurar que los dropdowns se muestren correctamente */
+  position: relative;
 }
 
 .form-grid {
@@ -324,7 +339,7 @@ body {
   resize: vertical;
 }
 
-/* File Input Styling */
+/* File Input Styling - Diseño Mejorado */
 .file-input-container {
   position: relative;
   overflow: hidden;
@@ -345,28 +360,72 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  background: #f9fafb;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
   transition: all 0.3s ease;
   cursor: pointer;
+  min-height: 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto de animación cuando se hace hover */
+.file-input-overlay::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.file-input-overlay:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .file-input-overlay:hover {
   border-color: #3b82f6;
-  background: #eff6ff;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.file-input-overlay:active {
+  transform: translateY(0);
 }
 
 .file-icon {
   font-size: 2rem !important;
   color: #9ca3af;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.file-input-overlay:hover .file-icon {
+  color: #3b82f6;
+  transform: scale(1.1);
 }
 
 .file-input-overlay span {
   color: #6b7280;
   font-weight: 500;
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.file-input-overlay:hover span {
+  color: #1f2937;
 }
 
 /* Image Preview */
@@ -389,6 +448,9 @@ body {
   gap: 1rem;
   margin-top: 1rem;
   flex-wrap: wrap;
+  /* Asegurar que los botones estén debajo de los dropdowns */
+  position: relative;
+  z-index: 1;
 }
 
 .submit-button,
@@ -592,7 +654,7 @@ body {
   position: relative;
   min-width: 260px;
   flex: 1 1 320px;
-  max-width: 520px;
+  max-width: 100%;
 }
 
 .users-search-icon {
@@ -601,21 +663,29 @@ body {
   left: 10px;
   transform: translateY(-50%);
   opacity: .7;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .users-search {
   width: 100%;
-  padding: 10px 12px 10px 34px;
+  padding: 10px 40px 10px 34px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-  transition: box-shadow .2s, border-color .2s;
+  transition: all .2s ease;
+  background: #fafafa;
 }
 
 .users-search:focus {
-  border-color: #3d6de2;
-  box-shadow: 0 0 0 3px rgba(61, 109, 226, .15);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+  background: white;
+}
+
+.users-search:hover {
+  border-color: #d1d5db;
 }
 
 

@@ -74,7 +74,7 @@ async function ensureFreshToken() {
   await refreshInFlight;
 }
 
-export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry = false } = {}) {
+export async function apiFetch(path, { method = 'GET', headers = {}, body, _retry = false, timeout = 10000 } = {}) {
   const auth = getAuth();
   
   if (auth?.token) {
@@ -86,15 +86,28 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
   const h = { 'Content-Type': 'application/json', ...headers };
   if (freshAuth?.token) h.Authorization = `Bearer ${freshAuth.token}`;
 
-  const doReq = () =>
-    fetch(`${API_URL}${path}`, {
+  const doReq = () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    return fetch(`${API_URL}${path}`, {
       method,
       headers: h,
       body: body ? JSON.stringify(body) : undefined,
       credentials: 'include',
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
+  };
 
-  let res = await doReq();
+  let res;
+  try {
+    res = await doReq();
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('La solicitud tardó demasiado tiempo. Por favor, intenta de nuevo.');
+    }
+    throw new Error('Error de conexión. Verifica tu conexión a internet.');
+  }
 
   if (freshAuth?.token && (res.status === 401 || res.status === 403) && !_retry) {
     try {
@@ -110,7 +123,18 @@ export async function apiFetch(path, { method = 'GET', headers = {}, body, _retr
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const msg = data?.error || data?.message || `HTTP ${res.status}`;
+    // Mejorar mensajes de error específicos
+    if (res.status === 404) {
+      throw new Error(data?.message || 'No encontrado');
+    } else if (res.status === 403) {
+      throw new Error('No tienes permisos para realizar esta acción');
+    } else if (res.status === 401) {
+      throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+    } else if (res.status >= 500) {
+      throw new Error('Error del servidor. Por favor, intenta más tarde.');
+    }
+    
+    const msg = data?.error || data?.message || `Error HTTP ${res.status}`;
     throw new Error(msg);
   }
   return data;
